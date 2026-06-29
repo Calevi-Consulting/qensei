@@ -1,0 +1,49 @@
+[tool.poetry]
+# The FRAMEWORK RUNTIME is zero-dependency (pure stdlib): `python3 -m engine.run --sut ...`
+# works with no install at all. Poetry manages only the DEV / TEST toolchain below
+# (test runner, parallelism, linter, CVE scanner). `package-mode = false` means
+# `poetry install` installs those tools into a local .venv WITHOUT packaging this repo.
+name = "qensei"
+version = "0.1.0"
+description = "Qensei — an AI QA assistant (built for Claude Code): backend-aware test-case design, automated regression, and failure diagnostics over a System-Under-Test plugin."
+authors = ["Martin Hereu <mhereu@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+# Pinned to the latest published majors/minors as the project's starting baseline.
+pytest = ">=9.0.3,<10"      # latest 9.x; >=9.0.3 closes CVE-2025-71176 (flagged by `make cve`)
+pytest-xdist = "^3.8"       # latest — parallel test execution (`pytest -n auto`)
+ruff = "^0.15"              # latest — lint + format
+pip-audit = "^2.10"         # latest — dependency CVE scan
+playwright = "^1.61"        # latest — browser automation for the UI testing capability
+pytest-playwright = "^0.8"  # latest — the `page` fixture + headed/slowmo options for the UI lane
+
+[tool.pytest.ini_options]
+# tools/tests = the zero-dependency unittest suite (also pytest-collectable);
+# tests/       = the pytest-only site-integration bridge (tests/test_sites.py).
+testpaths = ["tools/tests", "tests"]
+addopts = "-n auto -q"   # parallel by default; override with `-n0` to debug serially
+markers = [
+  "smoke: fast confidence slice",
+  "slow: long-running; kept out of the blocking gate",
+  "durability: existing_data / data-durability persona",
+  "integration: boots a SUT and exercises its live runtime",
+  "ui: browser-driven (Playwright) UI test; opt-in lane (make test-ui)",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E731"]   # assigning a lambda is fine in tests/config helpers
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.qa-runs/
+.env
+# durable stores (existing_data demos) — created at runtime, not tracked
+sut/mock-shop/source/.accounts.json
+sut/restful-booker/source/.rooms.json
+# machine-readable gate reports
+report*.xml
+report*.json
+# Claude Code project wiring — generated (opt-in) by scripts/install.sh; source of
+# truth is commands/ + agents/ + policies/ at the repo root
+.claude/
+# Provisioned SUT source clones — a real SUT sets manifest.source.repo and `make sync-source`
+# materialises source.path as a git clone. The example SUTs' committed
+# in-repo mocks (sut/*/source/) are NOT matched by this; add a real SUT's cloned source dir here
+# when you wire one, e.g.:
+#   sut/<name>/source/
+sut/restful-booker-live/source/

@@ -1,0 +1,127 @@
+# Qensei CI — lint + CVE scan + tests, per SITE, on GitHub Actions.
+#
+# Two kinds of work, matching how the repo is used:
+#   * checks (lint, CVE scan, framework unit/integration tests, fidelity, secrets) — run on
+#     every push / pull_request, i.e. on framework changes / general commits.
+#   * gate (the site integration packs under pytest + xdist) — the QA-facing gate. On push/PR it
+#     fans over EVERY site; "Run workflow" lets you CHOOSE a single site (or all) from a dropdown.
+#
+# The dev toolchain (pytest, pytest-xdist, ruff, pip-audit) is managed by Poetry; `make install`
+# provisions it. The framework runtime itself stays zero-dependency.
+name: qa-gate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Which site to validate"
+        type: choice
+        default: all
+        options:
+          - all
+          - sut/mock-shop
+          - sut/restful-booker
+
+permissions:
+  contents: read
+
+jobs:
+  # Compute the site matrix from the chosen input: a single site on manual dispatch, else all.
+  select-sites:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - id: pick
+        env:
+          SITE: ${{ github.event.inputs.site }}
+        run: |
+          if [ -n "$SITE" ] && [ "$SITE" != "all" ]; then
+            name="${SITE#sut/}"
+            echo "matrix={\"include\":[{\"sut\":\"$SITE\",\"site\":\"$name\"}]}" >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix={"include":[{"sut":"sut/mock-shop","site":"mock-shop"},{"sut":"sut/restful-booker","site":"restful-booker"}]}' >> "$GITHUB_OUTPUT"
+          fi
+
+  # Code quality + security + framework tests — site-independent, on every push/PR.
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # fidelity-lint diffs against the base ref
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: install Poetry + dev toolchain
+        run: |
+          pipx install poetry
+          make install
+      - name: lint (ruff)
+        run: make lint
+      - name: CVE scan (pip-audit)
+        run: make cve
+      - name: framework unit + integration tests
+        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py --junitxml=report-unit.xml
+      - name: spec-fidelity lint (no weakened acceptance criteria)
+        run: python3 -m engine.fidelity_lint --base "origin/${{ github.event.repository.default_branch }}"
+      - name: secrets scan
+        run: make secrets
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-unit
+          path: report-unit.xml
+
+  # The site integration gate — the chosen site's packs under pytest + xdist. fail-fast off so
+  # every selected site reports. QAF_SITES narrows the bridge (tools/tests/test_sites.py) to one site.
+  gate:
+    needs: select-sites
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select-sites.outputs.matrix) }}
+    name: gate (${{ matrix.site }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: install Poetry + dev toolchain
+        run: |
+          pipx install poetry
+          make install
+      - name: site integration tests (pytest -n auto)
+        env:
+          QAF_SITES: ${{ matrix.sut }}
+        run: poetry run pytest tests/test_sites.py --junitxml=report-${{ matrix.site }}.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-${{ matrix.site }}
+          path: report-${{ matrix.site }}.xml
+
+  # The UI (browser) lane — every site's Playwright UI packs. Separate from the REST gate because a
+  # browser is slower/heavier; it installs chromium and runs the `ui`-marked packs (sites without a
+  # UI simply contribute no tests).
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: install Poetry + chromium
+        run: |
+          pipx install poetry
+          poetry install
+          poetry run playwright install --with-deps chromium
+      - name: UI packs (Playwright, headless)
+        run: poetry run pytest tests/test_ui.py --junitxml=report-ui.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-ui
+          path: report-ui.xml
