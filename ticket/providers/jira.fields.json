@@ -1,0 +1,98 @@
+{
+  "_comment": "Per-tenant Jira field mapping. The commands (test-ticket, report-bug) reference NORMALIZED field names only; this file resolves each to a tenant's ACTUAL Jira field id / path / strategy. A different Jira instance has different custom-field ids and a different layout, so swapping tenants = selecting a profile here, with zero command changes. Select via the ticket config (provider: jira, profile: <name>). 'REQUIRES_MAPPING' marks a field a new tenant must fill.",
+  "active_profile": "default",
+  "profiles": {
+    "default": {
+      "_comment": "Neutral starting point for any Jira tenant. Standard Jira fields are pre-filled; tenant-specific custom fields are REQUIRES_MAPPING. Where a custom field is unset, the commands fall back to a Description section so the framework still works on a bare Jira.",
+      "cloud_id": "REQUIRES_MAPPING",
+      "project_key": "REQUIRES_MAPPING",
+      "read": {
+        "id": "key",
+        "title": "fields.summary",
+        "description": "fields.description",
+        "status": "fields.status.name",
+        "labels": "fields.labels",
+        "components": "fields.components[].name",
+        "issue_type": "fields.issuetype.name",
+        "links": "fields.issuelinks",
+        "comments": "fields.comment.comments",
+        "acceptance_criteria": { "strategy": "description-heading", "heading": "Acceptance Criteria" }
+      },
+      "write_results": {
+        "_comment": "Where test-ticket writes the execution summary. 'comment' works on any tenant; set a resolution-notes custom field to use that instead.",
+        "target": "comment",
+        "resolution_notes_field": "REQUIRES_MAPPING"
+      },
+      "bug": {
+        "summary": { "field": "summary", "type": "text" },
+        "description": { "field": "description", "type": "adf" },
+        "steps_to_reproduce": { "field": "REQUIRES_MAPPING", "type": "adf", "fallback": "description-section" },
+        "actual_behavior": { "field": "REQUIRES_MAPPING", "type": "adf", "fallback": "description-section" },
+        "expected_behavior": { "field": "REQUIRES_MAPPING", "type": "adf", "fallback": "description-section" },
+        "environment": { "field": "environment", "type": "text" },
+        "component": { "field": "components", "type": "array-name" },
+        "priority": { "field": "priority", "type": "name" },
+        "severity": { "field": "REQUIRES_MAPPING", "type": "option" },
+        "is_regression": { "field": "REQUIRES_MAPPING", "type": "option", "values": { "yes": "Yes", "no": "No" } },
+        "product_line": { "field": "REQUIRES_MAPPING", "type": "option" },
+        "qa_driver": { "field": "REQUIRES_MAPPING", "type": "user", "source": "current-user" },
+        "defect_type": { "field": "REQUIRES_MAPPING", "type": "option", "default": null },
+        "affects_version": { "field": "versions", "type": "array-name" },
+        "issue_type": { "bug": "Bug", "improvement": "Task" }
+      },
+      "transition": {
+        "_comment": "Discover transitions dynamically; never hardcode transition ids. required_before_transition gates a pass-transition on these fields being set first.",
+        "discover_dynamically": true,
+        "pass_target": ["Ready for Release", "Done"],
+        "required_before_transition": { "fix_versions": "fixVersions" }
+      },
+      "content_language": "en"
+    },
+
+    "aiq": {
+      "_comment": "Real AttackIQ tenant mapping — proves the mechanism against a live instance and documents the AIQ ids that used to be hardcoded in qa-agent/skills/JIRA.md. Copy this block, rename it, and fill your own ids to onboard another tenant.",
+      "cloud_id": "84825bb0-beb2-4287-add2-3c9ed63c0093",
+      "project_key": "AP",
+      "read": {
+        "id": "key",
+        "title": "fields.summary",
+        "description": "fields.description",
+        "status": "fields.status.name",
+        "labels": "fields.labels",
+        "components": "fields.components[].name",
+        "issue_type": "fields.issuetype.name",
+        "links": "fields.issuelinks",
+        "comments": "fields.comment.comments",
+        "acceptance_criteria": { "strategy": "description-heading", "heading": "Acceptance Criteria" }
+      },
+      "write_results": {
+        "target": "resolution-notes-or-comment",
+        "resolution_notes_field": "customfield_10962"
+      },
+      "bug": {
+        "summary": { "field": "summary", "type": "text" },
+        "description": { "field": "description", "type": "adf" },
+        "steps_to_reproduce": { "field": "customfield_11078", "type": "adf" },
+        "actual_behavior": { "field": "customfield_11080", "type": "adf" },
+        "expected_behavior": { "field": "customfield_11079", "type": "adf" },
+        "environment": { "field": "environment", "type": "text" },
+        "component": { "field": "components", "type": "array-name" },
+        "priority": { "field": "priority", "type": "name" },
+        "severity": { "field": "REQUIRES_MAPPING", "type": "option", "_comment": "AIQ maps from a shared severity scale; fill the instance's severity field id" },
+        "is_regression": { "field": "customfield_11143", "type": "option", "values": { "yes": "Yes", "no": "No" } },
+        "product_line": { "field": "customfield_12041", "type": "option" },
+        "qa_driver": { "field": "customfield_11134", "type": "user", "source": "current-user" },
+        "defect_type": { "field": "customfield_11133", "type": "option", "default": "IFD - Internal Found Defect" },
+        "affects_version": { "field": "versions", "type": "array-name" },
+        "issue_type": { "bug": "Bug", "improvement": "Task" }
+      },
+      "transition": {
+        "discover_dynamically": true,
+        "pass_target": ["Ready for Release"],
+        "required_before_transition": { "product_line": "customfield_12041", "fix_versions": "fixVersions" },
+        "product_line_options": { "Enterprise": "13326", "Flex": "13327", "Ready": "13328", "Command Center": "13457" }
+      },
+      "content_language": "en"
+    }
+  }
+}
