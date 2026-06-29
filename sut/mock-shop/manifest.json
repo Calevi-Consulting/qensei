@@ -1,0 +1,25 @@
+{
+  "name": "mock-shop",
+  "description": "A toy 'shop' backend (products / cart / checkout). The reference SUT plugin proving the framework is domain-agnostic: it provides BOTH a runtime to test and source to read.",
+  "source": {
+    "path": "source",
+    "note": "For a real backend this points at a checked-out clone read by design + diagnostics."
+  },
+  "runtime": {
+    "mode": "in_process",
+    "app": "app.py",
+    "factory": "make_server",
+    "note": "in_process: the framework boots the mock itself. A real plugin uses {\"mode\":\"remote\",\"base_url\":\"https://...\"}."
+  },
+  "env": {
+    "local": { "base_url": "in-process (ephemeral port)" }
+  },
+  "creds": {
+    "mode": "none",
+    "note": "The mock needs no auth. A real plugin resolves a token here (env var / Vault / etc.)."
+  },
+  "knowledge": {
+    "skills": "skills",
+    "learnings": "learnings"
+  }
+}
