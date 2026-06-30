@@ -68,27 +68,31 @@ flowchart LR
   `citation_gate.py` / `freshness_gate.py`.
 - **`policies/`** — product-neutral governance (spec phases, ownership, test philosophy, security,
   release-safety). [quality-gates.md](quality-gates.md) shows how the policies become forcing functions.
-- **`core/specs` + `core/plans`** — intent contracts (human-approved) and implementation rationale.
-- **`packs/`** — landed regressions, one dir each (`case.py` + index-card `README.md`); `make new-pack`
-  scaffolds one, `make regen-index` aggregates the cards.
-- **`sut/`** — the plugins. `mock-shop/` is the reference; a real product is the same shape.
+- **`sut/`** — the SITES under test, one **self-contained** plugin dir each. A site owns its backend
+  access AND its tests: `source/` (backend), `skills/` + `learnings/` (manual-QA context), `packs/`
+  (landed regressions: `case.py` + index-card `README.md`), `specs/` + `plans/` (intent contracts +
+  implementation rationale), `tickets/`, `examples/`, and `manifest.json` (+ optional `plugin.py`).
+  `mock-shop/` and `restful-booker/` are the two reference sites; a real product is the same shape.
+  `make new-pack SUT=sut/<name>` scaffolds a pack into a site; `make regen-index` aggregates every
+  site's cards into [delivered-regressions.md](delivered-regressions.md).
 - **`agents/` + `docs/multiagent/`** — the advisory review panel.
 - **`tools/tests/`** — engine + gate unit tests (`make test-engine`).
 
-## Lineage (what it generalises)
+## How the pieces compose
 
-| Source of the pattern | What it contributes here |
-|----------------------|--------------------------|
-| A manual-QA context agent (domain skills, learnings, test-case design) | the **DESIGN** capability + `sut/<name>/skills` + `learnings` |
-| A REST regression framework (specs, packs, personas, the merge gate, the diagnostic lenses) | the **REGRESS** + **DIAGNOSE** capabilities + `core/` + `packs/` |
-| A spec-driven methodology | the **`policies/`** governance |
+| Concern | What provides it |
+|---------|------------------|
+| Manual-QA design (domain skills, learnings, test-case design) | the **DESIGN** capability + each site's `sut/<name>/skills` + `learnings` |
+| Automated regression + failure triage (specs, packs, personas, the merge gate, the diagnostic lenses) | the **REGRESS** + **DIAGNOSE** capabilities + each site's `sut/<name>/specs` + `packs` |
+| Development governance (spec-driven workflow, ownership, test philosophy) | the **`policies/`** |
 
-The single new idea binding them is that **one backend connection serves both test design and
-diagnostics** — which is why "backend access" is the framework's central abstraction.
+The idea binding them is that **one backend connection serves both test design and diagnostics** —
+which is why "backend access" is the framework's central abstraction.
 
 ## Status & next
 
-v0 runs the three capabilities end-to-end against `mock-shop`, with the full gate machinery (auth/env
-seams, pre-flight, personas/durability, selection lanes, the deterministic gates, CI). Open next steps:
-a second SUT plugin (validates the seam is really generic), the manual-validation leg, and the
-ticket→spec handoff.
+v0 runs the three capabilities end-to-end against **two** sites — `mock-shop` and `restful-booker` —
+with the full gate machinery (auth/env seams, pre-flight, personas/durability, selection lanes, the
+deterministic gates, CI fanned over both sites). The second site validated that the SUT seam is really
+generic: it dropped in with no change to `engine/` or `policies/`. Open next steps: the manual-validation
+leg, the ticket→spec handoff, and a real authenticated backend behind the booker's `live`-env path.

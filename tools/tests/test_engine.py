@@ -1,4 +1,4 @@
-"""Unit tests for the engine core added to close the t-800 gaps. Pure stdlib unittest.
+"""Unit tests for the engine core. Pure stdlib unittest.
 
 Run: ``python -m unittest discover -s tools/tests`` (or ``make test-engine``).
 """

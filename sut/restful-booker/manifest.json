@@ -1,0 +1,44 @@
+{
+  "name": "restful-booker",
+  "description": "mwinteringham's restful-booker-platform (https://automationintesting.online, source https://github.com/mwinteringham/restful-booker-platform), as the qa-framework's SECOND site. Proves the engine is genuinely domain-agnostic: nothing in engine/ or policies/ changes between this and mock-shop. Ships a zero-dependency in-process mock for the deterministic offline gate AND a 'live' env pointing at the real public demo.",
+  "source": {
+    "path": "source",
+    "note": "The in-repo mock IS the source (declared ROUTES + BUSINESS_RULES read by design + diagnostics), faithful to the real platform. For a real backend this would point at a checked-out clone of the GitHub source."
+  },
+  "tests": {
+    "packs": "packs",
+    "specs": "specs",
+    "tickets": "tickets",
+    "ui_packs": "ui-packs"
+  },
+  "ui": {
+    "path": "/ui",
+    "note": "The site serves a web UI here (relative to the runtime base_url). The mock serves a minimal booking form at /ui for the deterministic offline Playwright sample; the live site's UI is at the host root. UICases (ui-packs/) drive this with a real browser."
+  },
+  "runtime": {
+    "mode": "in_process",
+    "app": "app.py",
+    "factory": "make_server",
+    "isolate": "/booking/reset",
+    "note": "Default boots the mock in-process (deterministic, offline). 'isolate' clears ephemeral bookings before each case (a mock-only test seam; harmlessly 404s against the live site, where new_user cases self-clean via teardown). The 'live' env (below) overrides mode to 'remote'."
+  },
+  "env": {
+    "local": {
+      "mode": "in_process",
+      "base_url": "in-process (ephemeral port)"
+    },
+    "live": {
+      "mode": "remote",
+      "base_url": "https://automationintesting.online/api",
+      "note": "The real public demo API (served under /api). Use this env to exercise the REMOTE + login seam against the real site: run with QAF_CREDS_MODE=provider QAF_USERNAME=admin QAF_PASSWORD=password so plugin.py:resolve_creds logs in (POST /api/auth/login -> token). Scope: the offline mock is the deterministic gate; against the live site the behavioural rules the real platform implements hold (e.g. BOOK-3's 409 on overlapping dates), while packs asserting the mock's computed price fields (subtotal/discount/totalprice — the real booking model has none) are mock-scoped. e.g. QAF_ENV=live QAF_CREDS_MODE=provider QAF_USERNAME=admin QAF_PASSWORD=password make test SUT=sut/restful-booker"
+    }
+  },
+  "creds": {
+    "mode": "none",
+    "note": "The mock enforces no auth, so the offline gate is dependency-free. Override per-run with QAF_CREDS_MODE=provider to exercise the real cookie-login flow (plugin.py:resolve_creds) against the 'live' env."
+  },
+  "knowledge": {
+    "skills": "skills",
+    "learnings": "learnings"
+  }
+}

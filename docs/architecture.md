@@ -104,9 +104,11 @@ sequenceDiagram
 - **`engine/`** — the core (above). Pure stdlib, Python 3.14.
 - **`policies/`** — product-neutral governance (spec phases, ownership, test philosophy, security,
   release-safety). See [quality-gates.md](quality-gates.md) for how the policies become forcing functions.
-- **`core/specs` + `core/plans`** — intent contracts (human-approved) and implementation rationale.
-- **`packs/`** — landed regressions, one dir each (`case.py` + an index-card `README.md`).
-- **`sut/`** — the plugins. `mock-shop/` is the reference; see [the SUT contract](../sut/contract.md).
+- **`sut/`** — the SITES under test, one self-contained plugin dir each. A site owns its backend
+  access AND its tests: `source/`, `skills/`, `learnings/`, `packs/` (landed regressions —
+  `case.py` + an index-card `README.md`), `specs/` + `plans/` (intent contracts + rationale),
+  `tickets/`, `examples/`, `manifest.json` (+ optional `plugin.py`). `mock-shop/` and
+  `restful-booker/` are the two reference sites; see [the SUT contract](../sut/contract.md).
 - **`agents/` + `docs/multiagent/`** — the advisory review panel (see
   [diagnostics-and-review-panel.md](diagnostics-and-review-panel.md)).
 

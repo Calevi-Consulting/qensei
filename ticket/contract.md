@@ -35,7 +35,7 @@ framework knows.
   ],
   "status": "done",
   "links": [
-    {"type": "spec", "url": "core/specs/SHOP-456-bulk-discount.md", "title": "Spec"}
+    {"type": "spec", "url": "sut/mock-shop/specs/SHOP-456-bulk-discount.md", "title": "Spec"}
   ]
 }
 ```
@@ -45,11 +45,13 @@ framework knows.
 Selected per run: `/spec-test --ticket <provider>:<id>` (e.g. `mock-file:SHOP-456`,
 `jira:QA-1234`). The provider only ever **reads** — see *Read-only by default* below.
 
-- **`mock-file`** (reference / demo) — reads a local markdown ticket from
-  `ticket/mock/<id>.md`. Zero dependencies, no network, fully offline. This is what makes
-  the spec-test entry flow runnable in the mock-shop domain:
-  [`ticket/mock/SHOP-456.md`](mock/SHOP-456.md) normalizes to the shape above and maps to
-  [`core/specs/SHOP-456-bulk-discount.md`](../core/specs/SHOP-456-bulk-discount.md).
+- **`mock-file`** (reference / demo) — reads a local markdown ticket from a site's own
+  `sut/<name>/tickets/<id>.md`. Zero dependencies, no network, fully offline. This is what makes
+  the spec-test entry flow runnable per site:
+  [`sut/mock-shop/tickets/SHOP-456.md`](../sut/mock-shop/tickets/SHOP-456.md) normalizes to the
+  shape above and maps to
+  [`sut/mock-shop/specs/SHOP-456-bulk-discount.md`](../sut/mock-shop/specs/SHOP-456-bulk-discount.md);
+  the booker site has [`sut/restful-booker/tickets/BOOK-2.md`](../sut/restful-booker/tickets/BOOK-2.md).
 - **`jira`** (reference real) — fetches an issue through the project's **read-only Jira
   MCP/API**. No tracker credentials live in this repo; the provider uses whatever read-only
   Jira access the host project already configures. **The Jira field layout is configurable**
@@ -142,7 +144,7 @@ The `mock-file` provider parses a local markdown ticket so the demo runs offline
 
 This deliberately mirrors the `jira` provider's `description-section` + `checklist` strategy,
 so the demo exercises the same normalization path a real tenant would. See
-[`ticket/mock/SHOP-456.md`](mock/SHOP-456.md) for the concrete file.
+[`sut/mock-shop/tickets/SHOP-456.md`](../sut/mock-shop/tickets/SHOP-456.md) for the concrete file.
 
 ## The entry flow (ticket → spec)
 
@@ -152,12 +154,12 @@ The ticket is the **input** to `/spec-test`, not an output:
 2. **Manual validation is the source of truth** — a tester (or the AI manual-QA pass) has
    already validated the ticket against the running SUT; that evidence backs the spec.
 3. **Human-approved spec** — the normalized `acceptance_criteria` seed a draft
-   `core/specs/<id>-<short-desc>.md`. The human owns intent and approves the spec; the
+   `sut/<name>/specs/<id>-<short-desc>.md`. The human owns intent and approves the spec; the
    criteria are never silently rewritten (see `policies/methodology.md`, *Ownership*).
 4. **Automate** — `/spec-test` writes the pack/case and runs the regression gate.
 
-So `mock-file:SHOP-456` → [`core/specs/SHOP-456-bulk-discount.md`](../core/specs/SHOP-456-bulk-discount.md)
-→ `packs/SHOP-456-discount/` is the full, runnable entry flow in the mock domain.
+So `mock-file:SHOP-456` → [`sut/mock-shop/specs/SHOP-456-bulk-discount.md`](../sut/mock-shop/specs/SHOP-456-bulk-discount.md)
+→ `sut/mock-shop/packs/SHOP-456-discount/` is the full, runnable entry flow in the mock-shop domain.
 
 ## Read-only by default
 

@@ -49,10 +49,10 @@
       "content_language": "en"
     },
 
-    "aiq": {
-      "_comment": "Real AttackIQ tenant mapping — proves the mechanism against a live instance and documents the AIQ ids that used to be hardcoded in qa-agent/skills/JIRA.md. Copy this block, rename it, and fill your own ids to onboard another tenant.",
-      "cloud_id": "84825bb0-beb2-4287-add2-3c9ed63c0093",
-      "project_key": "AP",
+    "acme": {
+      "_comment": "Worked EXAMPLE of a custom-field tenant — illustrative ids only (customfield_NNNNN are placeholders, NOT a real instance). Proves the mechanism: a tenant whose bug fields live in custom fields and whose pass-transition gates on a product line. Copy this block, rename it, and fill your own ids to onboard a tenant.",
+      "cloud_id": "00000000-0000-0000-0000-000000000000",
+      "project_key": "ACME",
       "read": {
         "id": "key",
         "title": "fields.summary",
@@ -67,30 +67,30 @@
       },
       "write_results": {
         "target": "resolution-notes-or-comment",
-        "resolution_notes_field": "customfield_10962"
+        "resolution_notes_field": "customfield_10100"
       },
       "bug": {
         "summary": { "field": "summary", "type": "text" },
         "description": { "field": "description", "type": "adf" },
-        "steps_to_reproduce": { "field": "customfield_11078", "type": "adf" },
-        "actual_behavior": { "field": "customfield_11080", "type": "adf" },
-        "expected_behavior": { "field": "customfield_11079", "type": "adf" },
+        "steps_to_reproduce": { "field": "customfield_10110", "type": "adf" },
+        "actual_behavior": { "field": "customfield_10111", "type": "adf" },
+        "expected_behavior": { "field": "customfield_10112", "type": "adf" },
         "environment": { "field": "environment", "type": "text" },
         "component": { "field": "components", "type": "array-name" },
         "priority": { "field": "priority", "type": "name" },
-        "severity": { "field": "REQUIRES_MAPPING", "type": "option", "_comment": "AIQ maps from a shared severity scale; fill the instance's severity field id" },
-        "is_regression": { "field": "customfield_11143", "type": "option", "values": { "yes": "Yes", "no": "No" } },
-        "product_line": { "field": "customfield_12041", "type": "option" },
-        "qa_driver": { "field": "customfield_11134", "type": "user", "source": "current-user" },
-        "defect_type": { "field": "customfield_11133", "type": "option", "default": "IFD - Internal Found Defect" },
+        "severity": { "field": "customfield_10120", "type": "option", "_comment": "map from your instance's severity scale; fill the field id" },
+        "is_regression": { "field": "customfield_10121", "type": "option", "values": { "yes": "Yes", "no": "No" } },
+        "product_line": { "field": "customfield_10122", "type": "option" },
+        "qa_driver": { "field": "customfield_10123", "type": "user", "source": "current-user" },
+        "defect_type": { "field": "customfield_10124", "type": "option", "default": "Internally Found Defect" },
         "affects_version": { "field": "versions", "type": "array-name" },
         "issue_type": { "bug": "Bug", "improvement": "Task" }
       },
       "transition": {
         "discover_dynamically": true,
         "pass_target": ["Ready for Release"],
-        "required_before_transition": { "product_line": "customfield_12041", "fix_versions": "fixVersions" },
-        "product_line_options": { "Enterprise": "13326", "Flex": "13327", "Ready": "13328", "Command Center": "13457" }
+        "required_before_transition": { "product_line": "customfield_10122", "fix_versions": "fixVersions" },
+        "product_line_options": { "Core": "10001", "Pro": "10002", "Enterprise": "10003" }
       },
       "content_language": "en"
     }

@@ -10,8 +10,7 @@ gate checks the clone is in sync with its origin default branch before its sourc
         clean & in sync -> FRESH ; ahead/behind/dirty/detached -> STALE (exit 1)
   * remote plugin whose source dir is NOT a git repo -> UNKNOWN (exit 0 with a note)
 
-This is the product-neutral half of t-800's ``tools/freshness_gate.py`` driven off the
-active SUT plugin instead of a fixed ``codebase/`` layout.
+It is product-neutral, driven off the active SUT plugin instead of a fixed source-tree layout.
 """
 from __future__ import annotations
 

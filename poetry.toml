@@ -1,0 +1,4 @@
+# Project-local Poetry config: keep the virtualenv inside the repo (./.venv, gitignored)
+# so the dev toolchain is self-contained and easy to find/remove.
+[virtualenvs]
+in-project = true

@@ -4,7 +4,7 @@ A case encodes a BEHAVIORAL CONTRACT (what the system does for the user), not an
 internal call sequence. It declares:
 
   * id          — stable identifier (usually the ticket id + slug)
-  * spec_ref    — the intent spec it satisfies (core/specs/<id>.md)
+  * spec_ref    — the intent spec it satisfies (sut/<name>/specs/<id>.md)
   * persona     — "new_user" (ephemeral) or "existing_data" (durable) — see policies
   * covers      — the backend surface it exercises (endpoints + business-rule ids),
                   read by the DESIGN layer to compute coverage gaps

@@ -1,59 +1,95 @@
-# qa-framework CI — the gate, made real.
+# qa-framework CI — lint + CVE scan + tests, per SITE.
 #
-# The regression gate (engine/run.py) is the framework's automation surface; this wires it
-# as a MERGE GATE (green is a precondition to landing) plus the deterministic quality gates.
-# Pure stdlib + Python 3.14 — no install step. A real SUT plugin sets QAF_BASE_URL / QAF_TOKEN
-# (and selects an env with QAF_ENV) via masked CI/CD variables, never committed.
+# Two kinds of work:
+#   * checks (lint, CVE scan, framework unit/integration tests, fidelity, secrets) — on every
+#     push / MR, i.e. framework changes / general commits.
+#   * gate (the site integration packs under pytest + xdist) — the QA-facing gate. By default it
+#     fans over EVERY site; run a pipeline with `SITE=sut/<name>` to validate just one (gate-one).
+#
+# The dev toolchain (pytest, pytest-xdist, ruff, pip-audit) is managed by Poetry. The framework
+# runtime itself stays zero-dependency. A real authenticated site sets QAF_BASE_URL / QAF_TOKEN /
+# QAF_CREDS_MODE via masked CI/CD variables, never committed.
 
-stages: [lint, test]
+stages: [check, test]
 
 default:
   image: python:3.14-slim
-  # Auto-retry INFRASTRUCTURE failures only (a runner/registry hiccup), never a red test.
+  before_script:
+    - pip install --quiet poetry
+    - poetry install --quiet
+  # Auto-retry INFRASTRUCTURE failures only (a runner hiccup), never a red test.
   retry:
     max: 2
     when: [runner_system_failure, stuck_or_timeout_failure]
 
-# --- lint stage: the deterministic forcing functions ------------------------
-fidelity-lint:
-  stage: lint
+# --- check stage: lint + CVE + framework tests + the deterministic gates ----
+checks:
+  stage: check
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq git make >/dev/null
+    - pip install --quiet poetry
+    - poetry install --quiet
   script:
-    - python3 -m engine.fidelity_lint --base "origin/$CI_DEFAULT_BRANCH"
-
-engine-tests:
-  stage: lint
-  script:
-    - python3 -m unittest discover -s tools/tests
-
-secrets:
-  stage: lint
-  script:
+    - poetry run ruff check .                                    # lint
+    - poetry run pip-audit                                       # CVE scan
+    - poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py --junitxml=report-unit.xml
+    - python -m engine.fidelity_lint --base "origin/$CI_DEFAULT_BRANCH"
     - make secrets
+  artifacts:
+    when: always
+    reports:
+      junit: report-unit.xml
+    paths: ["report-unit.xml"]
 
-# --- test stage: the merge gate, per environment ----------------------------
-# The matrix fans the gate over every configured environment and all must be green.
-# The mock has one env (`local`); a real plugin lists its envs here (staging, prod, ...).
+# --- test stage: the site integration gate (pytest + xdist), per SITE -------
+# CHOOSE which site to validate:
+#   * default pipeline (push/MR)  -> the matrix fans over EVERY site; all must be green.
+#   * run a pipeline with `SITE=sut/<name>` (a CI/CD variable / "Run pipeline" field)
+#                                 -> validate only that one site (the gate-one job).
 gate:
   stage: test
+  rules:
+    - if: '$SITE'        # a single site was chosen -> gate-one handles it
+      when: never
+    - when: on_success
   parallel:
     matrix:
-      - QAF_ENV: ["local"]
+      - SUT: ["sut/mock-shop", "sut/restful-booker"]
   script:
-    - python3 -m engine.run --sut "${SUT:-sut/mock-shop}" --env "$QAF_ENV" --report "report-$QAF_ENV.xml"
+    - SITE_NAME=$(basename "$SUT")
+    - QAF_SITES="$SUT" poetry run pytest tests/test_sites.py --junitxml="report-$SITE_NAME.xml"
   artifacts:
     when: always
     reports:
       junit: "report-*.xml"
     paths: ["report-*.xml"]
 
-# Fast cross-env confidence slice — web-triggered, not on every push.
-smoke:
+# Validate ONE chosen site: run a pipeline with the SITE variable, e.g. SITE=sut/restful-booker.
+gate-one:
   stage: test
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$SITE'
   script:
-    - python3 -m engine.run --sut "${SUT:-sut/mock-shop}" --select smoke --report report-smoke.xml
+    - SITE_NAME=$(basename "$SITE")
+    - QAF_SITES="$SITE" poetry run pytest tests/test_sites.py --junitxml="report-$SITE_NAME.xml"
   artifacts:
     when: always
     reports:
-      junit: report-smoke.xml
+      junit: "report-*.xml"
+    paths: ["report-*.xml"]
+
+# The UI (browser) lane — every site's Playwright UI packs. Installs chromium; sites without a UI
+# contribute no tests. Separate from the REST gate because a browser is slower/heavier.
+ui:
+  stage: test
+  before_script:
+    - pip install --quiet poetry
+    - poetry install --quiet
+    - poetry run playwright install --with-deps chromium
+  script:
+    - poetry run pytest tests/test_ui.py --junitxml=report-ui.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report-ui.xml
+    paths: ["report-ui.xml"]

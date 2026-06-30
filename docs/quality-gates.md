@@ -13,10 +13,22 @@ never replace them.
 | Source freshness | `engine/freshness_gate.py` | a stale/dirty remote source clone | `1` |
 | Secret detection | `make secrets` + gitleaks | a hardcoded credential | `1` |
 | Engine + gate units | `make test-engine` | a broken engine module | `1` |
+| Code lint | `make lint` (ruff) | a lint violation | `1` |
+| Dependency CVE scan | `make cve` (pip-audit) | a known vulnerability in a dependency | `1` |
+| REST + unit tests | `make pytest` (pytest + xdist) | a failing REST pack / engine test | `1` |
+| UI packs (browser) | `make test-ui` (pytest + Playwright) | a failing browser-driven UI pack | `1` |
+
+The first five are **zero-dependency** (stdlib); `make check` runs them with no install. The last
+three use the Poetry-managed dev toolchain (`make install`) — `make verify` runs all of them together.
 
 ```bash
-make check         # the offline pre-commit ritual: test-engine + fidelity + secrets
-make fidelity      # spec-fidelity lint over packs/*/case.py
+make check         # the offline pre-commit ritual (zero-dep): test-engine + fidelity + secrets
+make fidelity      # spec-fidelity lint over sut/*/{packs,ui-packs}/*/case.py (every site)
+make lint          # ruff lint            (needs `make install`)
+make cve           # pip-audit CVE scan   (needs `make install`)
+make pytest        # REST packs + engine tests under pytest -n auto (UI excluded)
+make test-ui       # browser (Playwright) UI packs — the opt-in UI lane
+make verify        # everything: lint + cve + pytest + fidelity + secrets
 python3 -m engine.citation_gate <files…>      # or pipe text on stdin
 python3 -m engine.freshness_gate --sut sut/acme
 ```
@@ -28,7 +40,7 @@ python3 -m engine.freshness_gate --sut sut/acme
 > REAL_BUG/TEST_BUG rate-classify). An LLM cannot hold this seat: identical input must give an
 > identical verdict, so the gate is mechanical.
 
-It diffs each changed `packs/**/case.py` against its **git baseline** and flags, per `RegressionCase`:
+It diffs each changed `sut/*/packs/**/case.py` against its **git baseline** and flags, per `RegressionCase`:
 
 - the case **class was removed** (lost coverage);
 - **persona changed** (e.g. `existing_data → new_user` drops the durability contract);
@@ -88,7 +100,7 @@ clone means a lens could cite code that no longer matches production. The gate c
 flowchart LR
   edit([edit a pack / lens]) --> commit{git commit}
   commit --> pc["pre-commit hooks<br/>(.pre-commit-config.yaml)"]
-  pc --> f1["fidelity-lint<br/>(packs/*/case.py)"]
+  pc --> f1["fidelity-lint<br/>(sut/*/packs/*/case.py)"]
   pc --> t1["engine + gate unit tests"]
   pc --> g1["gitleaks (secrets)"]
   f1 & t1 & g1 -->|all pass| land[commit lands]

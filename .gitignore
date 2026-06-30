@@ -4,8 +4,9 @@ __pycache__/
 *.egg-info/
 .qa-runs/
 .env
-# mock-shop durable store (existing_data demo) — created at runtime, not tracked
+# durable stores (existing_data demos) — created at runtime, not tracked
 sut/mock-shop/source/.accounts.json
+sut/restful-booker/source/.rooms.json
 # machine-readable gate reports
 report*.xml
 report*.json

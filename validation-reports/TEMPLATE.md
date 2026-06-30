@@ -1,7 +1,7 @@
 # Validation Report — <change title>
 
 **Date:** <YYYY-MM-DD>
-**Spec:** <core/specs/<id>.md, or "none — <why>">
+**Spec:** <sut/<name>/specs/<id>.md, or "none — <why>">
 **Branch:** <branch>
 **Scope:** <one-line what changed>
 

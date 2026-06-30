@@ -1,9 +1,9 @@
 """Tag-based test selection — run a subset of the suite by a marker expression.
 
-t-800 builds every CI lane on ``pytest -m "<expr>"`` over a marker taxonomy. Here a
+Mature suites build CI lanes on a marker expression (e.g. ``pytest -m "<expr>"``). Here a
 case declares ``tags = {"smoke", "slow", ...}`` and a small boolean-expression matcher
 selects which cases run, so the gate can run lanes (smoke / slow / isolated / a domain)
-instead of the whole ``packs/`` directory.
+instead of the whole SUT ``packs/`` directory.
 
 Grammar (a safe subset, evaluated against the case's tag set):
 

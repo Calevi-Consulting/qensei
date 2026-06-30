@@ -29,7 +29,7 @@ Each case runs from a clean state, with pre-flight evaluated first and teardown 
 
 ```mermaid
 flowchart TD
-  start([discover_cases under packs/*/case.py]) --> filt{selection.matches<br/>tags vs --select?}
+  start([discover_cases under sut/&lt;name&gt;/packs/*/case.py]) --> filt{selection.matches<br/>tags vs --select?}
   filt -- no --> skip1[drop from this lane]
   filt -- yes --> pf{preflight.evaluate<br/>unmet requires?}
   pf -- "unmet & partial" --> SKIP[/status = SKIP<br/>reason recorded/]

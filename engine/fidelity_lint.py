@@ -2,8 +2,8 @@
 
 The framework's prime invariant is that a test is never quietly relaxed to make a red gate
 go green. An advisory LLM lens (agents/r-fidelity.md) *watches* for this, but a watcher is
-not a gate — t-800's lesson is that a documented rule without a forcing function is not
-followed. This is the gate: a mechanical AST diff of a changed pack case against its git
+not a gate — a documented rule without a forcing function is not reliably followed. This
+is the gate: a mechanical AST diff of a changed pack case against its git
 baseline that flags weakenings and exits non-zero (wire it as a pre-commit hook + in CI).
 
 Detected weakenings (per RegressionCase, matched by class name):
@@ -15,7 +15,7 @@ Detected weakenings (per RegressionCase, matched by class name):
   * a skip/xfail escape hatch ADDED (decorator or truthy ``skip``/``xfail`` class attr)
 
 A brand-new file (no git baseline) has nothing to weaken and is clean. Re-shaping a test
-legitimately is allowed via ``--allow-reshape`` (mirrors t-800), which downgrades shrink
+legitimately is allowed via ``--allow-reshape``, which downgrades shrink
 findings to warnings so an intentional refactor is not blocked.
 """
 from __future__ import annotations
@@ -170,14 +170,14 @@ def _basenames(cls: ast.ClassDef) -> set[str]:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="qa-framework spec-fidelity lint")
-    ap.add_argument("paths", nargs="*", help="pack case.py files (default: all packs/*/case.py)")
+    ap.add_argument("paths", nargs="*", help="pack case.py files (default: all sut/*/packs/*/case.py)")
     ap.add_argument("--base", default="HEAD", help="git ref to diff against (default HEAD)")
     ap.add_argument("--allow-reshape", action="store_true", help="downgrade shrink findings to warnings")
     args = ap.parse_args(argv)
 
     import glob
 
-    paths = args.paths or sorted(glob.glob("packs/*/case.py"))
+    paths = args.paths or sorted(glob.glob("sut/*/packs/*/case.py") + glob.glob("sut/*/ui-packs/*/case.py"))
     blocking = 0
     for p in paths:
         for f in lint_file(p, args.base, args.allow_reshape):

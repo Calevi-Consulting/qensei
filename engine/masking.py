@@ -3,8 +3,7 @@
 The rule (policies/input-hygiene.md, security-review.md) is: redact known credential
 keys before anything is printed, logged, or folded into a failure detail. The policy
 existed as prose with no enforcing code; this is the enforcing code. ``mask`` is
-key-name based and product-neutral (mirrors t-800 ``lib/logging_tool.py:mask_data``),
-so it lives in the engine core, not a plugin.
+key-name based and product-neutral, so it lives in the engine core, not a plugin.
 """
 from __future__ import annotations
 
@@ -43,6 +42,6 @@ def mask(value, _sensitive=SENSITIVE_KEYS):
             else:
                 out[k] = mask(v, _sensitive)
         return out
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return type(value)(mask(v, _sensitive) for v in value)
     return value

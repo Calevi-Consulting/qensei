@@ -9,7 +9,7 @@ these helpers are exercised but dormant there).
                        from an in-code baseline; present ⇒ verify it persists with that
                        baseline (this is what catches DB-migration data loss).
 
-Naming conventions (mirrors t-800 ``core/personas.py``):
+Naming conventions:
 
   * ``keep_name(*parts)``      — stable, prefixed id for a durable object. NEVER deleted.
   * ``ephemeral_name(*parts)`` — unique id for a throwaway object, so a MISSED teardown

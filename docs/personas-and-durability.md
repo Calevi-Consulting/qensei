@@ -54,9 +54,11 @@ flowchart TD
 
 ## Find-or-create across runs (the durability contract)
 
-The worked example is `packs/SHOP-DUR-account-durability/`, run against the mock's **file-backed**
-account store (`sut/mock-shop/source/app.py`: `POST /accounts` is idempotent — `201 created:true` the
-first time, `200 created:false` thereafter), so the durable genuinely survives across server boots.
+The worked example is `sut/mock-shop/packs/SHOP-DUR-account-durability/`, run against the mock's
+**file-backed** account store (`sut/mock-shop/source/app.py`: `POST /accounts` is idempotent —
+`201 created:true` the first time, `200 created:false` thereafter), so the durable genuinely survives
+across server boots. `sut/restful-booker/packs/BOOK-DUR-room-catalog/` is the same pattern on a second
+site (a durable file-backed *room*), proving the persona machinery is product-neutral.
 
 ```mermaid
 sequenceDiagram

@@ -38,8 +38,13 @@ The key distinctions:
   never weakened either way.
 
 ```bash
-python3 -m engine.diagnose --sut sut/mock-shop --pack packs/SHOP-456-discount --seed-bug   # REAL_BUG
-python3 -m engine.diagnose --sut sut/mock-shop --pack examples/diagnostics/SHOP-789-bad-test  # TEST_BUG
+# mock-shop (the bulk-discount rule)
+python3 -m engine.diagnose --sut sut/mock-shop --pack sut/mock-shop/packs/SHOP-456-discount --seed-bug          # REAL_BUG
+python3 -m engine.diagnose --sut sut/mock-shop --pack sut/mock-shop/examples/diagnostics/SHOP-789-bad-test      # TEST_BUG
+
+# restful-booker (the long-stay-discount rule) — the SAME lens, a different site
+python3 -m engine.diagnose --sut sut/restful-booker --pack sut/restful-booker/packs/BOOK-2-longstay-discount --seed-bug       # REAL_BUG
+python3 -m engine.diagnose --sut sut/restful-booker --pack sut/restful-booker/examples/diagnostics/BOOK-789-bad-test          # TEST_BUG
 ```
 
 ## The advisory review panel (`agents/`)

@@ -1,7 +1,7 @@
 """Machine-readable gate reports (JUnit XML / JSON) for CI rendering and triage.
 
 The runner prints a human report; this emits a structured artifact a CI "Tests" tab or
-triage tooling can consume (t-800 uploads ``--junitxml`` as a CI artifact). A result is
+triage tooling can consume (CI uploads it as a JUnit artifact). A result is
 the tuple ``(case, expect, error, status)`` produced by the runner, where ``status`` is
 one of ``PASS`` / ``FAIL`` / ``SKIP``.
 """
