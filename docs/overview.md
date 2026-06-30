@@ -1,77 +1,94 @@
-# qa-framework — architecture & lineage
+# qa-framework — documentation map
 
-A map-level reference. Living document: update it when a capability, policy, or layer changes.
+A map-level reference and the entry point to the docs. Living document: update it when a capability,
+policy, or layer changes.
 
 ## Thesis
 
-One backend-aware QA agent with three capabilities over a single backend connection:
+One backend-aware QA framework with **three capabilities over a single backend connection**. The
+product under test is a plugin (`sut/<name>/`), so adding a product means writing a plugin, not
+touching the core.
 
+```mermaid
+flowchart TB
+  policies["policies/ — product-neutral governance<br/>(spec phases · ownership · test philosophy · security · release)"]
+  policies -. governs .-> caps
+
+  subgraph caps[" "]
+    direction LR
+    DESIGN["DESIGN<br/>read backend → coverage gaps"]
+    REGRESS["REGRESS<br/>run packs vs live → the gate"]
+    DIAGNOSE["DIAGNOSE<br/>REAL_BUG vs TEST_BUG<br/>by reading the source"]
+  end
+
+  DESIGN -->|source access| SUT
+  REGRESS -->|runtime access| SUT
+  DIAGNOSE -->|source access| SUT
+  SUT["SUTConnector — sut/&lt;name&gt;/ (the backend plugin)"]
 ```
-        ┌──────────────── policies/ (general, QA-applicable) ────────────────┐
-        │  spec phases · ownership · test philosophy · security · release    │
-        └────────────────────────────────────────────────────────────────────┘
-                                     governs
-   ┌───────────┐        ┌───────────┐        ┌────────────────────┐
-   │  DESIGN   │        │  REGRESS  │        │     DIAGNOSE       │
-   │ read the  │        │ run packs │        │ REAL_BUG vs        │
-   │ backend → │        │ vs live → │        │ TEST_BUG by        │
-   │ propose   │        │ the gate  │        │ reading the source │
-   │ cases     │        │           │        │                    │
-   └─────┬─────┘        └─────┬─────┘        └─────────┬──────────┘
-         │   source access    │  runtime access       │  source access
-         └────────────────────┴───────────────────────┘
-                          SUTConnector
-                  (sut/<name>/ — the backend plugin)
+
+Design and diagnostics need the backend **source**; regression needs the backend **runtime**. Both go
+through one `SUTConnector`.
+
+## The documentation set
+
+| Page | Covers |
+|------|--------|
+| [architecture.md](architecture.md) | the component map, the three capabilities, the plugin model, an end-to-end `make demo` |
+| [regression-gate.md](regression-gate.md) | the gate lifecycle, exit codes, the false-green guard, the report artifact |
+| [personas-and-durability.md](personas-and-durability.md) | `new_user` vs `existing_data`, find-or-create, keep/ephemeral naming, the no-delete guard, teardown |
+| [remote-backend.md](remote-backend.md) | credentials + auth injection, env selection, the uncommitted config channel, TLS, retry, masking, pagination, plugin hooks |
+| [preflight-and-selection.md](preflight-and-selection.md) | `requires` + the requirement registry (skip/block), tag selection + lanes, the CI matrix |
+| [quality-gates.md](quality-gates.md) | the deterministic forcing functions: fidelity lint, citation gate, freshness gate, pre-commit + CI |
+| [diagnostics-and-review-panel.md](diagnostics-and-review-panel.md) | the REAL_BUG/TEST_BUG classifier and the advisory review lenses it pairs with |
+| [delivered-regressions.md](delivered-regressions.md) | the generated index of landed packs (`make regen-index`) |
+| [the SUT contract](../sut/contract.md) | how to write a plugin: manifest keys + the optional `plugin.py` hooks |
+
+Each page links a capability to the code that implements it:
+
+```mermaid
+flowchart LR
+  arch[architecture.md] --> overview([the whole picture])
+  gate[regression-gate.md] --> REGRESS[REGRESS]
+  pre[preflight-and-selection.md] --> REGRESS
+  per[personas-and-durability.md] --> REGRESS
+  rem[remote-backend.md] --> SUT[SUTConnector seam]
+  diag[diagnostics-and-review-panel.md] --> DIAGNOSE[DIAGNOSE]
+  qg[quality-gates.md] --> INV([never-weaken invariant])
+  REGRESS --> SUT
+  DIAGNOSE --> SUT
 ```
 
-Design and diagnostics need the backend **source**; regression needs the backend **runtime**.
-Both go through one `SUTConnector`, so adding a product means writing a plugin, not touching the
-core.
+## Layers on disk
 
-## Layers
-
-- **`policies/`** — the product-neutral governance: the spec-driven phases, the ownership model
-  (humans own intent; the framework owns implementation), test philosophy, security review,
-  release-safety/reversibility, communication standards, git workflow. Derived from a general
-  methodology and stripped of any single product's specifics.
-- **`engine/`** — the core. `sut.py` (backend access), `case.py` (the soft-assert regression
-  unit), `runner.py` (the deterministic gate), `design.py` (coverage from the backend surface),
-  `diagnostics.py` (the REAL_BUG/TEST_BUG lens).
-- **`core/specs` + `core/plans`** — intent contracts (human-approved) and implementation
-  rationale, separated so intent changes go through human approval while plans iterate freely.
-- **`packs/`** — the landed regressions, one directory each with a `case.py` and an index card.
-- **`sut/`** — the plugins. `mock-shop/` is the reference; a real product (e.g. `aiq/`) is the
-  same shape.
-
-## The three capabilities
-
-1. **Design** (`engine/design.py`) — reads `ROUTES` + `BUSINESS_RULES` from the backend source,
-   cross-references the packs' `covers`, and reports the gap as candidate cases. The generic form
-   of designing tests by reading the system, not guessing.
-2. **Regress** (`engine/runner.py` + `run.py`) — discovers packs, runs each from a clean state
-   against the live backend, and reports pass/fail with a non-zero exit for CI. The gate.
-3. **Diagnose** (`engine/diagnostics.py` + `diagnose.py`) — on a failure, compares the case's
-   `contract_claim` to the backend's declared contract and the runtime response:
-   - claim agrees with the contract, runtime violated it → **REAL_BUG** (keep red, file a bug);
-   - claim disagrees with the contract → **TEST_BUG** (fix the test; never weaken the spec);
-   - the case threw → **ENV_OR_TRANSIENT**; no claim → **INDETERMINATE** (human adjudicates).
+- **`engine/`** — the core: `sut.py` (backend access), `case.py` (the soft-assert regression unit +
+  matchers + personas hooks), `runner.py` (the gate), `run.py` (CLI + false-green guard),
+  `design.py`, `diagnostics.py`, plus `config.py` / `credentials.py` / `masking.py` / `preflight.py` /
+  `selection.py` / `personas.py` / `report.py` and the deterministic gates `fidelity_lint.py` /
+  `citation_gate.py` / `freshness_gate.py`.
+- **`policies/`** — product-neutral governance (spec phases, ownership, test philosophy, security,
+  release-safety). [quality-gates.md](quality-gates.md) shows how the policies become forcing functions.
+- **`core/specs` + `core/plans`** — intent contracts (human-approved) and implementation rationale.
+- **`packs/`** — landed regressions, one dir each (`case.py` + index-card `README.md`); `make new-pack`
+  scaffolds one, `make regen-index` aggregates the cards.
+- **`sut/`** — the plugins. `mock-shop/` is the reference; a real product is the same shape.
+- **`agents/` + `docs/multiagent/`** — the advisory review panel.
+- **`tools/tests/`** — engine + gate unit tests (`make test-engine`).
 
 ## Lineage (what it generalises)
-
-This is the product-neutral extraction of three things:
 
 | Source of the pattern | What it contributes here |
 |----------------------|--------------------------|
 | A manual-QA context agent (domain skills, learnings, test-case design) | the **DESIGN** capability + `sut/<name>/skills` + `learnings` |
-| A REST regression framework (specs, packs, personas, the merge gate, the diagnostic review lenses) | the **REGRESS** + **DIAGNOSE** capabilities + `core/` + `packs/` |
+| A REST regression framework (specs, packs, personas, the merge gate, the diagnostic lenses) | the **REGRESS** + **DIAGNOSE** capabilities + `core/` + `packs/` |
 | A spec-driven methodology | the **`policies/`** governance |
 
 The single new idea binding them is that **one backend connection serves both test design and
-diagnostics** — which is why "backend access" is the framework's central abstraction rather than
-an incidental detail.
+diagnostics** — which is why "backend access" is the framework's central abstraction.
 
 ## Status & next
 
-v0 runs the three capabilities end-to-end against `mock-shop`. Open next steps: a second SUT
-plugin (validates the seam is really generic), the manual-validation leg (AI-driven validation
-producing evidence), and the ticket→spec handoff that seeds a spec from a validation run.
+v0 runs the three capabilities end-to-end against `mock-shop`, with the full gate machinery (auth/env
+seams, pre-flight, personas/durability, selection lanes, the deterministic gates, CI). Open next steps:
+a second SUT plugin (validates the seam is really generic), the manual-validation leg, and the
+ticket→spec handoff.

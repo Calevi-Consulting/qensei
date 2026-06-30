@@ -23,8 +23,9 @@ advisory by construction.
 - **on-demand** — a human points the lens at a failed regression-gate run (`engine/run.py` /
   `make test`) or a CI log and asks the panel to adjudicate.
 - **pre-commit** — runs as a lint after a test/pack edit, before the change lands. (The
-  blocking pre-commit check is the *deterministic* companion in `engine/diagnostics.py`; the
-  advisory lens here is its judgement companion and does not block.)
+  blocking pre-commit check is the *deterministic* spec-fidelity lint in `engine/fidelity_lint.py`,
+  wired via `.pre-commit-config.yaml` + `.gitlab-ci.yml` + `make fidelity`; the advisory lens here is
+  its judgement companion and does not block.)
 - **plan-step** — reviews a plan's assumptions before the test is written.
 - **migration-only** — runs only when porting a test from a legacy repo into this framework;
   not part of failure triage and not used in greenfield authoring.
@@ -48,6 +49,8 @@ advisory by construction.
   and never weakens a spec: if the SUT genuinely cannot satisfy an acceptance criterion, the
   test is correctly red and the bug is real.
 - The deterministic counterparts that *can* gate live in `engine/` — the regression gate
-  (`engine/run.py`) and the mechanical REAL_BUG-vs-TEST_BUG / spec-fidelity checks
-  (`engine/diagnostics.py`). The lenses in this directory complement those checks with
-  judgement; they do not replace the gate and they do not become one.
+  (`engine/run.py`), the mechanical REAL_BUG-vs-TEST_BUG classifier (`engine/diagnostics.py`), the
+  spec-fidelity lint (`engine/fidelity_lint.py`), the citation anti-fabrication gate
+  (`engine/citation_gate.py`), and the source-freshness gate (`engine/freshness_gate.py`). The lenses
+  in this directory complement those checks with judgement; they do not replace the gate and they do
+  not become one.
