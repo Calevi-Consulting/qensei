@@ -1,0 +1,59 @@
+# qa-framework CI — the gate, made real.
+#
+# The regression gate (engine/run.py) is the framework's automation surface; this wires it
+# as a MERGE GATE (green is a precondition to landing) plus the deterministic quality gates.
+# Pure stdlib + Python 3.14 — no install step. A real SUT plugin sets QAF_BASE_URL / QAF_TOKEN
+# (and selects an env with QAF_ENV) via masked CI/CD variables, never committed.
+
+stages: [lint, test]
+
+default:
+  image: python:3.14-slim
+  # Auto-retry INFRASTRUCTURE failures only (a runner/registry hiccup), never a red test.
+  retry:
+    max: 2
+    when: [runner_system_failure, stuck_or_timeout_failure]
+
+# --- lint stage: the deterministic forcing functions ------------------------
+fidelity-lint:
+  stage: lint
+  script:
+    - python3 -m engine.fidelity_lint --base "origin/$CI_DEFAULT_BRANCH"
+
+engine-tests:
+  stage: lint
+  script:
+    - python3 -m unittest discover -s tools/tests
+
+secrets:
+  stage: lint
+  script:
+    - make secrets
+
+# --- test stage: the merge gate, per environment ----------------------------
+# The matrix fans the gate over every configured environment and all must be green.
+# The mock has one env (`local`); a real plugin lists its envs here (staging, prod, ...).
+gate:
+  stage: test
+  parallel:
+    matrix:
+      - QAF_ENV: ["local"]
+  script:
+    - python3 -m engine.run --sut "${SUT:-sut/mock-shop}" --env "$QAF_ENV" --report "report-$QAF_ENV.xml"
+  artifacts:
+    when: always
+    reports:
+      junit: "report-*.xml"
+    paths: ["report-*.xml"]
+
+# Fast cross-env confidence slice — web-triggered, not on every push.
+smoke:
+  stage: test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  script:
+    - python3 -m engine.run --sut "${SUT:-sut/mock-shop}" --select smoke --report report-smoke.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report-smoke.xml

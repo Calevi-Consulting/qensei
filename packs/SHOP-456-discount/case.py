@@ -12,6 +12,8 @@ class BulkDiscountApplies(RegressionCase):
     title = "bulk discount applies at the >=3 threshold"
     spec_ref = "core/specs/SHOP-456-bulk-discount.md"
     persona = "new_user"
+    tags = frozenset({"smoke"})
+    severity = "critical"
     covers = ["POST /checkout", "bulk-discount"]
     contract_claim = {"rule": "bulk-discount", "rate": 0.10, "min_qty": 3}
 

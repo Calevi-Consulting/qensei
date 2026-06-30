@@ -3,3 +3,9 @@ __pycache__/
 .venv/
 *.egg-info/
 .qa-runs/
+.env
+# mock-shop durable store (existing_data demo) — created at runtime, not tracked
+sut/mock-shop/source/.accounts.json
+# machine-readable gate reports
+report*.xml
+report*.json
