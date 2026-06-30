@@ -1,6 +1,7 @@
 """runner — the deterministic regression GATE.
 
-Discovers cases under packs/, optionally filters them by a tag expression, evaluates each
+Discovers cases under the active SUT's packs dir (sut/<name>/packs/), optionally filters
+them by a tag expression, evaluates each
 case's pre-flight requirements against the target backend (skip-or-block), runs the rest
 from a clean state, calls best-effort teardown, prints a report, and reports pass/fail.
 This is the framework's analog of a merge gate: green is a precondition to landing.

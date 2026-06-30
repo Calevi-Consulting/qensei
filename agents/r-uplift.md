@@ -20,13 +20,13 @@ anti-patterns over — while never silently dropping the behavioural contract th
 You are migration-only. You are **not** part of the failure-triage panel (that is R-DIAGNOSIS / R-MECHANISM
 / R-EVIDENCE / R-FIDELITY / JUDGE, complementing the deterministic `engine/diagnostics.py` REAL_BUG-vs-
 TEST_BUG lens), and you do **not** run in greenfield spec authoring — there is no legacy anti-pattern to
-import when a pack is written fresh from a `core/specs/` spec.
+import when a pack is written fresh from a `sut/<name>/specs/` spec.
 
 ## When you run
 
 - **Only in the migration variant** (legacy repo → this framework), at the **port-review** step:
-  excavate the legacy test → reverse-engineer its intent into a `core/specs/` spec → **port** the test into
-  a pack under `packs/` → **R-UPLIFT** → behaviour-parity check. You run after a test is ported, before it
+  excavate the legacy test → reverse-engineer its intent into a `sut/<name>/specs/` spec → **port** the test into
+  a pack under `sut/<name>/packs/` → **R-UPLIFT** → behaviour-parity check. You run after a test is ported, before it
   lands.
 - You may also be invoked **on-demand** by a human pointing you at a freshly ported pack to audit it for
   imported anti-patterns and lost coverage. The judgement is identical to the port-review step.

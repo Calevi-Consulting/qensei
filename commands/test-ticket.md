@@ -38,12 +38,22 @@ field is resolved through [`jira.fields.json`](../ticket/providers/jira.fields.j
 2. Collect the SUT's component/version info (cache per environment within a session; don't re-fetch).
 3. Mask secrets (`***MASKED***`).
 
-## Phase 3 — Validation
+## Phase 3 — Validation (REST or UI)
 
 1. **Each acceptance criterion becomes a check.** Parse them from the normalized ticket.
-2. **Execute each check** against the live SUT (REST via the SUTConnector; browser/other via the
-   SUT's tools). Record **PASS / FAIL / SKIPPED / BLOCKED** with specific detail for non-pass.
-3. **Summarize** in the test-execution-result format (see [`docs/report-formats.md`](../docs/report-formats.md)).
+2. **Pick the verification surface per check** — the framework supports BOTH approaches:
+   - **REST** (default, fastest): call the JSON API through the `SUTConnector` (`sut.get` / `sut.post`).
+   - **UI** (when the criterion is about the front-end, or for genuine end-to-end): drive the site's
+     web UI in a **real browser with Playwright**, against the SUT's `ui.path` (manifest). Prefer REST
+     where an API path covers the criterion; use UI where the behaviour only exists in the UI, or when
+     the ticket asks for an end-to-end check.
+3. **Run UI checks headed so the QA person can WATCH the verification live** — a visible, slowed-down
+   browser. With the framework's Playwright lane: `make ui-watch` (headed + `--slowmo`), or
+   `poetry run pytest tests/test_ui.py --headed --slowmo 600 -n0`. (Headless is the default for
+   automation; headed is for live human review.)
+4. **Record PASS / FAIL / SKIPPED / BLOCKED** with specific detail for non-pass, per check.
+5. **Summarize** in the test-execution-result format (see [`docs/report-formats.md`](../docs/report-formats.md)).
+   Note which checks were REST vs UI — `/spec-test` uses that to pick the automated-test surface.
 
 ## Phase 4 — Write results to the ticket
 

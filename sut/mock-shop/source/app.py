@@ -25,8 +25,8 @@ DISCOUNT_MIN_QTY = 3  # ... once the cart holds at least 3 items total
 
 # Durable store: accounts persist ACROSS server boots (a file), unlike the ephemeral cart.
 # This is what makes the existing_data find-or-create / durability demo real — a baseline
-# created on the first run is re-read (not recreated) on later runs, the way t-800's
-# t800-keep durables survive across runs and DB migrations.
+# created on the first run is re-read (not recreated) on later runs — the way a
+# qaf-keep durable survives across runs and DB migrations.
 ACCOUNTS_FILE = Path(os.environ.get("QAF_MOCK_STATE", Path(__file__).parent / ".accounts.json"))
 
 PRODUCTS = {

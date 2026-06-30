@@ -122,7 +122,7 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
 
 1. **① R-DIAGNOSIS — diagnose BEFORE any fix.** Reads the case + fixtures + both knowledge stores
    (`policies/` framework-shape, `sut/<name>/learnings/` + `sut/<name>/skills/` domain/system-shape) + the
-   spec (`core/specs/<id>.md`) + the SUT source via the SUTConnector. When the case carries a resolvable
+   spec (`sut/<name>/specs/<id>.md`) + the SUT source via the SUTConnector. When the case carries a resolvable
    `contract_claim`, run `engine/diagnostics.py` first and echo its verdict; R-DIAGNOSIS exists for the
    calls the heuristic cannot make. Verdict `TEST_BUG` / `REAL_BUG` / `TRANSIENT` / `UNDOCUMENTED-ESCALATE`,
    cited. Sets `needs_evidence` / `needs_mechanism` flags for the next step.
@@ -159,7 +159,7 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
 
 ## Invariants
 
-- The loop **never weakens an acceptance criterion** in `core/specs/` to make a test pass. If the SUT
+- The loop **never weakens an acceptance criterion** in `sut/<name>/specs/` to make a test pass. If the SUT
   legitimately cannot satisfy a criterion, the test is correctly red and the bug is real.
 - The lenses are **advisory** and never gate the merge. The **regression gate** — `engine/run.py` /
   `make test`, green on every **configured environment** (the entries in the active plugin's

@@ -8,8 +8,8 @@ A review lens (R-MECHANISM / R-EVIDENCE) grounds a claim in the backend source a
   * resolves -> OK
 
 A fabricated citation is treated as a hard failure (the lens invented evidence); an
-unverifiable one is reported distinctly (not the lens's fault — no source to check against),
-mirroring t-800's ``tools/citation_gate.py`` exit-code split.
+unverifiable one is reported distinctly (not the lens's fault — no source to check against)
+via a separate exit code.
 """
 from __future__ import annotations
 

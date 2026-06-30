@@ -54,5 +54,5 @@ set first, behind its own approval. A failing validation never transitions.
 ## Mock alternative
 
 For local/demo runs with no Jira, the `mock-file` provider (see [contract.md](../contract.md)) reads
-a markdown ticket from `ticket/mock/` and "writes" results to the run report instead of a live
-instance — same normalized shape, so the commands are identical.
+a markdown ticket from a site's own `sut/<name>/tickets/` and "writes" results to the run report
+instead of a live instance — same normalized shape, so the commands are identical.

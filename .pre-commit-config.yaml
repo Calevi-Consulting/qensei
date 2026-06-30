@@ -10,7 +10,7 @@ repos:
         name: spec-fidelity lint (no weakened acceptance criteria)
         entry: python3 -m engine.fidelity_lint
         language: system
-        files: ^packs/.*/case\.py$
+        files: ^sut/.*/(packs|ui-packs)/.*/case\.py$
         pass_filenames: true
 
       - id: engine-tests
@@ -19,6 +19,11 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff  # lint (same rules as `make lint`; config in pyproject.toml [tool.ruff])
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.4

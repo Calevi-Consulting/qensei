@@ -1,10 +1,9 @@
 # QA Framework Policies
 
-These are the general, QA-applicable policies derived from the Ralph methodology, stripped of
-AttackIQ-specifics, that govern any project built on this framework. They define the default
-development practices — spec-driven workflow, test philosophy, coding standards, security review,
-and release safety — for manual test design, automated regression, and diagnostics work against any
-system under test.
+These are general, QA-applicable development policies that govern any project built on this
+framework. They define the default development practices — spec-driven workflow, test philosophy,
+coding standards, security review, and release safety — for manual test design, automated
+regression, and diagnostics work against any system under test.
 
 Each policy is the default; a project may extend or relax it via its own project-level config.
 
@@ -23,12 +22,12 @@ Each policy is the default; a project may extend or relax it via its own project
 
 ## What is intentionally excluded
 
-AttackIQ-specific policy modules are not part of this generic set — they are domain-plugin concerns,
-not framework concerns. Excluded by design:
+Product- or company-specific policy modules are not part of this generic set — they are
+domain-plugin concerns, not framework concerns. Examples excluded by design:
 
-- `git/platform-backend` (platform-specific git workflow)
-- The Jira, GitLab, and Vault integration specifics
-- `fd-inspect` (cluster-inspection tooling)
+- platform-specific git workflows
+- integration specifics for a particular Jira / GitLab / secrets backend
+- cluster-inspection or other infrastructure tooling
 
 ## Domain plugins
 

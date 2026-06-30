@@ -10,14 +10,24 @@ plugin (a directory under sut/<name>/) declares, in manifest.json:
               - optional "isolate": a path POSTed before each case for a clean state,
                 and "verify_tls": false for self-signed onprem certs
   * source  : where the backend SOURCE lives (read by design + diagnostics)
+  * tests   : the plugin's OWN test assets, so each site is self-contained and the gate
+              for one site never runs another's: {"packs", "specs", "tickets", "ui_packs"}
+              (relative to sut/<name>/; default packs/specs/tickets/ui-packs). run.py /
+              design.py default --packs to this plugin's packs_dir; ui_packs holds the
+              browser-driven UICase packs (engine/ui.py).
+  * ui      : {"path": "/ui"} — where the site serves its WEB UI (relative to base_url).
+              Present ⇒ the site has a UI testing surface the Playwright lane drives; absent
+              ⇒ REST-only.
   * env     : named environments -> {"base_url": ...} (selected with --env / QAF_ENV)
   * creds   : credential resolution (none | token | userpass | provider) — see credentials.py
+              (overridable per-run with QAF_CREDS_MODE, e.g. flip a mock's "none" to
+              "provider" to log in against the same plugin's real "live" env)
   * knowledge: skills + learnings dirs (domain manual-QA context)
 
 A plugin MAY ship an optional ``plugin.py`` exposing hooks the engine calls when present
 (none required by the mock): ``REQUIREMENTS`` (pre-flight checks), ``resolve_creds(settings)``
 (Vault/AWS-SM provider), ``isolate(sut)`` (custom clean-state reset), ``sweep(sut, max_age,
-dry_run)`` (orphan reaper). This is how AIQ-specific behaviour plugs in WITHOUT editing core.
+dry_run)`` (orphan reaper). This is how product-specific behaviour plugs in WITHOUT editing core.
 
 Both things the framework needs — calling the live API AND reading the backend source —
 go through this one object.
@@ -51,6 +61,16 @@ class SUTConnector:
         self.manifest = json.loads((self.dir / "manifest.json").read_text())
         self.name = self.manifest["name"]
         self.source_dir = self.dir / self.manifest["source"]["path"]
+        # Per-SUT test assets: each site owns its packs/specs/tickets so the gate for one
+        # site never discovers another's cases. Defaults keep a plugin self-contained.
+        tests = self.manifest.get("tests", {})
+        self.packs_dir = self.dir / tests.get("packs", "packs")
+        self.specs_dir = self.dir / tests.get("specs", "specs")
+        self.tickets_dir = self.dir / tests.get("tickets", "tickets")
+        self.ui_packs_dir = self.dir / tests.get("ui_packs", "ui-packs")  # browser-driven UI packs
+        # ui.path: where the site serves its web UI, relative to the runtime base_url (e.g. "/ui").
+        # None ⇒ the SUT has no UI capability (REST-only); the UI lane skips it.
+        self.ui_path = self.manifest.get("ui", {}).get("path")
         self.settings = settings or Settings.load()
         self._httpd = None
         self._thread = None
@@ -58,8 +78,11 @@ class SUTConnector:
         self._base_url = self._resolve_base_url()
         rt = self.manifest.get("runtime", {})
         self.verify_tls = self.settings.verify_tls and rt.get("verify_tls", True)
+        creds = dict(self.manifest.get("creds", {"mode": "none"}))
+        if self.settings.creds_mode:  # per-run override (QAF_CREDS_MODE) of the committed manifest
+            creds["mode"] = self.settings.creds_mode
         self._auth_headers = resolve_auth_headers(
-            self.manifest.get("creds", {"mode": "none"}),
+            creds,
             self.settings,
             provider=getattr(self.plugin(), "resolve_creds", None) if self.plugin() else None,
         )
@@ -90,25 +113,37 @@ class SUTConnector:
         return self._plugin
 
     # --- runtime access -----------------------------------------------------
+    def runtime_mode(self):
+        """Effective runtime mode. A selected env MAY override the manifest default, so one
+        plugin can boot an ``in_process`` mock by default yet connect to a ``remote`` real
+        site under ``--env live`` (e.g. restful-booker: local mock vs automationintesting.online)."""
+        if self.settings.env:
+            env_mode = self.manifest.get("env", {}).get(self.settings.env, {}).get("mode")
+            if env_mode:
+                return env_mode
+        return self.manifest.get("runtime", {}).get("mode")
+
     def start(self, **runtime_kwargs):
         rt = self.manifest["runtime"]
-        if rt["mode"] == "in_process":
+        mode = self.runtime_mode()
+        if mode == "in_process":
             mod = self._load_source_module(rt["app"])
             factory = getattr(mod, rt.get("factory", "make_server"))
             self._httpd = factory(**runtime_kwargs)
             self._base_url = f"http://127.0.0.1:{self._httpd.server_address[1]}"
             self._thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
             self._thread.start()
-        elif rt["mode"] == "remote":
+        elif mode == "remote":
             if not self._base_url:
                 raise ValueError("remote runtime resolved no base_url (set --env/--base_url)")
         else:
-            raise ValueError(f"unknown runtime mode {rt['mode']!r}")
+            raise ValueError(f"unknown runtime mode {mode!r}")
         return self
 
     def stop(self):
         if self._httpd is not None:
             self._httpd.shutdown()
+            self._httpd.server_close()  # release the listening socket (not just serve_forever)
             self._httpd = None
 
     def __enter__(self):
@@ -149,7 +184,11 @@ class SUTConnector:
     def request(self, method, path, body=None, log=False):
         url = self._base_url + path
         data = json.dumps(body).encode() if body is not None else None
-        headers = {"Content-Type": "application/json", **self._auth_headers}
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": self.settings.user_agent,  # satisfy a real site's WAF/bot check
+            **self._auth_headers,
+        }
         if log:  # mask credentials at the logging boundary (policies/input-hygiene)
             print(f"    -> {method} {path} headers={mask(headers)} body={mask(body)}")
         retry_on = _RETRY_GET if method == "GET" else _RETRY_WRITE

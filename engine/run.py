@@ -36,7 +36,8 @@ def _precheck(sut, results) -> str | None:
 def main(argv=None):
     ap = argparse.ArgumentParser(description="qa-framework regression gate")
     ap.add_argument("--sut", required=True, help="path to a SUT plugin dir (e.g. sut/mock-shop)")
-    ap.add_argument("--packs", default="packs", help="directory of regression packs")
+    ap.add_argument("--packs", default=None,
+                    help="directory of regression packs (default: the SUT's own packs dir)")
     ap.add_argument("--env", help="environment name from manifest['env']")
     ap.add_argument("--base_url", help="override base_url outright")
     ap.add_argument("--select", help='tag expression, e.g. "smoke and not slow"')
@@ -52,12 +53,13 @@ def main(argv=None):
         print(f"\n  GATE FALSE-GREEN GUARD: credentials did not resolve — {e}\n", file=sys.stderr)
         return 2
 
+    packs = args.packs or str(sut.packs_dir)  # default to THIS site's packs (self-contained)
     sut.start(buggy=args.seed_bug)
     try:
-        if sut.manifest.get("runtime", {}).get("mode") == "remote" and not sut.reachable():
+        if sut.runtime_mode() == "remote" and not sut.reachable():
             print(f"\n  GATE FALSE-GREEN GUARD: SUT unreachable @ {sut.base_url}\n", file=sys.stderr)
             return 2
-        results = runner.run_packs(sut, args.packs, select=args.select, preflight=settings.preflight)
+        results = runner.run_packs(sut, packs, select=args.select, preflight=settings.preflight)
     finally:
         sut.stop()
 

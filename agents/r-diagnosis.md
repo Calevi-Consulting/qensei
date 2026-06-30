@@ -63,7 +63,7 @@ freshness — wherever it runs (Phase 4 or on-demand), not "remember to check".
    discipline) and the active SUT plugin's `sut/<name>/learnings/` + `sut/<name>/skills/` (domain/system-shape:
    what the backend does, where it drifts, deploy/timing behaviour). Surface anything about the failing
    area's execution flow.
-3. **The spec** (`core/specs/<id>.md`) — what the case must validate, so you never propose weakening it.
+3. **The spec** (`sut/<name>/specs/<id>.md`) — what the case must validate, so you never propose weakening it.
 4. **The backend mechanism** — the SUT source via the SUTConnector (`source_module()` / `source_path()`):
    the scheduling / state-machine / run-eligibility / timing behaviour the failure turns on. This is the
    generic analog of reading a backend's scheduler/transitions source — routed to whatever the active SUT

@@ -64,7 +64,7 @@ The **freshness** of that source depends on the runtime mode in `manifest.json`:
 
 ## What you are given
 
-The change under review, the failing/changed case and its spec (`core/specs/<TICKET>-...`), the other
+The change under review, the failing/changed case and its spec (`sut/<name>/specs/<TICKET>-...`), the other
 lenses' findings, and the regression-gate / CI state to verify. You may also read the framework-shape
 policies (`policies/`) and the domain/system-shape knowledge for the active SUT
 (`sut/<name>/skills/`, `sut/<name>/learnings/`).

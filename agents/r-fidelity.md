@@ -23,7 +23,7 @@ The never-weaken rule is partly mechanical and partly judgement, so the framewor
 
 - The **deterministic spec-fidelity check** is a mechanical AST diff that lives in
   `engine/fidelity_lint.py` (NOT in `engine/diagnostics.py`, which only does the runtime
-  REAL_BUG/TEST_BUG rate-classify). It compares each changed `packs/**/case.py` against its git
+  REAL_BUG/TEST_BUG rate-classify). It compares each changed `sut/*/packs/**/case.py` against its git
   baseline and hard-gates as a pre-commit / CI lint (`.pre-commit-config.yaml`, `.gitlab-ci.yml`,
   `make fidelity`), exiting non-zero on a weakening. It can hard-gate because it has no judgement: an
   LLM in that seat would only import non-determinism (block Monday / pass Tuesday on identical input —
@@ -45,12 +45,12 @@ human owns convergence.** You raise the floor; the human is the ceiling.
 - **On-demand against a failed regression-gate run** (`engine/run.py` / `make test` + the CI logs) — when
   a human points you at a changed test that turned green and asks whether the spec was honoured.
 
-You compare each changed pack/test (`packs/**/*.py` and any test module) against its **git baseline**
+You compare each changed pack/test (`sut/*/packs/**/*.py` and any test module) against its **git baseline**
 (`HEAD` by default), so you measure **weakening-vs-baseline**, not absolute correctness.
 
 ## What you are given
 - The changed test source and its git baseline (the diff to adjudicate).
-- The originating spec's acceptance criteria, from `core/specs/<TICKET>-…md` — the contract that must
+- The originating spec's acceptance criteria, from `sut/<name>/specs/<TICKET>-…md` — the contract that must
   not be weakened.
 - The generator's stated justification for the edit (so a claimed reshape can be checked against reality,
   not taken on faith).
@@ -59,7 +59,7 @@ You compare each changed pack/test (`packs/**/*.py` and any test module) against
 - **Both versions of each changed test**, via git (`git show HEAD:<path>` vs the working tree). Match each
   assertion across versions by the **left operand of its comparison** — so a lowered threshold on the
   *same* assertion is caught as a weakening, while a structurally different assertion surfaces as a reshape.
-- **The spec** in `core/specs/` — to confirm a dropped marker / lowered bound / removed case actually
+- **The spec** in `sut/<name>/specs/` — to confirm a dropped marker / lowered bound / removed case actually
   abandons something the spec required.
 - **The System-Under-Test (SUT) source**, routed through the `SUTConnector`
   (`engine/sut.py` → `source_module()` / `source_path()`, i.e. `sut/<name>/source/`), whenever the

@@ -7,9 +7,9 @@ resolves each key against the TARGET backend and either:
   * ``partial`` (default) — SKIP a case with an unmet requirement (the rest still run), or
   * ``block``             — FAIL it (use when every prerequisite MUST hold).
 
-The specific checks are plugin-supplied (a real ``sut/aiq`` plugin answers "is connector
-X deployed on this env?"); the engine owns the registry + the skip/block policy. This is
-the product-neutral half of t-800's ``core/preflight.py`` + ``core/requirements.py``.
+The specific checks are plugin-supplied (a real ``sut/acme`` plugin answers "is connector
+X deployed on this env?"); the engine owns the registry + the skip/block policy — the
+product-neutral preflight + requirements machinery.
 
 A plugin registers checks from ``sut/<name>/plugin.py`` by defining::
 
@@ -31,7 +31,7 @@ class Unmet:
 class Registry:
     """A namespaced map of requirement-key -> ``check(sut) -> bool``.
 
-    Duplicate registration of the same key raises (mirrors t-800's collision guard) so a
+    Duplicate registration of the same key raises (a collision guard) so a
     plugin cannot silently shadow a built-in or another plugin's check.
     """
 

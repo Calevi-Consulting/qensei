@@ -77,7 +77,7 @@ sequenceDiagram
   participant PF as preflight
   participant Case
 
-  Run->>Run: discover_cases(packs/*/case.py)
+  Run->>Run: discover_cases(sut/&lt;name&gt;/packs/*/case.py)
   loop each discovered case
     Run->>Sel: matches(case.tags, --select)
     alt not in lane
@@ -95,9 +95,11 @@ sequenceDiagram
 
 ## Lanes in CI
 
-The CI pipeline maps tags to lanes (`.gitlab-ci.yml`): the `gate` job runs the full suite per
-environment; the `smoke` job (web-triggered, not on every push) runs `--select smoke` for a fast
-cross-environment confidence slice. A `slow` tag is the convention for minutes-long packs that belong
-in a scheduled lane out of the blocking gate (`--select "not slow"`).
+The CI pipeline maps tags to lanes (`.github/workflows/qa-gate.yml`, `.gitlab-ci.yml`): the `gate` job
+runs the full suite **per site** (a matrix over every `sut/<name>/`; all must be green), and you can
+**choose a single site** to validate — the GitHub Actions `workflow_dispatch` `site` dropdown, or a
+GitLab `SITE=sut/<name>` pipeline variable. The `smoke` job runs `--select smoke` for a fast
+confidence slice. A `slow` tag is the convention for minutes-long packs that belong in a scheduled
+lane out of the blocking gate (`--select "not slow"`).
 
 See also: [the regression gate](regression-gate.md), [targeting a real backend](remote-backend.md).

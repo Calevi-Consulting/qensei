@@ -25,9 +25,9 @@ read interface — `fetch(id) -> {id, title, description, acceptance_criteria, �
 
 - **JIRA is the reference provider**, but the **Jira field schema is configurable**: which Jira
   fields map onto `title` / `description` / `acceptance_criteria` / status is plugin config, so
-  the framework works against any Jira project layout — and **outside AIQ entirely** against any
+  the framework works against any Jira project layout — and against any
   tracker that implements the provider interface.
-- A **mock provider** (`ticket/mock/`) serves tickets offline — for the in-repo demo, for CI
+- A **mock provider** (`sut/<name>/tickets/`) serves tickets offline — for the in-repo demo, for CI
   without a live tracker, and for SUT plugins whose tickets are illustrative (e.g. the `SHOP-*`
   tickets behind `mock-shop`).
 - **No ticket?** A short feature description is accepted (the `noticket` path). Add the no-ticket
@@ -39,11 +39,11 @@ read interface — `fetch(id) -> {id, title, description, acceptance_criteria, �
 
 ## Spec vs plan
 
-- **Spec (`core/specs/<TICKET-ID|noticket>-<short-desc>.md`)** is the human-approved contract for
+- **Spec (`sut/<name>/specs/<TICKET-ID|noticket>-<short-desc>.md`)** is the human-approved contract for
   *what* the test verifies: context, requirements, acceptance criteria, persona coverage, teardown.
   Reviewed once; changes go through human approval. (The methodology's `<NNN>-` counter is dropped
-  here — the ticket id disambiguates, matching the existing `core/specs/` and `packs/` naming.)
-- **Plan (`core/plans/<YYYY-MM-DD>-<short-slug>.md`)** is the agent-iterated implementation: REST
+  here — the ticket id disambiguates, matching the existing `sut/<name>/specs/` and `sut/<name>/packs/` naming.)
+- **Plan (`sut/<name>/plans/<YYYY-MM-DD>-<short-slug>.md`)** is the agent-iterated implementation: REST
   mapping, facade/fixture shape, persona markers, runtime expectations, SUT-shape rationale.
   Multiple plans can attach to one spec as the implementation evolves; the spec's final section
   lists its plans.
@@ -55,8 +55,8 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 ## Phase 0 — Orient
 
 1. Read `README.md`, `docs/overview.md`, and the spec conventions in `policies/methodology.md`
-   (§ Spec File Conventions), plus an existing spec under `core/specs/` and any existing plan under
-   `core/plans/` for a related domain, as the shape to follow.
+   (§ Spec File Conventions), plus an existing spec under `sut/<name>/specs/` and any existing plan under
+   `sut/<name>/plans/` for a related domain, as the shape to follow.
 2. Read **both** knowledge stores for the relevant domain (append-only, AI-authored):
    - `policies/` — **framework-shape** patterns (fixture/case rules, gate/runner choices, persona
      discipline, test philosophy, ownership).
@@ -76,7 +76,7 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
    - **`remote`** (a real backend): the source is a checked-out clone. Verify it is current — each
      clone's local `HEAD` must equal its `origin/<default>` tip:
      ```bash
-     # remote SUT only — SUT_DIR is the plugin dir passed to --sut (e.g. sut/aiq)
+     # remote SUT only — SUT_DIR is the plugin dir passed to --sut (e.g. sut/acme)
      SUT_DIR=sut/<name>
      src="$SUT_DIR/$(python3 -c "import json;print(json.load(open('$SUT_DIR/manifest.json'))['source']['path'])")"
      b=$(git -C "$src" rev-parse --abbrev-ref HEAD)
@@ -104,8 +104,8 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 
 ## Phase 2 — Write the spec
 
-1. Create `core/specs/<TICKET-ID|noticket>-<short-desc>.md` following the conventions in
-   `policies/methodology.md` and the shape of the existing `core/specs/` specs.
+1. Create `sut/<name>/specs/<TICKET-ID|noticket>-<short-desc>.md` following the conventions in
+   `policies/methodology.md` and the shape of the existing `sut/<name>/specs/` specs.
 2. Fill the spec sections — **intent only**: Context, Requirements, Acceptance Criteria (a `- [ ]`
    checkbox list of specific, testable, long-lived behavioral contracts), Persona coverage, Risks &
    Assumptions, Status. Include the **real-system (integration-boundary) AC**: at least one criterion
@@ -117,7 +117,7 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 
 ## Phase 2b — Write the plan
 
-1. Create `core/plans/<YYYY-MM-DD>-<short-slug>.md`. The slug names the spec topic.
+1. Create `sut/<name>/plans/<YYYY-MM-DD>-<short-slug>.md`. The slug names the spec topic.
 2. Cover the *how*: a **REST mapping table** (for each manual step, the SUTConnector call —
    `sut.get(path)` / `sut.post(path, body)` — or the typed facade over it), facade/model extensions
    the plugin needs, the case/fixture shape, persona marker, and runtime expectations.
@@ -127,27 +127,41 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
    API path exists, or for genuine end-to-end coverage.
 4. Reference the plan from the spec's final *Implementation* section.
 
-## Phase 3 — Implement (REST-first, as a pack)
+## Phase 3 — Implement (translate the functional test to a REST **or** UI automated pack)
 
-1. Author the regression as a **pack** under `packs/<TICKET-ID|noticket>-<short-desc>/`: a `case.py`
-   holding a `RegressionCase` subclass (`engine/case.py`) plus an index `README.md`.
+The validated functional test from `/test-ticket` is translated into a permanent automated test. The
+**surface follows the verification**: criteria validated over the **REST API** become a REST pack;
+criteria validated through the **web UI** become a UI (Playwright) pack. Many tickets yield one of
+each. Pick per criterion, and prefer REST where an API path covers it (faster, less brittle).
+
+**REST automated test** — a `RegressionCase` pack under `sut/<name>/packs/<TICKET-ID>-<short-desc>/`:
+
+1. A `case.py` holding a `RegressionCase` subclass (`engine/case.py`) plus an index `README.md`.
 2. The case declares the contract the DESIGN and DIAGNOSE layers read:
-   - `id`, `title`, `spec_ref` (the `core/specs/…` intent it satisfies);
+   - `id`, `title`, `spec_ref` (the `sut/<name>/specs/…` intent it satisfies);
    - `persona` — `new_user` or `existing_data`, per Phase 1;
-   - `covers` — the backend surface it exercises (endpoints + business-rule ids), read by DESIGN to
-     compute coverage gaps;
+   - `covers` — the backend surface it exercises (endpoints + business-rule ids), read by DESIGN;
    - `contract_claim` — the business-rule value the case relies on (e.g. `{rule, rate, min_qty}`),
-     read by **`engine/diagnostics.py`** to tell REAL_BUG from TEST_BUG against the SUT source. Add it
-     whenever the case pins a business rule — it is what makes a failure diagnosable.
-3. The `run(self, sut, expect)` body calls the SUT **runtime** through the connector (`sut.get` /
-   `sut.post`) — or a typed facade over it — and uses **soft assertions** (`expect.equal` /
-   `expect.approx` / `expect.that`) so one run reports every break. Encode **behavioral contracts**,
-   not internal call sequences.
-4. Make it **self-cleaning**: `new_user` cases start from a clean state and leave nothing behind;
-   `existing_data` cases find-or-create their durable and never delete it. For a UI fallback step,
-   add/extend a page object and use the plugin's authenticated-session helper.
-5. Write the pack `README.md` as the index card: one-paragraph summary, persona, `Spec:` link,
-   `Covers:`, and the run command.
+     read by **`engine/diagnostics.py`** to tell REAL_BUG from TEST_BUG. Add it whenever the case
+     pins a business rule — it is what makes a failure diagnosable.
+3. `run(self, sut, expect)` calls the SUT **runtime** through the connector (`sut.get` / `sut.post`)
+   with **soft assertions** (`expect.equal` / `expect.approx` / `expect.that`). Encode **behavioral
+   contracts**, not internal call sequences.
+
+**UI automated test** — a `UICase` pack under `sut/<name>/ui-packs/<TICKET-ID>-<short-desc>/`:
+
+1. A `case.py` holding a `UICase` subclass (`engine/ui.py`) plus an index `README.md`. The SUT plugin
+   must declare a `ui.path` in its manifest (where the web UI is served).
+2. Same declarative metadata (`id`, `title`, `spec_ref`, `persona`, `covers`, `severity`), plus the
+   `ui` tag so it runs in the opt-in UI lane (`make test-ui`).
+3. `run(self, page, base_url, expect)` drives the front-end with a **real browser** — a Playwright
+   `page` — and asserts on what the user sees (`page.goto`, `page.fill`, `page.click`,
+   `page.wait_for_selector`, then `expect.that(...)`). Pin **stable element ids / roles**, not
+   layout. `sut/restful-booker/ui-packs/BOOK-UI-1-book-a-room/` is the worked example.
+
+**Both** are **self-cleaning** (`new_user` starts clean and leaves nothing behind; `existing_data`
+find-or-creates a durable and never deletes it) and ship an index-card `README.md` (one-paragraph
+summary, persona, `Spec:` link, `Covers:`, run command).
 
 ## Phase 4 — Validate (iterative, with the review panel)
 
@@ -258,7 +272,7 @@ The loop ends when either:
 3. Set the **pack's terminal status in-branch** — the pack `README.md` index card carries the status
    tag (e.g. `· automated`) at landing, as the single source of truth (do not defer it to a
    post-merge step). If the implementation took multiple iterations to converge, add sibling plans
-   under `core/plans/` capturing the rationale for each batch.
+   under `sut/<name>/plans/` capturing the rationale for each batch.
 4. Finalize the pack `README.md` index card (summary, persona, `Spec:` link, `Covers:`, run command) —
    the card future agents read first.
 5. Record any non-obvious SUT/API learning: domain / system-shape → `sut/<name>/learnings/`;
@@ -266,8 +280,10 @@ The loop ends when either:
 
 ## Guardrails
 
-- **REST runtime API via the SUTConnector is the preferred layer;** UI/browser automation is the
-  fallback — only where the plugin exposes a UI and no API path exists, or for genuine end-to-end.
+- **Both REST and UI are first-class automated-test surfaces.** Prefer the REST runtime API (via the
+  SUTConnector) where an API path covers the criterion — it is faster and less brittle. Use a UI
+  (Playwright `UICase`) pack where the behaviour lives in the front-end, where no API path exists, or
+  for genuine end-to-end coverage. The surface follows what `/test-ticket` actually verified.
 - **Never commit secrets;** credentials resolve through the plugin's `manifest.json` `creds`
   (env / Vault), never hardcoded.
 - **Packs must clean up everything they create on shared environments** — `new_user` self-cleans;

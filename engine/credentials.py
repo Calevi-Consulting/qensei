@@ -1,8 +1,8 @@
 """Credential resolution + auth-header injection — the generic seam.
 
-t-800's ``lib/credentials.py`` + ``lib/vault.py`` resolve a token (direct value wins,
-then a provider fills the gap) and the API client injects it on every request. Here
-the same seam is product-neutral: the plugin's ``manifest["creds"]`` declares HOW to
+A token is resolved (a direct value wins, then a provider fills the gap) and the API
+client injects it on every request. The seam is product-neutral: the plugin's
+``manifest["creds"]`` declares HOW to
 authenticate; this module turns that + the uncommitted :class:`~engine.config.Settings`
 into the headers :class:`~engine.sut.SUTConnector` adds to every request.
 
@@ -13,9 +13,8 @@ Modes (``creds.mode``):
                     ``Authorization: <scheme> <token>`` (scheme defaults to ``Bearer``).
   * ``userpass``  — HTTP Basic from ``QAF_USERNAME``/``QAF_PASSWORD``.
   * ``provider``  — delegate to a plugin callable ``sut/<name>/plugin.py:resolve_creds``
-                    (this is where a Vault / AWS-SM integration plugs in WITHOUT touching
-                    the engine — the generic equivalent of t-800's Vault client, which is
-                    correctly plugin-side).
+                    (this is where a secrets backend — Vault, AWS Secrets Manager, ... —
+                    plugs in WITHOUT touching the engine; correctly a plugin concern).
 
 Precedence: a direct value in Settings always wins; the provider only fills gaps.
 """
