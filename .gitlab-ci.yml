@@ -1,4 +1,4 @@
-# qa-framework CI — lint + CVE scan + tests, per SITE.
+# Qensei CI — lint + CVE scan + tests, per SITE.
 #
 # Two kinds of work:
 #   * checks (lint, CVE scan, framework unit/integration tests, fidelity, secrets) — on every

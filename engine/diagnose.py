@@ -14,7 +14,7 @@ from engine.sut import SUTConnector
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="qa-framework failure diagnostics")
+    ap = argparse.ArgumentParser(description="Qensei failure diagnostics")
     ap.add_argument("--sut", required=True)
     ap.add_argument("--pack", required=True, help="path to a single pack dir (contains case.py)")
     ap.add_argument("--seed-bug", action="store_true")

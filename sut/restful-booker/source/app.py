@@ -1,4 +1,4 @@
-"""restful-booker — the System Under Test for the qa-framework's SECOND site.
+"""restful-booker — the System Under Test for the Qensei's SECOND site.
 
 A zero-dependency stdlib (http.server) mock of mwinteringham's **restful-booker-platform**
 (live at https://automationintesting.online/, source at

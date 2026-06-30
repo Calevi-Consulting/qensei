@@ -52,7 +52,7 @@ def check_freshness(sut_dir: str) -> tuple[str, str]:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="qa-framework SUT-source freshness gate")
+    ap = argparse.ArgumentParser(description="Qensei SUT-source freshness gate")
     ap.add_argument("--sut", required=True, help="path to a SUT plugin dir")
     args = ap.parse_args(argv)
     status, detail = check_freshness(args.sut)

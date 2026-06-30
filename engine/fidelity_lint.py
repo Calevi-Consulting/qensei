@@ -169,7 +169,7 @@ def _basenames(cls: ast.ClassDef) -> set[str]:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="qa-framework spec-fidelity lint")
+    ap = argparse.ArgumentParser(description="Qensei spec-fidelity lint")
     ap.add_argument("paths", nargs="*", help="pack case.py files (default: all sut/*/packs/*/case.py)")
     ap.add_argument("--base", default="HEAD", help="git ref to diff against (default HEAD)")
     ap.add_argument("--allow-reshape", action="store_true", help="downgrade shrink findings to warnings")

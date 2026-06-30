@@ -85,7 +85,7 @@ def run_packs(sut, packs_dir, select=None, preflight="partial"):
     cases = [c for c in discover_cases(packs_dir) if selection.matches(getattr(c, "tags", ()), select)]
     registry = preflight_mod.default_registry(sut)
     lane = f" [{select}]" if select else ""
-    print(f"\n  qa-framework gate{lane} — {len(cases)} case(s) vs '{sut.name}' @ {sut.base_url}\n")
+    print(f"\n  Qensei gate{lane} — {len(cases)} case(s) vs '{sut.name}' @ {sut.base_url}\n")
 
     results = []
     for case_cls in cases:

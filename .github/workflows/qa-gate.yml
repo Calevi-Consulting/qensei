@@ -1,4 +1,4 @@
-# qa-framework CI — lint + CVE scan + tests, per SITE, on GitHub Actions.
+# Qensei CI — lint + CVE scan + tests, per SITE, on GitHub Actions.
 #
 # Two kinds of work, matching how the repo is used:
 #   * checks (lint, CVE scan, framework unit/integration tests, fidelity, secrets) — run on

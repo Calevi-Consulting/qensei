@@ -3,11 +3,12 @@
 # works with no install at all. Poetry manages only the DEV / TEST toolchain below
 # (test runner, parallelism, linter, CVE scanner). `package-mode = false` means
 # `poetry install` installs those tools into a local .venv WITHOUT packaging this repo.
-name = "qa-framework"
+name = "qensei"
 version = "0.1.0"
-description = "A backend-aware QA framework — test-case design, automated regression, and failure diagnostics over a System-Under-Test plugin."
+description = "Qensei — an AI QA assistant (built for Claude Code): backend-aware test-case design, automated regression, and failure diagnostics over a System-Under-Test plugin."
 authors = ["Martin Hereu <mhereu@gmail.com>"]
 readme = "README.md"
+license = "MIT"
 package-mode = false
 
 [tool.poetry.dependencies]

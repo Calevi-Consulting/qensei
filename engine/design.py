@@ -61,7 +61,7 @@ def main(argv=None):
 
     from engine.sut import SUTConnector
 
-    ap = argparse.ArgumentParser(description="qa-framework backend-aware test-case design")
+    ap = argparse.ArgumentParser(description="Qensei backend-aware test-case design")
     ap.add_argument("--sut", required=True)
     ap.add_argument("--packs", default=None, help="packs dir (default: the SUT's own packs dir)")
     args = ap.parse_args(argv)

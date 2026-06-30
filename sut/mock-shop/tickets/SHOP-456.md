@@ -1,6 +1,6 @@
 # SHOP-456 — Apply a 10% bulk discount at 3+ items
 
-> Mock JIRA-style ticket for the qa-framework demo. The `mock-file` ticket provider
+> Mock JIRA-style ticket for the Qensei demo. The `mock-file` ticket provider
 > (see [`ticket/contract.md`](../../../ticket/contract.md)) normalizes this file to
 > `{id, title, description, acceptance_criteria[], status, links[]}`. It is the **entry** to
 > `/spec-test` for the mock-shop domain and maps to

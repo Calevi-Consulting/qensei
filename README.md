@@ -1,13 +1,34 @@
-# qa-framework
+# Qensei
 
 A generic, backend-aware QA framework: a hybrid of **test-case design**, **automated
 regression**, and **failure diagnostics**, governed by a reusable set of QA policies.
 Domain-agnostic — it works against any product through a System-Under-Test plugin.
 
-> Provisional name. It unifies three QA capabilities that usually live in separate tools —
-> manual-QA test-case design (with domain knowledge), automated REST regression, and failure
-> diagnostics — under one product-neutral engine, governed by a reusable set of development
-> policies, with the product under test wired in as a plugin. See [`docs/overview.md`](docs/overview.md).
+> **Qensei** = *Q* (QA) + *sensei*: an AI coding assistant (Claude Code) drives it like a QA sensei —
+> reading the backend to design cases and to diagnose failures. It unifies three QA capabilities that
+> usually live in separate tools — manual-QA test-case design (with domain knowledge), automated REST
+> regression, and failure diagnostics — under one product-neutral engine, governed by a reusable set of
+> development policies, with the product under test wired in as a plugin. See [`docs/overview.md`](docs/overview.md).
+
+## Built to run inside an AI coding assistant (Claude Code)
+
+This framework is **driven by an AI coding assistant** — it was developed for, and is run with,
+[Claude Code](https://claude.com/claude-code). Its human-in-the-loop legs are assistant-facing
+constructs, not plain scripts:
+
+- **Slash commands** (`commands/`) are the legs the assistant runs: `/test-ticket` (validate a
+  ticket's acceptance criteria against a live SUT), `/spec-test` (turn a validated result into an
+  automated REST/UI pack), and `/report-bug` (file a real defect).
+- **Subagents** (`agents/`) are the advisory **review panel** — read-only diagnostic lenses
+  (`r-diagnosis`, `r-evidence`, `r-mechanism`, `r-fidelity`, `r-uplift`, adjudicated by `judge`) the
+  assistant spawns to classify a failure REAL_BUG vs TEST_BUG and to catch a spec-weakening edit.
+- **Policies** (`policies/`) are the governance the assistant follows (spec phases, ownership, test
+  philosophy, security, release safety).
+
+The **deterministic core runs without any AI**: the engine and the regression gate (`engine/`,
+`make test` / `make demo`) are plain Python 3 stdlib and remain the single source of truth for
+"green". The assistant designs, validates, and diagnoses **around** that gate — it never becomes the
+gate, and the human owns convergence (specs, acceptance criteria, approvals).
 
 ## What it does (three capabilities, one backend connection)
 
@@ -131,6 +152,11 @@ UI tests are a separate opt-in lane (a browser is slower/heavier than the REST g
 ## Layout
 
 ```
+commands/   Claude Code slash commands — the assistant-run, human-in-the-loop legs:
+            /test-ticket (validate a ticket vs the SUT) · /spec-test (result → automated
+            REST/UI pack) · /report-bug
+agents/     Claude Code subagents — the advisory review panel (read-only diagnostic lenses
+            + the judge that adjudicates them). Advisory only; never gates a merge
 policies/   general, QA-applicable policies (spec phases, ownership, test philosophy,
             security review, release safety, communication, git) — product-neutral
 engine/     the core: sut.py (backend access) · case.py · runner.py (gate) ·
@@ -158,3 +184,7 @@ and exercised end-to-end against **two** sites: `mock-shop` and `restful-booker`
 site validates that the seam is genuinely generic (it dropped in with no change to `engine/` or
 `policies/`). Next: the manual-validation + ticket→spec handoff legs, and a real authenticated
 backend behind the `live`-env path the booker plugin demonstrates.
+
+## License
+
+[MIT](LICENSE) © 2026 Martin Hereu.

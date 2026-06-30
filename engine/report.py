@@ -20,7 +20,7 @@ def _failure_text(expect, error, skip_reason) -> str | None:
     return "; ".join(parts) or None
 
 
-def to_junit(results, suite_name="qa-framework") -> str:
+def to_junit(results, suite_name="Qensei") -> str:
     """Render results as JUnit XML (one <testcase> per case; <skipped>/<failure> as needed)."""
     n = len(results)
     failures = sum(1 for r in results if r[3] == "FAIL")
@@ -44,7 +44,7 @@ def to_junit(results, suite_name="qa-framework") -> str:
     return "\n".join(lines)
 
 
-def to_json(results, suite_name="qa-framework") -> str:
+def to_json(results, suite_name="Qensei") -> str:
     payload = {
         "suite": suite_name,
         "total": len(results),
@@ -68,7 +68,7 @@ def to_json(results, suite_name="qa-framework") -> str:
     return json.dumps(payload, indent=2)
 
 
-def write_report(results, path: str, suite_name="qa-framework") -> None:
+def write_report(results, path: str, suite_name="Qensei") -> None:
     text = to_junit(results, suite_name) if path.endswith(".xml") else to_json(results, suite_name)
     from pathlib import Path
 

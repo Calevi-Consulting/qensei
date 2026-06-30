@@ -34,7 +34,7 @@ def _precheck(sut, results) -> str | None:
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="qa-framework regression gate")
+    ap = argparse.ArgumentParser(description="Qensei regression gate")
     ap.add_argument("--sut", required=True, help="path to a SUT plugin dir (e.g. sut/mock-shop)")
     ap.add_argument("--packs", default=None,
                     help="directory of regression packs (default: the SUT's own packs dir)")

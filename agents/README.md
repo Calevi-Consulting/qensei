@@ -1,6 +1,6 @@
 # Lens registry
 
-The advisory review panel for qa-framework. Each lens is a read-only subagent that
+The advisory review panel for Qensei. Each lens is a read-only subagent that
 examines one failing or changed test and reports findings. The panel **raises the floor**;
 it never lowers the bar and it never blocks a merge.
 

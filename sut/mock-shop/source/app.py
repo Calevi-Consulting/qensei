@@ -1,4 +1,4 @@
-"""mock-shop — the System Under Test for the qa-framework demo.
+"""mock-shop — the System Under Test for the Qensei demo.
 
 Pure stdlib (http.server), zero dependencies. This single file is BOTH:
 

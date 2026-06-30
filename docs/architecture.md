@@ -1,6 +1,6 @@
 # Architecture
 
-qa-framework is a domain-agnostic QA framework: the product under test is a **plugin** under
+Qensei is a domain-agnostic QA framework: the product under test is a **plugin** under
 `sut/<name>/`, so the same engine runs against a mock backend or a real one. It offers **three
 capabilities over a single backend connection** (`engine/sut.py` `SUTConnector`):
 
@@ -12,6 +12,11 @@ capabilities over a single backend connection** (`engine/sut.py` `SUTConnector`)
 
 Design and diagnostics need the backend **source**; regression needs the backend **runtime**. Both
 go through one `SUTConnector`, so adding a product means writing a plugin, not touching the core.
+
+The framework is **driven by an AI coding assistant ([Claude Code](https://claude.com/claude-code))**:
+the human-in-the-loop legs are Claude Code **slash commands** (`commands/`) and the advisory review panel
+is a set of Claude Code **subagents** (`agents/`). The engine and gate below are plain Python and run
+with no AI in the loop — the assistant works around the gate, never as it.
 
 ## Component map
 
@@ -109,7 +114,9 @@ sequenceDiagram
   `case.py` + an index-card `README.md`), `specs/` + `plans/` (intent contracts + rationale),
   `tickets/`, `examples/`, `manifest.json` (+ optional `plugin.py`). `mock-shop/` and
   `restful-booker/` are the two reference sites; see [the SUT contract](../sut/contract.md).
-- **`agents/` + `docs/multiagent/`** — the advisory review panel (see
+- **`commands/`** — the Claude Code slash commands the assistant runs: `/test-ticket`, `/spec-test`,
+  `/report-bug`.
+- **`agents/` + `docs/multiagent/`** — the advisory review panel, run as Claude Code subagents (see
   [diagnostics-and-review-panel.md](diagnostics-and-review-panel.md)).
 
 ## Where to go next

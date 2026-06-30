@@ -55,7 +55,7 @@ def resolve_citations(text: str, repo_root: str = ".") -> list[Citation]:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="qa-framework citation anti-fabrication gate")
+    ap = argparse.ArgumentParser(description="Qensei citation anti-fabrication gate")
     ap.add_argument("files", nargs="*", help="files to scan (default: stdin)")
     ap.add_argument("--root", default=".", help="repo root for resolving sut/<name>/source paths")
     args = ap.parse_args(argv)

@@ -1,4 +1,4 @@
-"""qa-framework engine — the generic QA core.
+"""Qensei engine — the generic QA core.
 
 A backend-aware hybrid of test-case DESIGN (read the backend, propose cases),
 automated REGRESSION (run cases against a live system — the gate), and
