@@ -34,6 +34,18 @@ def diagnose(case_cls, sut):
             "why": "the case passed against the running system; nothing to triage.",
         }
 
+    if error and getattr(case, "_precondition_failed", False):
+        return {
+            "verdict": "PRECONDITION_FAILED",
+            "case": case.id,
+            "evidence": error,
+            "why": (
+                "a hard precondition the case declared did not hold — this is a REAL test "
+                "verdict (the setup the contract depends on is absent), not transient infra. "
+                "Adjudicate as REAL_BUG vs TEST_BUG; do NOT dismiss it as a flake."
+            ),
+        }
+
     if error:
         return {
             "verdict": "ENV_OR_TRANSIENT",

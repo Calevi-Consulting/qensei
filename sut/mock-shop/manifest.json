@@ -9,7 +9,8 @@
     "mode": "in_process",
     "app": "app.py",
     "factory": "make_server",
-    "note": "in_process: the framework boots the mock itself. A real plugin uses {\"mode\":\"remote\",\"base_url\":\"https://...\"}."
+    "isolate": "/cart/clear",
+    "note": "in_process: the framework boots the mock itself. 'isolate' is POSTed before each case for a clean new_user state (was hardcoded in the runner; now a plugin concern). A real plugin uses {\"mode\":\"remote\",\"base_url\":\"https://...\"}."
   },
   "env": {
     "local": { "base_url": "in-process (ephemeral port)" }

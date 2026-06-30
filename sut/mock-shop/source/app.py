@@ -15,11 +15,19 @@ A tiny "shop": products, a cart, and a checkout that applies a bulk discount.
 from __future__ import annotations
 
 import json
+import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 # --- declared business contract (read by engine/design.py + engine/diagnostics.py) ---
 DISCOUNT_RATE = 0.10  # 10% off the subtotal
 DISCOUNT_MIN_QTY = 3  # ... once the cart holds at least 3 items total
+
+# Durable store: accounts persist ACROSS server boots (a file), unlike the ephemeral cart.
+# This is what makes the existing_data find-or-create / durability demo real — a baseline
+# created on the first run is re-read (not recreated) on later runs, the way t-800's
+# t800-keep durables survive across runs and DB migrations.
+ACCOUNTS_FILE = Path(os.environ.get("QAF_MOCK_STATE", Path(__file__).parent / ".accounts.json"))
 
 PRODUCTS = {
     1: {"id": 1, "name": "Widget", "price": 10.0},
@@ -34,7 +42,20 @@ ROUTES = [
     ("GET", "/cart", "current cart"),
     ("POST", "/cart/clear", "empty the cart"),
     ("POST", "/checkout", "create an order; applies the bulk-discount rule"),
+    ("GET", "/accounts/{name}", "get a durable account by name (404 if missing)"),
+    ("POST", "/accounts", "find-or-create a durable account {name, plan}; persists across boots"),
 ]
+
+
+def _load_accounts():
+    try:
+        return json.loads(ACCOUNTS_FILE.read_text())
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def _save_accounts(accounts):
+    ACCOUNTS_FILE.write_text(json.dumps(accounts))
 
 BUSINESS_RULES = [
     {
@@ -78,6 +99,12 @@ def _make_handler(state, buggy):
                 return self._send(200, p) if p else self._send(404, {"error": "not found"})
             if self.path == "/cart":
                 return self._send(200, self._cart_view())
+            if self.path.startswith("/accounts/"):
+                from urllib.parse import unquote
+
+                name = unquote(self.path.split("/accounts/", 1)[1])
+                acct = _load_accounts().get(name)
+                return self._send(200, acct) if acct else self._send(404, {"error": "no account"})
             return self._send(404, {"error": "no route"})
 
         def do_POST(self):
@@ -92,6 +119,18 @@ def _make_handler(state, buggy):
             if self.path == "/cart/clear":
                 state["cart"] = []
                 return self._send(200, {"items": [], "total": 0.0})
+            if self.path == "/accounts":  # find-or-create a DURABLE account (persists across boots)
+                body = self._read_json()
+                name = body.get("name")
+                if not name:
+                    return self._send(400, {"error": "name required"})
+                accounts = _load_accounts()
+                if name in accounts:
+                    return self._send(200, {**accounts[name], "created": False})
+                acct = {"name": name, "plan": body.get("plan", "free")}
+                accounts[name] = acct
+                _save_accounts(accounts)
+                return self._send(201, {**acct, "created": True})
             if self.path == "/checkout":
                 view = self._cart_view()
                 subtotal = view["total"]

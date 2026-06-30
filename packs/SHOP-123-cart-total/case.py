@@ -7,6 +7,8 @@ class CartTotalReflectsAddedItems(RegressionCase):
     title = "cart total reflects added items"
     spec_ref = "core/specs/SHOP-123-cart-total.md"
     persona = "new_user"
+    tags = frozenset({"smoke"})
+    severity = "high"
     covers = ["POST /cart", "GET /cart"]
 
     def run(self, sut, expect):

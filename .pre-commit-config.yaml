@@ -1,0 +1,26 @@
+# Pre-commit hooks — the forcing functions, run at commit time.
+#
+# The framework's prime invariant (never weaken a spec to go green) and the
+# no-secrets rule are POLICY in policies/, but a policy without a gate is not
+# followed. These hooks make them deterministic. Install: `pre-commit install`.
+repos:
+  - repo: local
+    hooks:
+      - id: fidelity-lint
+        name: spec-fidelity lint (no weakened acceptance criteria)
+        entry: python3 -m engine.fidelity_lint
+        language: system
+        files: ^packs/.*/case\.py$
+        pass_filenames: true
+
+      - id: engine-tests
+        name: engine + gate unit tests
+        entry: python3 -m unittest discover -s tools/tests
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks  # secret detection (the no-credentials-in-VCS rule, enforced)
