@@ -2,7 +2,7 @@
 name: r-diagnosis
 description: >-
   Diagnose a failing regression case BEFORE any fix. Use whenever a Qensei case fails — inside the
-  /spec-test Phase-4 loop or on-demand against a failed regression-gate / CI run. Classifies test-bug vs
+  /automate Phase-4 loop or on-demand against a failed regression-gate / CI run. Classifies test-bug vs
   genuine backend-bug and cites evidence (or escalates). The judgment-side complement to the deterministic
   engine/diagnostics.py lens. Read-only; never weakens a spec; never files a ticket itself.
 tools: Read, Grep, Glob, Bash
@@ -30,11 +30,11 @@ a "is this a known flaky correlation or a real regression" judgment, or anything
 learnings + the SUT source rather than a single rule lookup. Same vocabulary, added judgment.
 
 ## When you run
-- **Automatically** — at the top of a `/spec-test` Phase-4 failure, before the generator fixes anything.
+- **Automatically** — at the top of a `/automate` Phase-4 failure, before the generator fixes anything.
 - **On-demand** — when a human points you at a failed case / regression-gate run / CI job (e.g. a gate
   failure, a post-merge red).
 
-Two triggers, one capability. You are a standalone subagent, not a `/spec-test`-only step — Phase 4 simply
+Two triggers, one capability. You are a standalone subagent, not a `/automate`-only step — Phase 4 simply
 *calls* you.
 
 ## What you are given

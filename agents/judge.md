@@ -20,7 +20,7 @@ plugin's **SUTConnector** (`engine/sut.py`), never through a hard-coded backend.
 
 ## When you run
 Step ③ of the review-panel protocol (the orchestration sequence), in two situations:
-- the **`/spec-test` validate-and-iterate loop (Phase 4)** — after a lens flags a freshly authored or
+- the **`/automate` validate-and-iterate loop (Phase 4)** — after a lens flags a freshly authored or
   changed test in the iteration cycle;
 - **on-demand** — a human points you at a failed **regression gate** run (`engine/run.py` /
   `make test`, or a CI run over the configured environments) and asks the panel to adjudicate it.

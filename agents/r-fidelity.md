@@ -2,7 +2,7 @@
 name: r-fidelity
 description: >-
   Spec-fidelity lens. Use after ANY test/pack edit inside the validate-and-iterate loop (the
-  /spec-test Phase-4 equivalent), or on-demand on a changed test after a failed regression-gate run,
+  /automate Phase-4 equivalent), or on-demand on a changed test after a failed regression-gate run,
   to verify the edit did not WEAKEN an acceptance criterion just to turn a red test green. Blocks
   unambiguous weakenings (lowered thresholds, equality relaxed to inequality, dropped persona markers,
   ungated xfail, lost coverage); surfaces restructured assertions (reshapes) for the human to confirm —

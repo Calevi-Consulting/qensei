@@ -57,7 +57,7 @@ The **freshness** of that source depends on the runtime mode in `manifest.json`:
   is green (a stale clone makes R-MECHANISM / R-DIAGNOSIS cite an old backend).
 - **After findings, before the JUDGE adjudicates** — run citation resolution over every lens's findings.
   Separate the two "not found" outcomes (see rule 1).
-- **Phase 4 triage of `/spec-test`** — alongside R-DIAGNOSIS / R-MECHANISM, on any "it's fine / transient /
+- **Phase 4 triage of `/automate`** — alongside R-DIAGNOSIS / R-MECHANISM, on any "it's fine / transient /
   not my change / it's merged" claim, or any failure.
 - **On-demand** — the same skeptic pass run directly against a failed **regression-gate** run a human
   points you at. Both entry points (the automatic Phase-4 loop and the on-demand gate review) apply.

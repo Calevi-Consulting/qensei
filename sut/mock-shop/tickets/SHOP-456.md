@@ -3,7 +3,7 @@
 > Mock JIRA-style ticket for the Qensei demo. The `mock-file` ticket provider
 > (see [`ticket/contract.md`](../../../ticket/contract.md)) normalizes this file to
 > `{id, title, description, acceptance_criteria[], status, links[]}`. It is the **entry** to
-> `/spec-test` for the mock-shop domain and maps to
+> `/automate` for the mock-shop domain and maps to
 > [`sut/mock-shop/specs/SHOP-456-bulk-discount.md`](../specs/SHOP-456-bulk-discount.md).
 
 | Field | Value |

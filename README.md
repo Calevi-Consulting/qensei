@@ -16,8 +16,8 @@ This framework is **driven by an AI coding assistant** — it was developed for,
 [Claude Code](https://claude.com/claude-code). Its human-in-the-loop legs are assistant-facing
 constructs, not plain scripts:
 
-- **Slash commands** (`commands/`) are the legs the assistant runs: `/test-ticket` (validate a
-  ticket's acceptance criteria against a live SUT), `/spec-test` (turn a validated result into an
+- **Slash commands** (`commands/`) are the legs the assistant runs: `/validate` (verify a
+  ticket's acceptance criteria against a live SUT), `/automate` (turn a validated result into an
   automated REST/UI pack), and `/report-bug` (file a real defect).
 - **Subagents** (`agents/`) are the advisory **review panel** — read-only diagnostic lenses
   (`r-diagnosis`, `r-evidence`, `r-mechanism`, `r-fidelity`, `r-uplift`, adjudicated by `judge`) the
@@ -145,15 +145,15 @@ make ui-watch   # WATCH the UI verification live — a headed, slowed-down brows
 
 The worked example is `sut/restful-booker/ui-packs/BOOK-UI-1-book-a-room/` — it books a room through
 the booking **form** (fill, pick a room, submit, assert the confirmation), the UI counterpart to the
-REST `BOOK-1` pack. The `/test-ticket` command can verify a ticket over REST or UI (headed, so a QA
-person watches), and `/spec-test` turns that result into a REST **or** a UI automated pack accordingly.
+REST `BOOK-1` pack. The `/validate` command can verify a ticket over REST or UI (headed, so a QA
+person watches), and `/automate` turns that result into a REST **or** a UI automated pack accordingly.
 UI tests are a separate opt-in lane (a browser is slower/heavier than the REST gate).
 
 ## Layout
 
 ```
 commands/   Claude Code slash commands — the assistant-run, human-in-the-loop legs:
-            /test-ticket (validate a ticket vs the SUT) · /spec-test (result → automated
+            /validate (verify a ticket vs the SUT) · /automate (result → automated
             REST/UI pack) · /report-bug
 agents/     Claude Code subagents — the advisory review panel (read-only diagnostic lenses
             + the judge that adjudicates them). Advisory only; never gates a merge

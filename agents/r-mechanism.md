@@ -46,8 +46,8 @@ the freshness check guards the point of consumption, not "remember to check".
 
 ## When you run
 - **Step 2 (plan)** — review the plan's SUT-mechanism assumptions **before** the test is written
-  (the planning phase of `/spec-test`, against a `sut/<name>/specs/<NNN>-…` intent contract).
-- **Phase 4 triage loop** — when a failure in the `/spec-test` validate-and-iterate loop turns on
+  (the planning phase of `/automate`, against a `sut/<name>/specs/<NNN>-…` intent contract).
+- **Phase 4 triage loop** — when a failure in the `/automate` validate-and-iterate loop turns on
   timing / scheduling / run-eligibility / SUT-component behaviour.
 - **On-demand** — when a human points you at a failed run of the **regression gate** (`engine/run.py`
   / `make test`, across the environments declared in `manifest.json`'s `env`) or its CI log, and asks

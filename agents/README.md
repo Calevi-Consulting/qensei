@@ -18,7 +18,7 @@ advisory by construction.
 
 ## Entry-point vocabulary
 
-- **Phase-4 loop** — the `/spec-test` validate-and-iterate loop, invoked on a freshly authored
+- **Phase-4 loop** — the `/automate` validate-and-iterate loop, invoked on a freshly authored
   or changed test before/around a fix.
 - **on-demand** — a human points the lens at a failed regression-gate run (`engine/run.py` /
   `make test`) or a CI log and asks the panel to adjudicate.

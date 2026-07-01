@@ -3,7 +3,7 @@
 > Mock JIRA-style ticket for the restful-booker site demo. The `mock-file` ticket provider
 > (see [`ticket/contract.md`](../../../ticket/contract.md)) normalizes this file to
 > `{id, title, description, acceptance_criteria[], status, links[]}`. It is the **entry** to
-> `/spec-test` for the booker domain and maps to
+> `/automate` for the booker domain and maps to
 > [`sut/restful-booker/specs/BOOK-2-longstay-discount.md`](../specs/BOOK-2-longstay-discount.md).
 
 | Field | Value |

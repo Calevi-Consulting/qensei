@@ -1,10 +1,10 @@
 # Report formats
 
-The structures the [`/test-ticket`](../commands/test-ticket.md) and
+The structures the [`/validate`](../commands/validate.md) and
 [`/report-bug`](../commands/report-bug.md) commands produce. Product- and tenant-neutral; rich-text
 fields render as ADF on the Jira provider (plain markdown on the mock provider).
 
-## Test-execution result (test-ticket)
+## Test-execution result (validate)
 
 Written to the ticket (per the profile's `write_results` target) and to the run report:
 
@@ -24,7 +24,7 @@ Evidence: runs/<TICKET-ID>_<ts>.md  (screenshots: runs/.../*)
 ```
 
 Status vocabulary: **PASS / FAIL / SKIPPED / BLOCKED** per check; the roll-up transitions the ticket
-only when every check passed (see test-ticket Phase 5).
+only when every check passed (see validate Phase 5).
 
 ## Bug report (report-bug) — six sections
 

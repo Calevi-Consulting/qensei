@@ -1,7 +1,7 @@
 # Review-panel protocol
 
 The single source of truth for **how the multi-agent lenses run together** on a failing or changed test.
-Referenced by `/spec-test` Phase 4 (the automatic gate — the validate-and-iterate loop) and by the
+Referenced by `/automate` Phase 4 (the automatic gate — the validate-and-iterate loop) and by the
 **on-demand** path (a human points the agent at a failed regression-gate / CI run). It is **not** a
 context-free trigger — the panel runs only when there is a concrete failure/change to review (the
 `review-panel` skill is the model-driven invocation, and always takes one failing/changed test as its
@@ -38,7 +38,7 @@ judgement. When the two disagree, surface both — the deterministic verdict is 
 
 This doc is the **spec**; there are two ways to run it, sharing the same lenses (orchestrator-agnostic):
 - **Model-driven** — the driving agent (or the `review-panel` skill) *follows* this protocol, invoking
-  the `agents/` lenses as subagents. Default for the lightweight auto path; native to `/spec-test`
+  the `agents/` lenses as subagents. Default for the lightweight auto path; native to `/automate`
   Phase 4 inline.
 - **Deterministic** — the mechanical parts run as code/lints at the point of consumption:
   `engine/diagnostics.py` (the `REAL_BUG` / `TEST_BUG` contract check), the **SUT-source freshness
@@ -51,16 +51,16 @@ protocol via subagents, vs a script sequencing the lenses deterministically. Eve
 lenses, the conditional skip, the freshness self-gate, the verdicts, the outcomes — is identical.
 
 ## Two entry points, one protocol
-- **Automatic** — `/spec-test` Phase 4, on each non-green result of the regression gate.
+- **Automatic** — `/automate` Phase 4, on each non-green result of the regression gate.
 - **On-demand** — a human gives the agent a specific failure (a regression-gate run, a CI job, a test) to
   analyse and fix. Same fix→test→fix loop, so the same protocol applies. (R-FIDELITY's pre-commit lint and
-  R-DIAGNOSIS's on-demand trigger already work here regardless of `/spec-test`.)
+  R-DIAGNOSIS's on-demand trigger already work here regardless of `/automate`.)
 
 ## Flow (both orchestrators)
 
 ```
                           A FAILURE / CHANGE TO REVIEW
-            (/spec-test Phase 4 | on-demand inline | streaming layer)
+            (/automate Phase 4 | on-demand inline | streaming layer)
                                         │
                   ┌─────────────────────┴─────────────────────┐
                   ▼                                           ▼
@@ -201,12 +201,12 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
   because a *backend API it calls* misbehaves is a mechanism claim, routed to R-MECHANISM on its merits.)
 
 - **The routing + freshness discipline applies to BOTH entry points, on-demand included.** This invariant
-  is not scoped to `/spec-test`. Whenever a lens runs — automatic (Phase 4) or on-demand (a human points
+  is not scoped to `/automate`. Whenever a lens runs — automatic (Phase 4) or on-demand (a human points
   the agent at a failed regression-gate / CI run) — every claim is routed to the SUT source via the
   SUTConnector (table above) and the fresh source is the only acceptable origin. The freshness check is a
   forcing function at the **point of consumption**, so it fires regardless of which entry point invoked the
   lens. The classic failure mode — the on-demand path consuming a stale/absent clone because the freshness
-  check only fired inside `/spec-test` — is closed here: the lens self-gates wherever it runs.
+  check only fired inside `/automate` — is closed here: the lens self-gates wherever it runs.
 
 - **A "degraded / missing-component" verdict needs a positive "expected-here" citation.** The JUDGE does
   not accept argument-from-absence without a source-of-truth line that the component is expected in this

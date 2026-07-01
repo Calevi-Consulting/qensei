@@ -34,7 +34,7 @@ through one `SUTConnector`.
 
 The framework was **built for, and runs inside, an AI coding assistant — [Claude Code](https://claude.com/claude-code)**.
 The assistant drives the human-in-the-loop legs through **slash commands** (`commands/` —
-`/test-ticket`, `/spec-test`, `/report-bug`) and spawns the advisory **review panel** as **subagents**
+`/validate`, `/automate`, `/report-bug`) and spawns the advisory **review panel** as **subagents**
 (`agents/`), following the `policies/` as governance. The deterministic engine and regression gate
 (`engine/`) are plain Python and run with **no AI in the loop** — the assistant works *around* the gate,
 never *as* it, and the human owns convergence. See the [review-panel protocol](multiagent/review-panel.md).
@@ -84,8 +84,8 @@ flowchart LR
   `mock-shop/` and `restful-booker/` are the two reference sites; a real product is the same shape.
   `make new-pack SUT=sut/<name>` scaffolds a pack into a site; `make regen-index` aggregates every
   site's cards into [delivered-regressions.md](delivered-regressions.md).
-- **`commands/`** — the **Claude Code slash commands** the assistant runs: `/test-ticket` (validate a
-  ticket vs the SUT), `/spec-test` (a validated result → an automated REST/UI pack), `/report-bug`.
+- **`commands/`** — the **Claude Code slash commands** the assistant runs: `/validate` (verify a
+  ticket vs the SUT), `/automate` (a validated result → an automated REST/UI pack), `/report-bug`.
 - **`agents/` + `docs/multiagent/`** — the advisory review panel, run as **Claude Code subagents**.
 - **`tools/tests/`** — engine + gate unit tests (`make test-engine`).
 

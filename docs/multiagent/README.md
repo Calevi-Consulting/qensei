@@ -1,7 +1,7 @@
 # Review panel
 
 An advisory, read-only multi-agent panel that **diagnoses and verifies a failing or
-changed test** — inside the `/spec-test` validate-and-iterate loop (Phase 4) or on-demand
+changed test** — inside the `/automate` validate-and-iterate loop (Phase 4) or on-demand
 when a human points it at a failed regression-gate / CI run.
 
 The panel is **advisory and never gates the merge.** The deterministic regression gate

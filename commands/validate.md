@@ -1,8 +1,8 @@
-# /test-ticket — functional validation of a ticket
+# /validate — functional validation of a ticket
 
 Validates a ticket's acceptance criteria against a live System Under Test and documents the results
 back on the ticket. This is the **manual-validation leg** of the framework: its output (a run report
-with evidence) is the source of truth a [`/spec-test`](spec-test.md) run turns into an automated
+with evidence) is the source of truth a [`/automate`](automate.md) run turns into an automated
 regression.
 
 Product- and tenant-neutral: the ticket comes from the [ticket provider](../ticket/contract.md)
@@ -12,7 +12,7 @@ field is resolved through [`jira.fields.json`](../ticket/providers/jira.fields.j
 ## Invocation
 
 ```
-/test-ticket <TICKET-ID> [--sut <name>] [--env <environment>] [--depth minimal|standard|deep] [--profile <jira-profile>]
+/validate <TICKET-ID> [--sut <name>] [--env <environment>] [--depth minimal|standard|deep] [--profile <jira-profile>]
 ```
 
 - `--sut`: the SUT plugin to validate against (default: the configured one).
@@ -53,7 +53,7 @@ field is resolved through [`jira.fields.json`](../ticket/providers/jira.fields.j
    automation; headed is for live human review.)
 4. **Record PASS / FAIL / SKIPPED / BLOCKED** with specific detail for non-pass, per check.
 5. **Summarize** in the test-execution-result format (see [`docs/report-formats.md`](../docs/report-formats.md)).
-   Note which checks were REST vs UI — `/spec-test` uses that to pick the automated-test surface.
+   Note which checks were REST vs UI — `/automate` uses that to pick the automated-test surface.
 
 ## Phase 4 — Write results to the ticket
 
@@ -71,7 +71,7 @@ approval (or proceed under `HARNESS_MODE=1`); write.
 
 ## Phase 6 — Report
 
-1. **Save the run report** to `runs/<TICKET-ID>_<TIMESTAMP>.md` (the durable evidence a `/spec-test`
+1. **Save the run report** to `runs/<TICKET-ID>_<TIMESTAMP>.md` (the durable evidence a `/automate`
    run will cite).
 2. **Append a learning** to the SUT's `learnings/` if the run produced a reusable pattern (durable,
    not a one-off run record), and publish it to the host's learnings store if configured.

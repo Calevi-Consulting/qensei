@@ -1,8 +1,8 @@
 # Ticket provider contract — "ticket access"
 
 A ticket provider is a small adapter that gives the framework a uniform **ticket** — the
-input to `/spec-test`. It is the second plugin seam in the framework (the first is the
-[SUT contract](../sut/contract.md), "backend access"): the engine, the spec-test entry
+input to `/automate`. It is the second plugin seam in the framework (the first is the
+[SUT contract](../sut/contract.md), "backend access"): the engine, the `/automate` entry
 flow, and the lenses depend only on the *normalized* ticket, never on a specific issue
 tracker. `mock-file` is the reference implementation used by the demo; `jira` is the
 reference real provider, reached through the project's read-only Jira MCP/API.
@@ -42,12 +42,12 @@ framework knows.
 
 ## Providers
 
-Selected per run: `/spec-test --ticket <provider>:<id>` (e.g. `mock-file:SHOP-456`,
+Selected per run: `/automate --ticket <provider>:<id>` (e.g. `mock-file:SHOP-456`,
 `jira:QA-1234`). The provider only ever **reads** — see *Read-only by default* below.
 
 - **`mock-file`** (reference / demo) — reads a local markdown ticket from a site's own
   `sut/<name>/tickets/<id>.md`. Zero dependencies, no network, fully offline. This is what makes
-  the spec-test entry flow runnable per site:
+  the `/automate` entry flow runnable per site:
   [`sut/mock-shop/tickets/SHOP-456.md`](../sut/mock-shop/tickets/SHOP-456.md) normalizes to the
   shape above and maps to
   [`sut/mock-shop/specs/SHOP-456-bulk-discount.md`](../sut/mock-shop/specs/SHOP-456-bulk-discount.md);
@@ -148,7 +148,7 @@ so the demo exercises the same normalization path a real tenant would. See
 
 ## The entry flow (ticket → spec)
 
-The ticket is the **input** to `/spec-test`, not an output:
+The ticket is the **input** to `/automate`, not an output:
 
 1. **Fetch + normalize** — the selected provider returns a normalized ticket.
 2. **Manual validation is the source of truth** — a tester (or the AI manual-QA pass) has
@@ -156,7 +156,7 @@ The ticket is the **input** to `/spec-test`, not an output:
 3. **Human-approved spec** — the normalized `acceptance_criteria` seed a draft
    `sut/<name>/specs/<id>-<short-desc>.md`. The human owns intent and approves the spec; the
    criteria are never silently rewritten (see `policies/methodology.md`, *Ownership*).
-4. **Automate** — `/spec-test` writes the pack/case and runs the regression gate.
+4. **Automate** — `/automate` writes the pack/case and runs the regression gate.
 
 So `mock-file:SHOP-456` → [`sut/mock-shop/specs/SHOP-456-bulk-discount.md`](../sut/mock-shop/specs/SHOP-456-bulk-discount.md)
 → `sut/mock-shop/packs/SHOP-456-discount/` is the full, runnable entry flow in the mock-shop domain.
@@ -176,4 +176,4 @@ safe defaults; do not embed tracker-specific allow/deny tool lists in this repo.
    `ticket/providers/<provider>.fields.json` — map normalized fields to the source's own
    fields/paths/strategies; do not hardcode them.
 3. Keep it read-only; route any outward write through the human-gated path.
-4. Wire it into selection: `/spec-test --ticket <provider>:<id>`.
+4. Wire it into selection: `/automate --ticket <provider>:<id>`.

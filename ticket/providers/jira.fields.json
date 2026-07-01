@@ -1,5 +1,5 @@
 {
-  "_comment": "Per-tenant Jira field mapping. The commands (test-ticket, report-bug) reference NORMALIZED field names only; this file resolves each to a tenant's ACTUAL Jira field id / path / strategy. A different Jira instance has different custom-field ids and a different layout, so swapping tenants = selecting a profile here, with zero command changes. Select via the ticket config (provider: jira, profile: <name>). 'REQUIRES_MAPPING' marks a field a new tenant must fill.",
+  "_comment": "Per-tenant Jira field mapping. The commands (validate, report-bug) reference NORMALIZED field names only; this file resolves each to a tenant's ACTUAL Jira field id / path / strategy. A different Jira instance has different custom-field ids and a different layout, so swapping tenants = selecting a profile here, with zero command changes. Select via the ticket config (provider: jira, profile: <name>). 'REQUIRES_MAPPING' marks a field a new tenant must fill.",
   "active_profile": "default",
   "profiles": {
     "default": {
@@ -19,7 +19,7 @@
         "acceptance_criteria": { "strategy": "description-heading", "heading": "Acceptance Criteria" }
       },
       "write_results": {
-        "_comment": "Where test-ticket writes the execution summary. 'comment' works on any tenant; set a resolution-notes custom field to use that instead.",
+        "_comment": "Where validate writes the execution summary. 'comment' works on any tenant; set a resolution-notes custom field to use that instead.",
         "target": "comment",
         "resolution_notes_field": "REQUIRES_MAPPING"
       },

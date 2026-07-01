@@ -3,7 +3,7 @@ description: Turn a manually-tested ticket into a complete intent spec and an au
 argument-hint: <TICKET-ID | "feature description">
 ---
 
-# /spec-test
+# /automate
 
 Convert a manually-validated feature into permanent regression coverage for the product
 under test. The agent authors and maintains the spec and the regression pack; the human
@@ -129,7 +129,7 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 
 ## Phase 3 — Implement (translate the functional test to a REST **or** UI automated pack)
 
-The validated functional test from `/test-ticket` is translated into a permanent automated test. The
+The validated functional test from `/validate` is translated into a permanent automated test. The
 **surface follows the verification**: criteria validated over the **REST API** become a REST pack;
 criteria validated through the **web UI** become a UI (Playwright) pack. Many tickets yield one of
 each. Pick per criterion, and prefer REST where an API path covers it (faster, less brittle).
@@ -283,7 +283,7 @@ The loop ends when either:
 - **Both REST and UI are first-class automated-test surfaces.** Prefer the REST runtime API (via the
   SUTConnector) where an API path covers the criterion — it is faster and less brittle. Use a UI
   (Playwright `UICase`) pack where the behaviour lives in the front-end, where no API path exists, or
-  for genuine end-to-end coverage. The surface follows what `/test-ticket` actually verified.
+  for genuine end-to-end coverage. The surface follows what `/validate` actually verified.
 - **Never commit secrets;** credentials resolve through the plugin's `manifest.json` `creds`
   (env / Vault), never hardcoded.
 - **Packs must clean up everything they create on shared environments** — `new_user` self-cleans;

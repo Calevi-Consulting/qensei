@@ -26,7 +26,7 @@ bug; friction/missing-feedback/"would be better" → improvement) and ask if amb
 
 Get the fundamentals before proceeding. **Bug:** what is wrong / why it's a problem / when it
 happens / how often. **Improvement:** what should improve / during what action / why it's valuable.
-If found during a `/test-ticket` run, pull context from the session but still confirm with the human.
+If found during a `/validate` run, pull context from the session but still confirm with the human.
 
 ## Phase 2 — Investigate
 
@@ -66,7 +66,7 @@ screenshots manually; link to `--parent` if given.
 
 ## Test-execution integration
 
-Invoked from a `/test-ticket` run: pre-fill Steps from the failing check, Environment from the
+Invoked from a `/validate` run: pre-fill Steps from the failing check, Environment from the
 session, parent = the ticket under validation, and reference the failing check id in the description.
 
 ## Error handling
