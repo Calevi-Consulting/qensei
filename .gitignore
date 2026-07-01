@@ -10,3 +10,6 @@ sut/restful-booker/source/.rooms.json
 # machine-readable gate reports
 report*.xml
 report*.json
+# Claude Code project wiring — generated (opt-in) by scripts/install.sh; source of
+# truth is commands/ + agents/ + policies/ at the repo root
+.claude/

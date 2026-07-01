@@ -48,6 +48,20 @@ advisory by construction.
 - Each lens is read-only (it writes only to its own memory dir), never files a ticket itself,
   and never weakens a spec: if the SUT genuinely cannot satisfy an acceptance criterion, the
   test is correctly red and the bug is real.
+- **Read-only is tool-enforced, not just prose.** Each lens frontmatter grants a minimal
+  `tools: Read, Grep, Glob, Bash` allowlist (Write/Edit are never granted) plus a
+  `disallowedTools: Write, Edit, MultiEdit, NotebookEdit` belt. Verified empirically in a fresh
+  Claude Code session on **both** invocation paths (`claude --agent <lens>` and a `subagent_type`
+  spawn via the Agent tool): the lens comes back with a read-only toolset and Write/Edit absent.
+  Two caveats worth knowing:
+  - The restriction is applied when the agent is loaded **at session start**. Wiring the panel
+    into `.claude/agents` *mid-session* (e.g. the first `make install` run inside a live Claude
+    session) registers the lenses but does NOT apply their tool limits until Claude Code is
+    restarted — a mid-session-discovered lens transiently has the full toolset.
+  - `Bash` stays granted because the lenses need read-only shell (git, `engine/run.py`). A lens
+    could therefore still write via the shell; that residual is bounded by the read-only prompt
+    discipline, not tool-blocked. The tool-level guarantee is against Write/Edit (and, by the
+    `disallowedTools` belt, the notebook/multi-edit variants), not against Bash-driven writes.
 - The deterministic counterparts that *can* gate live in `engine/` — the regression gate
   (`engine/run.py`), the mechanical REAL_BUG-vs-TEST_BUG classifier (`engine/diagnostics.py`), the
   spec-fidelity lint (`engine/fidelity_lint.py`), the citation anti-fabrication gate

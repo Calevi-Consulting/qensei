@@ -8,6 +8,7 @@ description: >-
   ungated xfail, lost coverage); surfaces restructured assertions (reshapes) for the human to confirm —
   never auto-passes a reshape. Advisory; read-only; never weakens the spec.
 tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 model: inherit
 effort: high
 memory: project

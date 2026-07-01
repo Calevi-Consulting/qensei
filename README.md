@@ -71,7 +71,17 @@ make install   # poetry install: pytest, pytest-xdist, ruff, pip-audit (into ./.
 ```
 
 If Poetry is missing, `make install` prints how to get it (`pipx install poetry`, or the official
-installer). It pins the **latest** published versions as the baseline and uses Python 3.14. Then:
+installer). It pins the **latest** published versions as the baseline and uses Python 3.14.
+
+`make install` also **offers (opt-in) to wire the framework into Claude Code** at project scope:
+it symlinks `commands/` and `agents/` into a gitignored `./.claude/` (so `/automate`, `/validate`,
+`/report-bug` and the review-panel subagents are discoverable) and generates `./.claude/CLAUDE.md`
+referencing `policies/` as governance. The repo root stays the single source of truth — edits are
+live; re-run `make install` to refresh. Skip it by answering `N`; enable non-interactively with
+`QENSEI_CLAUDE_WIRING=y`. Per-SUT domain knowledge (`sut/<name>/skills/`) is loaded on demand by the
+commands, not wired globally.
+
+Then:
 
 ```bash
 make pytest    # run the whole suite under pytest + xdist, in parallel  (pytest -n auto)

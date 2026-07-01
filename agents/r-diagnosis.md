@@ -6,6 +6,7 @@ description: >-
   genuine backend-bug and cites evidence (or escalates). The judgment-side complement to the deterministic
   engine/diagnostics.py lens. Read-only; never weakens a spec; never files a ticket itself.
 tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 effort: high
 memory: project
 ---

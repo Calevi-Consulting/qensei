@@ -8,6 +8,7 @@ description: >-
   Read-only and advisory: it raises the floor on fabrication; the human owns convergence and the
   panel never blocks a merge.
 tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 effort: high
 memory: project
 ---

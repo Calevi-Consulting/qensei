@@ -8,6 +8,7 @@ description: >-
   encoded. Advisory; read-only; migration-only. Not part of the failure-triage panel and not used in
   greenfield spec authoring.
 tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 effort: high
 memory: project
 ---

@@ -7,6 +7,7 @@ description: >-
   (read through the SUTConnector) and surfaces every mechanism call for human review. Advisory
   only; read-only; requires the SUT source to be fresh before any citation is trusted.
 tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 effort: high
 memory: project
 ---

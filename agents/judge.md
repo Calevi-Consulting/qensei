@@ -6,6 +6,7 @@ description: >-
   BLOCK / FIX / FLAG / ESCALATE per finding, run the rebuttal protocol, and write the
   decision-grade escalation digest for the human. Advisory only; never gates the regression gate.
 tools: Read, Grep, Glob, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 effort: high
 memory: project
 ---
