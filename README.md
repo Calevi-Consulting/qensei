@@ -172,6 +172,40 @@ ticket/     the tracker-agnostic ticket-provider contract + jira config
 docs/       overview.md (architecture + lineage)
 ```
 
+### Anatomy of a site (SUT)
+
+Every site under `sut/<name>/` has the **same shape**. `restful-booker` is the fuller example
+(it adds `plugin.py` for live auth and a `ui-packs/` lane); `mock-shop` is identical minus those two.
+The tests for a site live *inside the site*, one directory per case:
+
+```
+sut/restful-booker/
+├── manifest.json                    # runtime · envs · creds · where the tests live (tests.packs / tests.ui_packs)
+├── plugin.py                        # (optional) site hooks: REQUIREMENTS · resolve_creds · isolate · sweep
+├── source/                          # the backend under test — read by design.py + diagnostics.py
+│   └── app.py
+│
+├── packs/                           # ◀ REST tests — one dir per case, a RegressionCase in case.py
+│   ├── BOOK-1-create-booking/       #     case.py · README.md   (tags: smoke)
+│   ├── BOOK-2-longstay-discount/    #     case.py · README.md
+│   ├── BOOK-3-no-double-booking/    #     case.py · README.md   (the real 409 rule)
+│   └── BOOK-DUR-room-catalog/       #     case.py · README.md   (existing_data persona)
+│
+├── ui-packs/                        # ◀ UI tests (Playwright) — one dir per case, a UICase in case.py
+│   └── BOOK-UI-1-book-a-room/       #     case.py · README.md   (opt-in browser lane)
+│
+├── specs/                           # intent per case — a case's spec_ref points here
+├── tickets/                         # the site's own tickets (BOOK-2.md, …)
+├── skills/  ·  learnings/           # site knowledge base
+└── examples/                        # worked report + diagnostics samples
+```
+
+The engine discovers **`packs/*/case.py`** (REST) and **`ui-packs/*/case.py`** (UI) for the selected
+SUT only — `discover_cases()` in `engine/runner.py`, with the paths resolved from `manifest.json`
+by `engine/sut.py`. Run one site's tests with `make test SUT=sut/restful-booker` (engine gate) or
+`QAF_SITES=sut/restful-booker poetry run pytest` (pytest bridge). `mock-shop`'s packs are
+`SHOP-123-cart-total/`, `SHOP-456-discount/`, `SHOP-DUR-account-durability/` (no `ui-packs/`).
+
 ## Ownership (from the methodology)
 
 Humans own intent: specs, acceptance criteria, scope, approvals. The framework owns

@@ -89,6 +89,26 @@ flowchart LR
 - **`agents/` + `docs/multiagent/`** — the advisory review panel, run as **Claude Code subagents**.
 - **`tools/tests/`** — engine + gate unit tests (`make test-engine`).
 
+## Why packs (one directory per case)
+
+A **pack** is a self-contained unit — `case.py` (the test) plus an index-card `README.md`, next to
+its `spec` — living in its own `packs/<id>/` (or `ui-packs/<id>/`) directory. Three reasons this
+shape is deliberate:
+
+- **Localized blast radius under AI-assisted, multi-agent editing.** The framework is built to run
+  inside an AI coding assistant (see [Execution model](#execution-model--an-ai-coding-assistant-claude-code)),
+  frequently with several agents — or humans refactoring AI-generated code — editing in parallel.
+  One case per directory keeps each change confined to its own folder, so concurrent edits and
+  refactors seldom touch the same file. A conflict stays contained to a single case instead of
+  rippling through one shared, monolithic test module.
+- **Per-site isolation.** Packs live under `sut/<name>/packs/`, which is what makes a site
+  self-contained: the gate for one site never discovers another's cases (see the
+  [SUT contract](../sut/contract.md)).
+- **Self-documenting and aggregatable.** Each pack carries its index-card `README.md` beside the
+  `case.py`; `make regen-index` rolls every card up into
+  [delivered-regressions.md](delivered-regressions.md) — a catalog of landed regressions with no
+  hand-maintained list.
+
 ## How the pieces compose
 
 | Concern | What provides it |
