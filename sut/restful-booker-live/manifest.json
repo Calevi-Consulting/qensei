@@ -1,0 +1,19 @@
+{
+  "name": "restful-booker-live",
+  "description": "OPT-IN, network-touching example — the counterpart to the offline `restful-booker` mock. It provisions a LOCAL CLONE of the REAL source (mwinteringham's restful-booker-platform, https://github.com/mwinteringham/restful-booker-platform) via `make sync-source`, and points its runtime at the live public demo (https://automationintesting.online). It demonstrates the `source.repo` provisioning seam end-to-end against a real backend. NOT part of the default offline gate or CI matrices (ALL_SITES / the CI matrices list only mock-shop + restful-booker) — run it explicitly, e.g. `QAF_SITES=sut/restful-booker-live`. Note: automated DESIGN/DIAGNOSE over this source needs a source adapter (the upstream is a Java/Spring monorepo, not Python ROUTES/BUSINESS_RULES); here the clone's value is a fresh, citable real source for diagnosis and reading, kept current by `make sync-source` + the freshness gate.",
+  "source": {
+    "path": "source",
+    "repo": "https://github.com/mwinteringham/restful-booker-platform",
+    "depth": 1,
+    "note": "Gitignored clone materialised by `make sync-source SUT=sut/restful-booker-live`. `ref` omitted ⇒ the repo's default branch. The freshness gate then keeps it in sync (local HEAD == origin/HEAD)."
+  },
+  "runtime": {
+    "mode": "remote",
+    "base_url": "https://automationintesting.online",
+    "note": "The real public demo API. Remote-only — this site has no in-process mock (that is what sut/restful-booker is for). No 'app'/'factory' because nothing is booted in-process."
+  },
+  "creds": {
+    "mode": "none",
+    "note": "Override per-run with QAF_CREDS_MODE=provider QAF_USERNAME=admin QAF_PASSWORD=password to exercise the real login where a case needs it."
+  }
+}

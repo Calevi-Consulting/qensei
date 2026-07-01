@@ -7,7 +7,7 @@ TESTBUG_PACK ?= sut/mock-shop/examples/diagnostics/SHOP-789-bad-test
 SERVE_APP    ?= sut/mock-shop/source/app.py
 
 .PHONY: help demo demo-booker design test smoke gate-report diagnose-realbug diagnose-testbug \
-        serve check test-engine fidelity citations freshness secrets new-pack regen-index \
+        serve check test-engine fidelity citations freshness sync-source secrets new-pack regen-index \
         install pytest test-ui ui-watch lint lint-fix cve verify
 
 help: ## list targets
@@ -58,6 +58,9 @@ citations: ## resolve every source:line a lens cited (anti-fabrication)
 
 freshness: ## SUT source-clone freshness (no-op for in_process)
 	python3 -m engine.freshness_gate --sut $(SUT)
+
+sync-source: ## clone/refresh a remote SUT's source from source.repo (no-op for in-repo mocks)
+	python3 -m engine.source_sync --sut $(SUT)
 
 secrets: ## fail if an obvious secret is staged (best-effort, stdlib)
 	@! git grep -nIE '(secret|password|token|api[_-]?key)\s*[:=]\s*["'\''][^"'\'' ]{12,}' -- ':!*.md' ':!Makefile' ':!.pre-commit-config.yaml' \

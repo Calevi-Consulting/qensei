@@ -9,7 +9,8 @@ plugin (a directory under sut/<name>/) declares, in manifest.json:
               - {"mode": "remote", "base_url": "https://..."}   (a real backend)
               - optional "isolate": a path POSTed before each case for a clean state,
                 and "verify_tls": false for self-signed onprem certs
-  * source  : where the backend SOURCE lives (read by design + diagnostics)
+  * source  : where the backend SOURCE lives (read by design + diagnostics). A real SUT may add
+              {"repo", "ref", "depth"} so engine/source_sync.py clones/refreshes it locally.
   * tests   : the plugin's OWN test assets, so each site is self-contained and the gate
               for one site never runs another's: {"packs", "specs", "tickets", "ui_packs"}
               (relative to sut/<name>/; default packs/specs/tickets/ui-packs). run.py /

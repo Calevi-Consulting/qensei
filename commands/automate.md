@@ -73,8 +73,10 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
    depends on the plugin's `runtime.mode` (`manifest.json`):
    - **`in_process`** (the in-repo mock): the source *is* the running app and ships in this repo — it
      is **always fresh**; the gate is a no-op. Proceed.
-   - **`remote`** (a real backend): the source is a checked-out clone. Verify it is current — each
-     clone's local `HEAD` must equal its `origin/<default>` tip:
+   - **`remote`** (a real backend): the source is a checked-out clone. **Materialise/refresh it first**
+     with `make sync-source SUT=$SUT_DIR` — it clones/updates `source.path` from the manifest's
+     `source.repo`@`ref` (`engine/source_sync.py`); a no-op for an in-repo mock. Then verify it is
+     current — each clone's local `HEAD` must equal its `origin/<default>` tip:
      ```bash
      # remote SUT only — SUT_DIR is the plugin dir passed to --sut (e.g. sut/acme)
      SUT_DIR=sut/<name>

@@ -24,7 +24,9 @@ field is resolved through [`jira.fields.json`](../ticket/providers/jira.fields.j
 
 1. **Read policies + domain knowledge** (`policies/`, the SUT's `skills/` + `learnings/`) and **fetch
    the ticket** through the provider, in parallel. Normalize to `{id, title, description,
-   acceptance_criteria[], status, comments[], links[], ...}`.
+   acceptance_criteria[], status, comments[], links[], ...}`. For a `remote` SUT whose source you
+   will read while validating, refresh its local clone first with `make sync-source SUT=sut/<name>`
+   (`engine/source_sync.py`; a no-op for an in-repo mock).
 2. **Read comments** chronologically. Surface: AC/scope changes (show original vs comment AC and ask
    which to validate against), repro clarifications, MR/branch refs, prior results affecting scope.
 3. **Quick Triage** → depth: *minimal* (single AC, narrow change), *deep* (≥4 ACs, multi-area,

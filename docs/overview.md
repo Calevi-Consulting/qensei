@@ -72,7 +72,7 @@ flowchart LR
 
 - **`engine/`** — the core: `sut.py` (backend access), `case.py` (the soft-assert regression unit +
   matchers + personas hooks), `runner.py` (the gate), `run.py` (CLI + false-green guard),
-  `design.py`, `diagnostics.py`, plus `config.py` / `credentials.py` / `masking.py` / `preflight.py` /
+  `design.py`, `diagnostics.py`, `source_sync.py` (SUT source provisioning), plus `config.py` / `credentials.py` / `masking.py` / `preflight.py` /
   `selection.py` / `personas.py` / `report.py` and the deterministic gates `fidelity_lint.py` /
   `citation_gate.py` / `freshness_gate.py`.
 - **`policies/`** — product-neutral governance (spec phases, ownership, test philosophy, security,

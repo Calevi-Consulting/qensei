@@ -12,6 +12,9 @@ implementation; `sut/acme/` would wrap a real product backend the same way.
 |-----|---------|
 | `name` | plugin id |
 | `source.path` | dir holding the backend SOURCE the design + diagnostics layers read (a clone, a generated contract, or — for the mock — the app itself) |
+| `source.repo` | *(optional)* upstream git URL. When set, `make sync-source` (`engine/source_sync.py`) materialises `source.path` as a clone of it — how a SUT points at a real backend's source. Absent ⇒ the source is in-repo (mock/contract). A `source.path` that is a provisioned clone must be gitignored |
+| `source.ref` | *(optional, with `source.repo`)* branch \| tag \| sha to check out (default: the repo's default branch) |
+| `source.depth` | *(optional, with `source.repo`)* shallow clone depth (default `1`; `0` = full clone) |
 | `tests.packs` / `tests.specs` / `tests.tickets` / `tests.ui_packs` | the plugin's OWN test assets (relative to `sut/<name>/`; default `packs`/`specs`/`tickets`/`ui-packs`). This is what makes a site **self-contained** — the gate for one site never discovers another's cases; `run.py` / `design.py` default `--packs` to the SUT's `packs_dir`. `ui_packs` holds the browser-driven `UICase` packs |
 | `ui.path` | where the site serves its **web UI**, relative to the runtime base_url (e.g. `/ui`). Present ⇒ the site has a UI testing surface; the Playwright UI lane (`UICase` packs in `ui_packs`) drives `base_url + ui.path`. Absent ⇒ REST-only |
 | `runtime.mode` | `in_process` (framework boots `source/<app>` via `factory`) or `remote` (`runtime.base_url`). A selected `env` MAY override this (see `env` below) |
@@ -69,6 +72,8 @@ Precedence: CLI flag > env var > `.env` > manifest default.
 1. `mkdir sut/<name>/{source,skills,learnings,packs,specs,tickets}` and write `manifest.json`.
 2. Point `source` at the backend (clone or contract) and expose `ROUTES` + `BUSINESS_RULES`
    (or adapt `engine/design.py` + `engine/diagnostics.py` to your source representation).
+   For a **real** backend, set `source.repo` (+ `ref`), gitignore that `source.path`, and run
+   `make sync-source SUT=sut/<name>` to clone/refresh the source before design/diagnostics read it.
 3. Scaffold a pack INTO the site: `python scripts/new_pack.py --sut sut/<name> <TICKET> <slug>`
    (writes `sut/<name>/packs/<id>/` + `sut/<name>/specs/<id>.md`). Its case calls `sut.get/post`.
 4. Run the site's gate — it discovers only THIS site's packs:
