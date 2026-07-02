@@ -14,7 +14,7 @@ backend.
 
 ## The lenses
 
-Six lenses, all read-only and advisory (`agents/`):
+Seven lenses, all read-only and advisory (`agents/`):
 
 - **JUDGE** — adjudicates the findings, runs the rebuttal protocol, writes the escalation digest.
 - **R-DIAGNOSIS** — diagnoses the failure BEFORE any fix (`TEST_BUG` / `REAL_BUG` / `TRANSIENT` /
@@ -23,6 +23,9 @@ Six lenses, all read-only and advisory (`agents/`):
 - **R-MECHANISM** — verifies SUT-mechanism reasoning (timing / scheduling / run-eligibility / coalescing /
   component-and-deployment state) against the SUT source, and surfaces every mechanism call.
 - **R-FIDELITY** — the spec-fidelity lint: blocks a weakened acceptance criterion, escalates a reshape.
+- **R-COVERAGE** — the coverage-fidelity lens: flags an acceptance criterion the pack never exercises, and a
+  `covers` / `contract_claim` that resolves to no real `ROUTES` / `BUSINESS_RULES` (`COVERED` / `GAP` /
+  `CLAIM-MISMATCH`). Complements R-FIDELITY (weakening-vs-baseline) with coverage-vs-spec-and-source.
 - **R-UPLIFT** — **migration-only**; verifies a legacy test ported into this framework adopted its patterns
   without dropping the behavioural contract. **Not part of the failure-triage sequence below** — it runs
   only in the legacy→framework migration variant, never in greenfield spec authoring or Phase-4 triage.
@@ -148,10 +151,11 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
    `ticket/` abstraction — the JUDGE never opens the ticket itself); surface every SUT-mechanism call.
    **Echo the citation gate's output as proof it ran** (do not merely assert it did).
 
-4. **④ Fix WITH context → R-FIDELITY → re-run.** The generator fixes using the diagnosis, never weakening
-   the spec. **R-FIDELITY** (the pre-commit lint) blocks a weakened criterion and escalates a reshape on
-   commit, regardless of entry point (acknowledge a confirmed reshape with `--allow-reshape`). Re-run the
-   regression gate.
+4. **④ Fix WITH context → R-FIDELITY + R-COVERAGE → re-run.** The generator fixes using the diagnosis, never
+   weakening the spec. **R-FIDELITY** (the pre-commit lint) blocks a weakened criterion and escalates a reshape
+   on commit (acknowledge a confirmed reshape with `--allow-reshape`); **R-COVERAGE** flags any acceptance
+   criterion the pack does not exercise and any `covers` / `contract_claim` that names no real source rule,
+   regardless of entry point. Re-run the regression gate.
 
 - **genuine regression / infrastructure → STOP** (the test is correctly red); a `REAL_BUG` → ticket
   provider (human-gated).
@@ -220,4 +224,4 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
   is not a collision when it is shared on purpose.
 
 See the per-lens docs in `agents/` (`judge`, `r-diagnosis`, `r-evidence`, `r-mechanism`, `r-fidelity`,
-`r-uplift`) for each lens's full contract, and `docs/overview.md` for the architecture and lineage.
+`r-coverage`, `r-uplift`) for each lens's full contract, and `docs/overview.md` for the architecture and lineage.

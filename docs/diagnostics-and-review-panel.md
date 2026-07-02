@@ -85,7 +85,7 @@ sequenceDiagram
   Human->>Panel: run the lenses on the failing/changed test
   Panel->>Gates: fidelity_lint / citation_gate / freshness_gate
   Gates-->>Panel: deterministic findings (block-class)
-  Panel->>Panel: r-diagnosis / r-evidence / r-mechanism / r-fidelity (judgement)
+  Panel->>Panel: r-diagnosis / r-evidence / r-mechanism / r-fidelity / r-coverage (judgement)
   Panel->>Judge: findings
   Judge-->>Human: escalation digest (BLOCK / FIX / FLAG / ESCALATE)
   Note over Human: the human decides — the panel never blocks the merge

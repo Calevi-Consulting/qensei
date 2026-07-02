@@ -20,8 +20,8 @@ constructs, not plain scripts:
   ticket's acceptance criteria against a live SUT), `/automate` (turn a validated result into an
   automated REST/UI pack), and `/report-bug` (file a real defect).
 - **Subagents** (`agents/`) are the advisory **review panel** — read-only diagnostic lenses
-  (`r-diagnosis`, `r-evidence`, `r-mechanism`, `r-fidelity`, `r-uplift`, adjudicated by `judge`) the
-  assistant spawns to classify a failure REAL_BUG vs TEST_BUG and to catch a spec-weakening edit.
+  (`r-diagnosis`, `r-evidence`, `r-mechanism`, `r-fidelity`, `r-coverage`, `r-uplift`, adjudicated by `judge`) the
+  assistant spawns to classify a failure REAL_BUG vs TEST_BUG and to catch a spec-weakening or under-covering edit.
 - **Policies** (`policies/`) are the governance the assistant follows (spec phases, ownership, test
   philosophy, security, release safety).
 

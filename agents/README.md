@@ -39,11 +39,12 @@ advisory by construction.
 | **r-evidence** | Skeptic / anti-fabrication lens — verifies each causal claim and the gate state against the RAW source (the green dot is not evidence); runs the citation-resolution and SUT-source-freshness checks; surfaces cross-test, durable-collision, and env-divergence impact. | Phase-4 loop · on-demand | `false` |
 | **r-mechanism** | SUT-mechanism lens — forces timing / SLA / scheduling / run-eligibility / coalescing / component-state reasoning into the open with exact `sut/<name>/source/<file>:<line>` citations, and surfaces every mechanism call for human review (CITED / UNCITED / MISREAD). | plan-step · Phase-4 loop · on-demand | `false` |
 | **r-fidelity** | Spec-fidelity lens — catches edits that WEAKEN an acceptance criterion to turn a red test green (lowered thresholds, equality→inequality, dropped persona markers, ungated xfail, lost coverage); escalates restructured assertions (reshapes) for human confirmation, never auto-passing them. | Phase-4 loop (post-edit) · pre-commit · on-demand | `false` |
+| **r-coverage** | Coverage-fidelity lens — verifies the pack EXERCISES every acceptance criterion the spec states, and that its `covers` / `contract_claim` resolve to real ROUTES / BUSINESS_RULES in the SUT source (the mapping DESIGN reports over and DIAGNOSE relies on); complements r-fidelity by catching under-coverage and dangling metadata (COVERED / GAP / CLAIM-MISMATCH). | Phase-4 loop (post-edit) · on-demand | `false` |
 | **r-uplift** | Migration-uplift lens — verifies a ported legacy test adopted this framework's patterns (REST-first via the SUTConnector, typed facades, personas, soft-assert cases, self-cleaning) without importing legacy anti-patterns or dropping the behavioural contract the legacy test encoded. | migration-only | `false` |
 
 ## Notes
 
-- **judge** presides; the other five are the lenses it adjudicates. **r-uplift** is the only
+- **judge** presides; the other six are the lenses it adjudicates. **r-uplift** is the only
   lens outside the failure-triage panel — it runs in the migration variant only.
 - Each lens is read-only (it writes only to its own memory dir), never files a ticket itself,
   and never weakens a spec: if the SUT genuinely cannot satisfy an acceptance criterion, the

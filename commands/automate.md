@@ -204,6 +204,9 @@ Triage drives off **two complementary lenses**:
   - **R-FIDELITY** (`agents/r-fidelity.md`) — the pre-commit fidelity lint: blocks an edit that
     **weakens** an acceptance criterion to turn a red test green; escalates restructured assertions
     (reshapes) for the human, never auto-passing them.
+  - **R-COVERAGE** (`agents/r-coverage.md`) — the coverage-fidelity lens: flags an acceptance criterion the
+    pack never **exercises**, and a `covers` / `contract_claim` that resolves to no real `ROUTES` /
+    `BUSINESS_RULES` in the SUT source (the mapping DESIGN reports over and DIAGNOSE relies on).
   - **R-UPLIFT** (`agents/r-uplift.md`) — **migration variant only** (porting a legacy test in); not
     used in greenfield spec authoring.
   - **JUDGE** (`agents/judge.md`) — adjudicates the lenses' findings (BLOCK / FIX / FLAG / ESCALATE),
