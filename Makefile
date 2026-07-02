@@ -7,7 +7,7 @@ TESTBUG_PACK ?= sut/mock-shop/examples/diagnostics/SHOP-789-bad-test
 SERVE_APP    ?= sut/mock-shop/source/app.py
 
 .PHONY: help demo demo-booker design test smoke gate-report diagnose-realbug diagnose-testbug \
-        serve check test-engine fidelity citations freshness sync-source secrets new-pack regen-index \
+        serve check lint-offline test-engine fidelity citations freshness sync-source secrets new-pack regen-index \
         install pytest test-ui ui-watch lint lint-fix cve verify
 
 help: ## list targets
@@ -44,8 +44,15 @@ serve: ## run the SUT's mock backend standalone (prints its port)
 	python3 $(SERVE_APP)
 
 # --- deterministic quality gates (the forcing functions) --------------------
-check: test-engine fidelity secrets ## offline pre-commit ritual (tests + fidelity + secrets)
+check: test-engine fidelity lint-offline secrets ## offline pre-commit ritual (tests + fidelity + lint + secrets)
 	@echo "  check: OK"
+
+lint-offline: ## ruff lint IF the toolchain is present (keeps `check` zero-dependency; CI always enforces it)
+	@if command -v ruff >/dev/null 2>&1; then \
+	  ruff check . && echo "  lint: clean"; \
+	elif command -v poetry >/dev/null 2>&1 && poetry run ruff --version >/dev/null 2>&1; then \
+	  poetry run ruff check . && echo "  lint: clean"; \
+	else echo "  lint: skipped (ruff not installed — run 'make install'/'pre-commit install'; CI enforces it)"; fi
 
 test-engine: ## unit tests for the engine core + gates
 	python3 -m unittest discover -s tools/tests
