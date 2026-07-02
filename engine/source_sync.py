@@ -91,7 +91,8 @@ def sync(sut_dir: str) -> tuple[str, str]:
                          f"to clobber committed/local source (remove it first to provision a clone)")
 
     # (3) Fresh clone (shallow, at ref). Fall back to full clone + checkout for a sha ref.
-    clone = ["clone"] + (["--depth", str(depth)] if depth else []) + (["--branch", ref] if ref else []) + [repo, str(path)]
+    clone = (["clone"] + (["--depth", str(depth)] if depth else [])
+             + (["--branch", ref] if ref else []) + [repo, str(path)])
     r = _git(clone)
     if r.returncode != 0 and ref:
         shutil.rmtree(path, ignore_errors=True)
