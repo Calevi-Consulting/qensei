@@ -10,6 +10,17 @@ Domain-agnostic — it works against any product through a System-Under-Test plu
 > regression, and failure diagnostics — under one product-neutral engine, governed by a reusable set of
 > development policies, with the product under test wired in as a plugin. See [`docs/overview.md`](docs/overview.md).
 
+## New here? Start with the tour
+
+Two newcomer-facing entry points, no framework experience assumed:
+
+- **[The teaching deck](docs/qensei-teaching-deck.pdf)** — a 15-slide guided tour: the problem
+  it solves, the mental model, the `/validate` → `/automate` → `/report-bug` workflow, and the
+  ownership model (humans own intent, the framework owns implementation, the gate owns "green").
+- **[The walkthrough](docs/walkthrough.md)** — the same story narrated on a runnable example
+  (`SHOP-456`): a manually-tested ticket → `/validate` evidence → `/automate` spec + pack →
+  the deterministic gate → REAL_BUG vs TEST_BUG triage.
+
 ## Built to run inside an AI coding assistant (Claude Code)
 
 This framework is **driven by an AI coding assistant** — it was developed for, and is run with,

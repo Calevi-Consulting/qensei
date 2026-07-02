@@ -43,7 +43,10 @@ never *as* it, and the human owns convergence. See the [review-panel protocol](m
 
 | Page | Covers |
 |------|--------|
+| [the teaching deck (PDF)](qensei-teaching-deck.pdf) | the newcomer tour: the problem, the mental model, the workflow, ownership — 15 slides, no experience assumed |
+| [walkthrough.md](walkthrough.md) | the end-to-end journey narrated on a worked example (SHOP-456): ticket → `/validate` → `/automate` → the gate → REAL_BUG/TEST_BUG |
 | [architecture.md](architecture.md) | the component map, the three capabilities, the plugin model, an end-to-end `make demo` |
+| [ticket-testing-and-reporting.md](ticket-testing-and-reporting.md) | the `/validate` and `/report-bug` legs: functional ticket validation, bug reporting, the per-tenant Jira field mapping |
 | [regression-gate.md](regression-gate.md) | the gate lifecycle, exit codes, the false-green guard, the report artifact |
 | [personas-and-durability.md](personas-and-durability.md) | `new_user` vs `existing_data`, find-or-create, keep/ephemeral naming, the no-delete guard, teardown |
 | [remote-backend.md](remote-backend.md) | credentials + auth injection, env selection, the uncommitted config channel, TLS, retry, masking, pagination, plugin hooks |
