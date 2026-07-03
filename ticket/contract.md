@@ -24,6 +24,9 @@ framework knows.
 | `status` | string | a **normalized** workflow status (`open` · `in_progress` · `in_review` · `done`), mapped from the tracker's own status name. |
 | `links` | `[{type, url, title?}]` | related issues, the spec, design docs, MRs/PRs, domain learnings. |
 | `comments` | `[{author, created, body}]` | the ticket's discussion thread, oldest→newest. Read by `/validate`, and (when authoring) by `/automate` — scope refinements, repro clarifications, and edge cases raised in discussion that the description / AC alone miss. Never a licence to silently rewrite the human's AC. |
+| `labels` | `[string]` | the ticket's labels. |
+| `components` | `[string]` | the ticket's components (names). |
+| `issue_type` | string | the tracker's issue type (e.g. `Story`, `Bug`). |
 
 ```jsonc
 {
@@ -68,65 +71,50 @@ per-tenant mapping from `ticket/providers/jira.fields.json` that maps each *norm
 to that tenant's actual Jira field id / path / extraction strategy.
 
 ```jsonc
-// ticket/providers/jira.fields.json  — example for tenant A
+// ticket/providers/jira.fields.json — profile-based; `active_profile` selects one profile.
 {
-  "provider": "jira",
-  "base_url": "${JIRA_BASE_URL}",
-  "auth": {
-    "mode": "mcp",
-    "note": "read-only via the project's Jira MCP/API; or {\"mode\":\"token\",\"token_env\":\"JIRA_TOKEN\"} for a read-only REST token"
-  },
-  "fields": {
-    "id":          "key",
-    "title":       "fields.summary",
-    "description": "fields.description",
-    "status":      "fields.status.name",
-    "links":       "fields.issuelinks"
-  },
-  "acceptance_criteria": {
-    "strategy": "custom-field",      // this tenant stores AC in a custom field
-    "field":    "customfield_10042",
-    "format":   "checklist"           // parse `- [ ] / - [x]` items
-  },
-  "status_map": {
-    "Backlog": "open", "Selected for Development": "open",
-    "In Progress": "in_progress",
-    "In Review": "in_review", "Ready for QA": "in_review",
-    "Done": "done", "Closed": "done"
+  "active_profile": "default",
+  "profiles": {
+    "default": {
+      "cloud_id":    "REQUIRES_MAPPING",
+      "project_key": "REQUIRES_MAPPING",
+      "read": {                                  // each normalized field -> a dotted path into the Jira issue JSON
+        "id":          "key",
+        "title":       "fields.summary",
+        "description": "fields.description",
+        "status":      "fields.status.name",
+        "labels":      "fields.labels",
+        "components":  "fields.components[].name",
+        "issue_type":  "fields.issuetype.name",
+        "links":       "fields.issuelinks",
+        "comments":    "fields.comment.comments",
+        "acceptance_criteria": { "strategy": "description-heading", "heading": "Acceptance Criteria" }
+      },
+      "write_results": { "target": "comment" },  // where /validate writes its summary (human-gated)
+      "bug":        { "summary": {"field": "summary", "type": "text"}, "...": "the report-bug field map" },
+      "transition": { "discover_dynamically": true, "pass_target": ["Ready for Release", "Done"] }
+    }
   }
 }
 ```
 
-The same provider, pointed at a different tenant whose AC lives inline in the description
-under a heading and whose statuses differ, needs only a different config — **no code change**:
+Onboarding a second tenant = **copy the profile block, rename it, and fill its ids** — no code
+change. `jira.fields.json` ships a worked `acme` profile (a custom-field tenant with placeholder
+`customfield_NNNNN` ids) as the copy-me example; select it with `active_profile` or
+`/automate --ticket jira:<id> --profile acme`.
 
-```jsonc
-// tenant B — AC parsed from a description section, different field ids
-{
-  "fields": { "id": "key", "title": "fields.summary",
-              "description": "fields.description", "status": "fields.status.name",
-              "links": "fields.issuelinks" },
-  "acceptance_criteria": {
-    "strategy": "description-section",  // no custom field; pull a heading out of the body
-    "heading":  "Acceptance Criteria",
-    "format":   "checklist"
-  },
-  "status_map": { "To Do": "open", "Doing": "in_progress", "QA": "in_review", "Shipped": "done" }
-}
-```
+Mapping reference (per profile):
 
-Mapping reference:
-
-- **`fields.<normalized>`** — a dotted path into the Jira issue JSON (`fields.summary`,
-  `fields.status.name`). Change the path, not the engine.
-- **`acceptance_criteria.strategy`** — `custom-field` (read `field`), `description-section`
-  (extract the `heading` section from the description), or `whole-description` (the entire
-  body is the AC). `format` chooses the item parser: `checklist` (`- [ ]`/`- [x]`, preserves
-  `checked`), `bullets`, `numbered`, or `lines`.
-- **`status_map`** — maps the tenant's raw workflow status names onto the normalized set.
-  Unmapped values pass through verbatim with a warning so a missing mapping is visible, not
-  silently dropped.
-- **`links`** — `fields.issuelinks` plus remote links are flattened to `{type, url, title?}`.
+- **`read.<normalized>`** — a dotted path into the Jira issue JSON (`fields.summary`,
+  `fields.status.name`, `fields.components[].name`). Change the path, not the engine — this `read`
+  map is what produces the normalized ticket vocabulary above.
+- **`read.acceptance_criteria.strategy`** — `description-heading` (extract the named `heading`
+  section from the description — the default) or `custom-field` (read a dedicated `field`). The
+  `- [ ]` / `- [x]` checklist parser preserves `checked`.
+- **`write_results` / `bug` / `transition`** — where `/validate` writes its summary, the
+  `report-bug` field map, and the pass-transition rules (discovered dynamically, gated on
+  `required_before_transition`). All writes are **human-gated**.
+- **`links`** — `fields.issuelinks` plus remote links flatten to `{type, url, title?}`.
 
 There is intentionally nothing tracker- or company-specific baked into the provider. A new
 Jira tenant is onboarded by writing one `*.fields.json`, never by editing Python.
@@ -145,7 +133,7 @@ The `mock-file` provider parses a local markdown ticket so the demo runs offline
 - the `## Comments` section — each comment a `**<author>** (<created>):` line followed by its body →
   `comments[]`, oldest→newest.
 
-This deliberately mirrors the `jira` provider's `description-section` + `checklist` strategy,
+This deliberately mirrors the `jira` provider's `description-heading` + `checklist` strategy,
 so the demo exercises the same normalization path a real tenant would. See
 [`sut/mock-shop/tickets/SHOP-456.md`](../sut/mock-shop/tickets/SHOP-456.md) for the concrete file.
 
