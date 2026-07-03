@@ -209,6 +209,26 @@ class TestCitationGate(unittest.TestCase):
             self.assertEqual(by["app.py:99"], "FABRICATED")
             self.assertEqual(by["x.py:1"], "UNVERIFIABLE")
 
+    def test_ticket_doc_anchors(self):
+        # Phase B: a sourceless SUT's lenses cite the ticket/doc snapshot (in-repo) instead of
+        # source. Those anchors resolve the same way; a miss is FABRICATED (not UNVERIFIABLE).
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "sut" / "widget" / "tickets").mkdir(parents=True)
+            (root / "sut" / "widget" / "tickets" / "W-1.md").write_text("l1\nl2\nl3\n")
+            (root / "sut" / "widget" / "skills").mkdir(parents=True)
+            (root / "sut" / "widget" / "skills" / "W.md").write_text("a\nb\n")
+            cites = resolve_citations(
+                "cite sut/widget/tickets/W-1.md:2 and sut/widget/tickets/W-1.md:9 and "
+                "sut/widget/skills/W.md:1 and sut/widget/tickets/GONE.md:1",
+                repo_root=str(root),
+            )
+            by = {c.raw.rsplit("/", 1)[-1]: c.status for c in cites}
+            self.assertEqual(by["W-1.md:2"], "OK")           # ticket anchor resolves
+            self.assertEqual(by["W-1.md:9"], "FABRICATED")   # line out of range
+            self.assertEqual(by["W.md:1"], "OK")             # skills anchor resolves
+            self.assertEqual(by["GONE.md:1"], "FABRICATED")  # missing ticket file -> FABRICATED (in-repo)
+
 
 class TestFidelityLint(unittest.TestCase):
     BASE = '''
