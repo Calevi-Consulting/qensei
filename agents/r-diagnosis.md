@@ -57,6 +57,14 @@ routed by the active plugin's `manifest.json`):
 Enforcement is at the point of consumption: the lens that reads the SUT source is the one that gates on its
 freshness — wherever it runs (Phase 4 or on-demand), not "remember to check".
 
+## When the SUT is sourceless
+For a **sourceless** SUT (`SUTConnector.has_source` is False — no `source` declared), the deterministic
+`engine/diagnostics.py` returns `INDETERMINATE` (no `BUSINESS_RULES` oracle) and you have **no SUT source
+to cite**. Reason from the ticket + docs + the plugin's `learnings/` / `skills/`, and treat the ticket as
+the **contract of record**. You cannot mechanically separate a TEST_BUG from a *wrong ticket* — when the
+ticket is the only oracle, return **`UNDOCUMENTED-ESCALATE`** with that reason rather than asserting
+REAL_BUG / TEST_BUG. Never fabricate a source citation.
+
 ## Read before concluding — do NOT guess
 1. **The case + its fixtures** — what it exercises and HOW it parallelises (markers, shard/dist split,
    ordering dependencies, shared fixtures, `existing_data` durables).

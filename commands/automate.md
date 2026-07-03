@@ -7,7 +7,9 @@ argument-hint: <TICKET-ID | "feature description">
 
 Convert a manually-validated feature into permanent regression coverage for the product
 under test. The agent authors and maintains the spec and the regression pack; the human
-owns intent and approval.
+owns intent and approval. The validation may have been done **outside Qensei** (a tester signed the
+ticket off manually) or via `/validate` — either way the ticket's own evidence (description + AC +
+comments + a validated/`done` status) backs the spec; a prior `/validate` run is not required.
 
 The framework is **domain-agnostic**: the product under test is wired in as a plugin under
 `sut/<name>/`, and every access to it — calling its live runtime and reading its source —
@@ -70,7 +72,10 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 4. **SUT-source freshness — MANDATORY GATE, before reading any SUT source.** Design and diagnostics
    read the backend SOURCE through the SUTConnector (`source_module()` / `source_path()`, i.e.
    `sut/<name>/source/`); a stale source means citing an old backend, which is a defect. The check
-   depends on the plugin's `runtime.mode` (`manifest.json`):
+   depends on the plugin's `runtime.mode` (`manifest.json`) — and on whether the SUT has source at all:
+   - **sourceless** (no `source` in the manifest — `SUTConnector.has_source` is False): there is no
+     source to read, so this gate is a **no-op** and DESIGN / DIAGNOSE fall back to the ticket + docs.
+     Skip it and proceed.
    - **`in_process`** (the in-repo mock): the source *is* the running app and ships in this repo — it
      is **always fresh**; the gate is a no-op. Proceed.
    - **`remote`** (a real backend): the source is a checked-out clone. **Materialise/refresh it first**
@@ -91,12 +96,17 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 
 ## Phase 1 — Gather the manual scenario (background)
 
-1. **Resolve the ticket via the `ticket/` provider** (read-only): pull its description and acceptance
-   criteria through the configured field schema. (Mock provider when offline / no live tracker.)
+1. **Resolve the ticket via the `ticket/` provider** (read-only): pull its description, acceptance
+   criteria, **and comments** through the configured field schema. Read the **comments chronologically**
+   and fold scope/AC refinements, repro clarifications, and edge cases raised in the discussion into the
+   scenario — the discussion often carries intent the description / AC alone miss. Never silently rewrite
+   the human's AC from a comment; surface the delta. (Mock provider when offline / no live tracker.)
 2. Optionally run the manual validation as background — the **DESIGN** capability (`engine/design.py`
    reads `ROUTES` + `BUSINESS_RULES` from the SUT source and reports coverage gaps) plus the domain
    context in `sut/<name>/skills/`. Capture the resulting manual steps and findings; that run report
-   becomes the "source of truth" for the spec's scenario section.
+   becomes the "source of truth" for the spec's scenario section. For a **sourceless** SUT there is no
+   backend surface to read — DESIGN reports only what packs cover, so work the scenario from the ticket
+   (description + AC + comments) and the SUT's `skills/` docs, which are the source of truth here.
 3. Separate fact (observed in the ticket / run) from inference. Note open questions.
 4. **Ask persona coverage** (required): should this cover `existing_data` (durability / migration),
    `new_user` (fresh creation), or both? Record it in the spec's *Persona coverage* field and apply
@@ -131,7 +141,9 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
 
 ## Phase 3 — Implement (translate the functional test to a REST **or** UI automated pack)
 
-The validated functional test from `/validate` is translated into a permanent automated test. The
+The validated functional test — from a Qensei `/validate` run, **or** the ticket's own manual-QA evidence
+when the ticket was validated outside Qensei (its description + AC + comments + a validated/`done` status)
+— is translated into a permanent automated test. The
 **surface follows the verification**: criteria validated over the **REST API** become a REST pack;
 criteria validated through the **web UI** become a UI (Playwright) pack. Many tickets yield one of
 each. Pick per criterion, and prefer REST where an API path covers it (faster, less brittle).
@@ -213,6 +225,14 @@ Triage drives off **two complementary lenses**:
     runs the rebuttal protocol, and writes the decision-grade escalation digest. Routes a genuine
     backend regression to a structured bug report for the **human** to file via the ticket provider
     (human-gated; the panel never files it).
+
+  **Sourceless SUT — the source-citing lenses degrade.** When the active SUT has no source
+  (`SUTConnector.has_source` is False), `engine/diagnostics.py` returns `INDETERMINATE` (no
+  `BUSINESS_RULES` oracle) and **R-MECHANISM / R-EVIDENCE / R-COVERAGE** cannot cite a
+  `sut/<name>/source/<file>:<line>`. They **degrade explicitly** — "source absent; advisory, not
+  source-verified" — and reason from the ticket + docs instead of fabricating a citation; the contract of
+  record is the ticket (a wrong ticket cannot be ruled out). R-FIDELITY and the prime invariant are
+  unaffected — they never depended on source.
 
   **The panel is advisory and NEVER gates the merge.** The regression gate (`engine/run.py`) remains
   the source of truth for "green"; the human owns convergence.

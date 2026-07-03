@@ -58,6 +58,11 @@ carry both the mechanical resolution check and the judgement call of whether an 
   specific product's tree. Before citing the source, satisfy the **SUT-source freshness check**: the in-repo
   mock is always fresh; a real remote backend uses the clone-freshness check (a citation against a stale
   clone is worse than none) — the source clone should be provisioned (`make sync-source`) and in sync.
+- **Sourceless SUT** (`SUTConnector.has_source` is False — no `source` declared): there are no `ROUTES` /
+  `BUSINESS_RULES` to resolve `covers` / `contract_claim` against, so you **cannot** emit a
+  `CLAIM-MISMATCH` from source. You can still check AC-**exercise** coverage against the spec (each AC → an
+  assertion). Flag unresolvable metadata as `UNVERIFIED (sourceless)` — surfaced for the human — not as a
+  mismatch, and never fabricate a source line.
 
 ## Your method — per acceptance criterion and per declared metadata key
 Classify each finding as exactly one of:

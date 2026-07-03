@@ -45,6 +45,14 @@ anything — a citation against an old clone is worse than none. The complementa
 (`engine/diagnostics.py`) reads the same source via the connector, so a stale clone would corrupt both;
 the freshness check guards the point of consumption, not "remember to check".
 
+## When the SUT is sourceless — degrade, do not fabricate
+Some SUTs have **no readable source** (`SUTConnector.has_source` is False — the manifest declares no
+`source`; the contract lives in the ticket + docs and the live runtime still backs the gate). Then there
+is **no `sut/<name>/source/<file>:<line>` to cite** — so this lens **degrades explicitly**: state "SUT is
+sourceless — no source to cite; this mechanism claim is advisory, not source-verified," return every
+mechanism call as `UNCITED` with that reason, and surface it for the human. NEVER fabricate a source line
+or treat the ticket as if it were source. (A later phase retargets citations to a ticket/doc snapshot.)
+
 ## When you run
 - **Step 2 (plan)** — review the plan's SUT-mechanism assumptions **before** the test is written
   (the planning phase of `/automate`, against a `sut/<name>/specs/<NNN>-…` intent contract).

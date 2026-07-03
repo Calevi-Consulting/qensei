@@ -51,6 +51,11 @@ The **freshness** of that source depends on the runtime mode in `manifest.json`:
   freshness check is a no-op.
 - `remote` (a real backend): the source is a checked-out clone, so a **clone-freshness check** (local
   HEAD == origin default) must be green before any `sut/<name>/source/...` citation is trusted.
+- **sourceless** (`SUTConnector.has_source` is False — no `source` declared): there is no source to
+  resolve citations against **by design** — not the same as a clone that was merely not checked out.
+  The citation-resolution check is *inapplicable*, not failed: treat a would-be `sut/<name>/source/...`
+  claim as a labelled **MISSING-SOURCE hypothesis** (permanent), never fabrication, and fall back to raw
+  runtime / log / REST state (rule 2) for verification. The contract of record is the ticket — say so.
 
 ## When you run
 

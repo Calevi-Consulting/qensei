@@ -13,6 +13,11 @@ capabilities over a single backend connection** (`engine/sut.py` `SUTConnector`)
 Design and diagnostics need the backend **source**; regression needs the backend **runtime**. Both
 go through one `SUTConnector`, so adding a product means writing a plugin, not touching the core.
 
+A SUT MAY also be **sourceless** (no `source` declared — a live runtime but no readable backend source):
+then DESIGN reports only the packs' `covers` (no backend-surface gaps) and DIAGNOSE returns
+`INDETERMINATE` — the contract of record is the ticket — while REGRESS still runs against the live
+runtime. See [`sut/contract.md`](../sut/contract.md#sourceless-suts).
+
 The framework is **driven by an AI coding assistant ([Claude Code](https://claude.com/claude-code))**:
 the human-in-the-loop legs are Claude Code **slash commands** (`commands/`) and the advisory review panel
 is a set of Claude Code **subagents** (`agents/`). The engine and gate below are plain Python and run
