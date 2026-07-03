@@ -134,6 +134,11 @@ class SUTConnector:
         rt = self.manifest["runtime"]
         mode = self.runtime_mode()
         if mode == "in_process":
+            if not self.has_source:
+                raise ValueError(
+                    f"sourceless SUT {self.name!r} cannot use an in_process runtime — an "
+                    "in_process mock IS its own source; declare runtime.mode 'remote'"
+                )
             mod = self._load_source_module(rt["app"])
             factory = getattr(mod, rt.get("factory", "make_server"))
             self._httpd = factory(**runtime_kwargs)

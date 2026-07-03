@@ -63,7 +63,9 @@ def sync(sut_dir: str) -> tuple[str, str]:
     """
     d = Path(sut_dir).resolve()
     manifest = json.loads((d / "manifest.json").read_text())
-    source = manifest.get("source", {})
+    source = manifest.get("source") or {}
+    if not source or source.get("mode") == "none":
+        return "SKIP", "sourceless SUT — no backend source to sync"
     repo = source.get("repo")
     path = d / source["path"]
 
