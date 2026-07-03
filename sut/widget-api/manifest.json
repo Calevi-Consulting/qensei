@@ -1,0 +1,22 @@
+{
+  "name": "widget-api",
+  "description": "A SOURCELESS demo SUT (spec 001): a small 'widget' REST service whose backend SOURCE Qensei is NOT given (no 'source' key). A live runtime still backs the regression gate; the contract authority is the ticket + skills, not readable source. Demonstrates sourceless mode: design falls back to the ticket, diagnostics returns INDETERMINATE, the source-freshness gate is a no-op. stub_runtime.py is a stand-in for the real remote backend so the demo/CI has a live runtime to hit — Qensei never reads it.",
+  "runtime": {
+    "mode": "remote",
+    "base_url": "http://127.0.0.1:8099",
+    "note": "Remote by necessity — a sourceless SUT cannot be in_process (an in_process mock IS its own source). base_url is a placeholder; the demo test (tools/tests/test_sourceless.py) boots stub_runtime.py on an ephemeral port and passes --base_url. In a real deployment this points at the live service. Without a reachable runtime the gate trips the false-green guard (exit 2), never a false pass."
+  },
+  "tests": {
+    "packs": "packs",
+    "specs": "specs",
+    "tickets": "tickets"
+  },
+  "creds": {
+    "mode": "none",
+    "note": "The demo stub needs no auth. A real sourceless SUT resolves a token here (QAF_TOKEN / provider)."
+  },
+  "knowledge": {
+    "skills": "skills",
+    "learnings": "learnings"
+  }
+}
