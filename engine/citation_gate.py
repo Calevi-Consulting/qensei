@@ -1,15 +1,22 @@
-"""Citation anti-fabrication gate — every source:line a lens cites must resolve.
+"""Citation anti-fabrication gate — every file:line a lens cites must resolve.
 
-A review lens (R-MECHANISM / R-EVIDENCE) grounds a claim in the backend source as
-``sut/<name>/source/<rel>:<line>``. This gate resolves each citation against the real file:
+A review lens (R-MECHANISM / R-EVIDENCE / R-COVERAGE) grounds a claim in a real file:line the
+active SUT plugin exposes. Two anchor kinds, resolved identically:
+
+  * ``sut/<name>/source/<rel>:<line>`` — the backend SOURCE (a source-backed SUT).
+  * ``sut/<name>/{tickets,skills,learnings,specs}/<rel>:<line>`` — the ticket / docs, which are the
+    contract of record for a SOURCELESS SUT (no readable source). This is the "ticket/doc snapshot":
+    the committed in-repo ticket + docs the lens cites instead of source.
+
+This gate resolves each citation against the real file:
 
   * file missing OR line out of range  -> FABRICATED  (exit 1: hard block)
-  * source dir absent (e.g. a remote plugin with no clone) -> UNVERIFIABLE (exit 3)
+  * a ``source/`` dir absent (e.g. a remote plugin with no clone) -> UNVERIFIABLE (exit 3)
   * resolves -> OK
 
-A fabricated citation is treated as a hard failure (the lens invented evidence); an
-unverifiable one is reported distinctly (not the lens's fault — no source to check against)
-via a separate exit code.
+A fabricated citation is a hard failure (the lens invented evidence). Only an absent ``source/``
+clone is UNVERIFIABLE (not the lens's fault — no source to check against); ticket/doc anchors are
+in-repo, so a miss there is FABRICATED like any other.
 """
 from __future__ import annotations
 
@@ -19,8 +26,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-# sut/<name>/source/<rel-path>:<line>
-_CITATION = re.compile(r"sut/([A-Za-z0-9_-]+)/source/([^\s:]+):(\d+)")
+# sut/<name>/<contract-dir>/<rel-path>:<line> — contract-dir is the backend source or, for a
+# sourceless SUT, the ticket/doc snapshot the lens cites instead. rel keeps the contract-dir.
+_CITATION = re.compile(r"sut/([A-Za-z0-9_-]+)/((?:source|tickets|skills|learnings|specs)/[^\s:]+):(\d+)")
 
 
 @dataclass
@@ -38,9 +46,11 @@ def resolve_citations(text: str, repo_root: str = ".") -> list[Citation]:
     out: list[Citation] = []
     for m in _CITATION.finditer(text):
         raw, sut, rel, line = m.group(0), m.group(1), m.group(2), int(m.group(3))
-        source_dir = root / "sut" / sut / "source"
-        f = source_dir / rel
-        if not source_dir.exists():
+        sut_dir = root / "sut" / sut
+        f = sut_dir / rel
+        # A source/ citation whose clone is absent is UNVERIFIABLE (not fabrication); ticket/doc
+        # anchors are committed in-repo, so a miss there is a genuine FABRICATED.
+        if rel.startswith("source/") and not (sut_dir / "source").exists():
             out.append(Citation(raw, sut, rel, line, "UNVERIFIABLE", "no source dir (remote plugin without a clone?)"))
         elif not f.exists():
             out.append(Citation(raw, sut, rel, line, "FABRICATED", "file does not exist"))
@@ -68,7 +78,7 @@ def main(argv=None) -> int:
         if c.status != "OK":
             print(f"  [{c.status}] {c.raw} — {c.detail}")
     if not cites:
-        print("  citation-gate: no source citations found.")
+        print("  citation-gate: no citations found.")
         return 0
     if fabricated:
         print(f"\n  citation-gate: {len(fabricated)} fabricated citation(s) — a lens invented evidence.\n")
