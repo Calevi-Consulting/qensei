@@ -2,7 +2,7 @@
 
 > **Tracking issue**: [Calevi-Consulting/qensei#14](https://github.com/Calevi-Consulting/qensei/issues/14).
 
-## Status: Phase A COMPLETE — Phase B (AC12–AC13) pending
+## Status: COMPLETE
 
 ## Context
 
@@ -130,11 +130,14 @@ Scope (confirmed with the maintainer):
   returns `INDETERMINATE` unconditionally, labeling the ticket as the contract of record (engine unit
   test). It does not resolve `contract_claim` against the ticket — deterministic ticket resolution is out
   of scope for Phase A.
-- [ ] **AC12** — `citation_gate` resolves ticket/doc-anchored citations against the ticket/doc snapshot
-  for a sourceless SUT (and still resolves `source:line` for a source-backed SUT); a fabricated /
-  unresolvable anchor fails the gate (test).
-- [ ] **AC13** — `freshness_gate` validates the ticket/doc snapshot's currency for a sourceless SUT and
-  the source-clone `HEAD` for a source-backed SUT.
+- [x] **AC12** — `citation_gate` resolves ticket/doc-anchored citations
+  (`sut/<name>/{tickets,skills,learnings,specs}/<rel>:<line>`) against the in-repo snapshot for a
+  sourceless SUT (and still resolves `source:line` for a source-backed SUT); a fabricated / out-of-range
+  anchor fails the gate as `FABRICATED` (engine unit test `test_ticket_doc_anchors`).
+- [x] **AC13** — `freshness_gate` treats a sourceless SUT's ticket/doc snapshot (committed in-repo) as
+  always current (`FRESH`), and validates the source-clone `HEAD` for a source-backed SUT (engine test).
+  *(A live-tracker staleness check for a fetched ticket is the AI leg's job — it snapshots to a committed
+  file — and is out of the deterministic gate's scope.)*
 - [x] **AC14** — the `agents/` lens docs (`r-mechanism`, `r-evidence`, `r-coverage`, `r-diagnosis`)
   state their sourceless behavior (cite ticket/doc anchors; degrade explicitly); `r-fidelity` unchanged.
 
@@ -189,13 +192,16 @@ Source-backed SUTs are unchanged in both phases (R0).
 
 ## Executive Summary
 
-Phase A of a **sourceless mode**: a SUT can declare no backend source and still run the regression gate
-against its live runtime, with the ticket + docs as the contract of record. `design` reports only what the
-packs cover, `diagnostics` returns `INDETERMINATE` (never a guessed REAL/TEST verdict), the freshness gate
-is a no-op, and the source-citing review lenses degrade explicitly — all strictly gated on
-`SUTConnector.has_source`, so **source-backed SUTs are behaviorally unchanged** (R0). It also lands the two
-ticket-input gaps (`/automate` reads a ticket's comments; accepts a ticket validated outside Qensei). A
-reference sourceless SUT (`sut/widget-api`, with a stand-in stub) proves it end-to-end in CI. Reviewers
-should look first at `engine/sut.py` (the `has_source` gate), `engine/diagnostics.py` (the `INDETERMINATE`
-branch), and `tools/tests/test_sourceless.py` (the integration proof). Phase B — retargeting the
-citation / anti-fabrication machinery to a ticket/doc snapshot (AC12–AC13) — is deferred.
+A **sourceless mode**: a SUT can declare no backend source and still run the regression gate against its
+live runtime, with the ticket + docs as the contract of record. `design` reports only what the packs
+cover, `diagnostics` returns `INDETERMINATE` (never a guessed REAL/TEST verdict), and the source-citing
+review lenses **retarget** their citations to the **ticket/doc snapshot** — `citation_gate` resolves a
+`sut/<name>/{tickets,skills,…}/<file>:<line>` anchor against the committed in-repo ticket + docs, so the
+anti-fabrication floor holds against the ticket, and `freshness_gate` treats that snapshot as
+always-current. All strictly gated on `SUTConnector.has_source`, so **source-backed SUTs are behaviorally
+unchanged** (R0). It also lands the two ticket-input gaps (`/automate` reads a ticket's comments; accepts a
+ticket validated outside Qensei). A reference sourceless SUT (`sut/widget-api`, with a stand-in stub)
+proves it end-to-end in CI. Reviewers should look first at `engine/sut.py` (the `has_source` gate),
+`engine/diagnostics.py` (`INDETERMINATE`), `engine/citation_gate.py` (the ticket/doc-anchor resolution),
+and the proofs in `tools/tests/test_sourceless.py` + `test_engine.py::TestCitationGate`. Delivered in two
+phases (A: honest degradation; B: citation retarget), both now complete.
