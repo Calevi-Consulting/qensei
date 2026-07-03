@@ -118,7 +118,8 @@ sequenceDiagram
   access AND its tests: `source/`, `skills/`, `learnings/`, `packs/` (landed regressions —
   `case.py` + an index-card `README.md`), `specs/` + `plans/` (intent contracts + rationale),
   `tickets/`, `examples/`, `manifest.json` (+ optional `plugin.py`). `mock-shop/` and
-  `restful-booker/` are the two reference sites; see [the SUT contract](../sut/contract.md).
+  `restful-booker/` are the two full reference sites (`widget-api/` is a minimal **sourceless**
+  fixture); see [the SUT contract](../sut/contract.md).
 - **`commands/`** — the Claude Code slash commands the assistant runs: `/validate`, `/automate`,
   `/report-bug`.
 - **`agents/` + `docs/multiagent/`** — the advisory review panel, run as Claude Code subagents (see

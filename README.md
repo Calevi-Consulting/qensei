@@ -135,7 +135,10 @@ make test SUT=sut/restful-booker   # the hotel-booking site's regressions
 The gate for one site never discovers another's cases: the engine defaults `--packs` to the
 selected SUT's own `packs/` dir. CI fans the gate over every site; all must be green.
 
-## The worked examples (two sites)
+## The worked examples
+
+`sut/mock-shop/` and `sut/restful-booker/` are the two full reference sites; `sut/widget-api/` is a
+minimal **sourceless** fixture (no backend source — see [Sourceless SUTs](sut/contract.md#sourceless-suts)).
 
 - **`sut/mock-shop/`** — a toy shop backend (products / cart / checkout with a 10%-off-at-3-items
   rule). The reference plugin: the same engine runs `SHOP-123` (cart total) and `SHOP-456` (bulk
