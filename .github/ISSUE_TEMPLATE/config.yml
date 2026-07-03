@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & ideas
+    url: https://github.com/Calevi-Consulting/qensei/discussions
+    about: Ask questions, propose designs, or discuss the framework in Discussions.
