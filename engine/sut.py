@@ -61,7 +61,13 @@ class SUTConnector:
         self.dir = Path(sut_dir).resolve()
         self.manifest = json.loads((self.dir / "manifest.json").read_text())
         self.name = self.manifest["name"]
-        self.source_dir = self.dir / self.manifest["source"]["path"]
+        # A SUT MAY be "sourceless": no backend source to read (the "source" key omitted, or
+        # {"mode": "none"}). Then design/diagnostics fall back to the ticket + docs and the
+        # source-freshness gate is a no-op, while the live runtime still backs the regression
+        # gate. Sourceless implies a REMOTE runtime — an in_process mock IS its own source.
+        source_cfg = self.manifest.get("source") or {}
+        self.has_source = bool(source_cfg) and source_cfg.get("mode") != "none"
+        self.source_dir = self.dir / source_cfg["path"] if self.has_source else None
         # Per-SUT test assets: each site owns its packs/specs/tickets so the gate for one
         # site never discovers another's cases. Defaults keep a plugin self-contained.
         tests = self.manifest.get("tests", {})
@@ -252,11 +258,21 @@ class SUTConnector:
     # --- source access (for design + diagnostics) ---------------------------
     def source_module(self):
         """Import the backend source as a module so design/diagnostics can read its
-        declared contract (ROUTES, BUSINESS_RULES, constants)."""
+        declared contract (ROUTES, BUSINESS_RULES, constants). Raises for a sourceless
+        SUT — callers MUST check ``has_source`` first and fall back to the ticket/docs."""
+        self._require_source()
         return self._load_source_module(self.manifest["runtime"]["app"])
 
     def source_path(self):
+        self._require_source()
         return self.source_dir / self.manifest["runtime"]["app"]
+
+    def _require_source(self):
+        if not self.has_source:
+            raise ValueError(
+                f"SUT {self.name!r} is sourceless (no manifest 'source'); design/diagnostics "
+                "must fall back to the ticket/docs — check has_source before reading source"
+            )
 
     def _load_source_module(self, rel):
         return self._import_file(self.source_dir / rel, f"sut_{self.name}_{Path(rel).stem}")
