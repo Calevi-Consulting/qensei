@@ -183,6 +183,13 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
   | which components **exist / should exist** · the deployment model · a concurrency limiter (**topology**) | the SUT SOURCE deployment/topology layer (a separate source tree / manifest / domain skill — NOT the request path, NEVER a mock) → **R-MECHANISM**, **highest-cost** |
   | is this a `REAL_BUG` or a `TEST_BUG` | the deterministic **`engine/diagnostics.py`** (`contract_claim` vs `BUSINESS_RULES` vs runtime) + **R-DIAGNOSIS** for the judgment calls the heuristic cannot make |
 
+  **When the SUT is sourceless** (`SUTConnector.has_source` is False — no `source` declared), there is no
+  `sut/<name>/source/...` to cite: the source-citing lenses (R-MECHANISM / R-EVIDENCE / R-COVERAGE)
+  **degrade explicitly** — a source claim becomes advisory / `UNCITED`-with-reason / a `MISSING-SOURCE`
+  hypothesis, reasoned from the ticket + docs, never fabricated — and `engine/diagnostics.py` returns
+  `INDETERMINATE` (contract of record = the ticket). R-FIDELITY and the never-weaken invariant are
+  unaffected. (A later phase retargets these citations to a ticket/doc snapshot.)
+
   **The citation must RESOLVE, not just name a source.** Freshness proves the source is current; it does
   not prove a cited `file:line` exists. The citation resolution check runs over the findings after the
   lenses and before the JUDGE adjudicates. It separates two "not found" cases: a **MISSING-FILE /

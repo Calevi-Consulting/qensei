@@ -23,6 +23,7 @@ framework knows.
 | `acceptance_criteria` | `[{text, checked}]` | the testable criteria. `checked` reflects whether the criterion was ticked during manual validation; `null` when the source has no checkbox semantics. |
 | `status` | string | a **normalized** workflow status (`open` · `in_progress` · `in_review` · `done`), mapped from the tracker's own status name. |
 | `links` | `[{type, url, title?}]` | related issues, the spec, design docs, MRs/PRs, domain learnings. |
+| `comments` | `[{author, created, body}]` | the ticket's discussion thread, oldest→newest. Read by `/validate`, and (when authoring) by `/automate` — scope refinements, repro clarifications, and edge cases raised in discussion that the description / AC alone miss. Never a licence to silently rewrite the human's AC. |
 
 ```jsonc
 {
@@ -140,7 +141,9 @@ The `mock-file` provider parses a local markdown ticket so the demo runs offline
 - the `## Description` section → `description`;
 - the `## Acceptance Criteria` checklist (`- [ ]` / `- [x]`) → `acceptance_criteria[]`
   with `checked` preserved;
-- the `## Links` markdown links → `links[]`.
+- the `## Links` markdown links → `links[]`;
+- the `## Comments` section — each comment a `**<author>** (<created>):` line followed by its body →
+  `comments[]`, oldest→newest.
 
 This deliberately mirrors the `jira` provider's `description-section` + `checklist` strategy,
 so the demo exercises the same normalization path a real tenant would. See

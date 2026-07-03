@@ -11,7 +11,7 @@ implementation; `sut/acme/` would wrap a real product backend the same way.
 | key | meaning |
 |-----|---------|
 | `name` | plugin id |
-| `source.path` | dir holding the backend SOURCE the design + diagnostics layers read (a clone, a generated contract, or — for the mock — the app itself) |
+| `source.path` | *(optional)* dir holding the backend SOURCE the design + diagnostics layers read (a clone, a generated contract, or — for the mock — the app itself). **Omit `source` entirely (or set `{"source": {"mode": "none"}}`) for a [sourceless SUT](#sourceless-suts)** — one whose backend source Qensei cannot read |
 | `source.repo` | *(optional)* upstream git URL. When set, `make sync-source` (`engine/source_sync.py`) materialises `source.path` as a clone of it — how a SUT points at a real backend's source. Absent ⇒ the source is in-repo (mock/contract). A `source.path` that is a provisioned clone must be gitignored |
 | `source.ref` | *(optional, with `source.repo`)* branch \| tag \| sha to check out (default: the repo's default branch) |
 | `source.depth` | *(optional, with `source.repo`)* shallow clone depth (default `1`; `0` = full clone) |
@@ -37,6 +37,24 @@ as module-level data the connector imports:
 For a real backend these can come from an OpenAPI spec, a parsed clone, or a hand-maintained
 contract file — the connector's `source_module()` / `source_path()` are the only touch points,
 so the representation is a plugin detail.
+
+## Sourceless SUTs
+
+A SUT MAY be **sourceless** — Qensei cannot read its backend source (no OpenAPI/clone is available),
+yet a running instance is reachable. Declare it by **omitting `source`** (or `{"source": {"mode":
+"none"}}`). Then:
+
+- `SUTConnector.has_source` is `False`; `source_module()` / `source_path()` are unavailable.
+- **The live runtime still backs the regression gate** — cases run against `runtime.base_url` exactly
+  as for any remote SUT. A sourceless SUT MUST use `runtime.mode: "remote"` (an `in_process` mock *is*
+  its own source — the connector rejects that combination with a clear error).
+- **`design` and `diagnostics` fall back to the ticket + docs.** Without `ROUTES` / `BUSINESS_RULES`,
+  `design` reports only what the packs cover (no backend-surface gap analysis) and `diagnostics` returns
+  `INDETERMINATE` — the contract of record is the ticket, so REAL_BUG vs TEST_BUG cannot be decided
+  mechanically. The source-freshness gate is a no-op.
+
+The contract authority then lives in the ticket (`ticket/contract.md`) and the SUT's `skills/` docs.
+See `specs/001-sourceless-ticket-driven-mode.md`.
 
 ## Runtime access
 
