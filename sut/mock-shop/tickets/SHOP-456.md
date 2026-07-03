@@ -2,7 +2,7 @@
 
 > Mock JIRA-style ticket for the Qensei demo. The `mock-file` ticket provider
 > (see [`ticket/contract.md`](../../../ticket/contract.md)) normalizes this file to
-> `{id, title, description, acceptance_criteria[], status, links[]}`. It is the **entry** to
+> `{id, title, description, acceptance_criteria[], status, links[], comments[]}`. It is the **entry** to
 > `/automate` for the mock-shop domain and maps to
 > [`sut/mock-shop/specs/SHOP-456-bulk-discount.md`](../specs/SHOP-456-bulk-discount.md).
 
@@ -37,6 +37,13 @@ Now ready to be locked in as a permanent regression test.
 - [x] A cart whose total quantity is 3 or more receives 10% off the subtotal.
 - [x] The threshold is inclusive: exactly 3 items already qualifies (off-by-one guard).
 - [x] The order `total` equals `subtotal` minus the applied `discount`.
+
+## Comments
+
+- **product-owner** (2026-06-28): confirm the threshold counts **quantities**, not distinct products — a
+  cart of 3× one item must qualify, not just 3 different items. This was ambiguous in the first draft.
+- **qa-lead** (2026-06-29): manual pass done — qty 2 full price, qty 3 → 10% off, and the exactly-3
+  boundary qualifies. Ready to automate.
 
 ## Links
 
