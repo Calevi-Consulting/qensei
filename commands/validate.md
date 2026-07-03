@@ -26,7 +26,8 @@ field is resolved through [`jira.fields.json`](../ticket/providers/jira.fields.j
    the ticket** through the provider, in parallel. Normalize to `{id, title, description,
    acceptance_criteria[], status, comments[], links[], ...}`. For a `remote` SUT whose source you
    will read while validating, refresh its local clone first with `make sync-source SUT=sut/<name>`
-   (`engine/source_sync.py`; a no-op for an in-repo mock).
+   (`engine/source_sync.py`; a no-op for an in-repo mock, and for a **sourceless** SUT — no `source/`
+   clone to sync, so validation runs entirely against the live runtime).
 2. **Read comments** chronologically. Surface: AC/scope changes (show original vs comment AC and ask
    which to validate against), repro clarifications, MR/branch refs, prior results affecting scope.
 3. **Quick Triage** → depth: *minimal* (single AC, narrow change), *deep* (≥4 ACs, multi-area,

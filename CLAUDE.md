@@ -18,7 +18,7 @@ three capabilities over a **single backend connection** (the `SUTConnector`):
 
 A SUT may be **sourceless** (no readable backend source, only a live runtime): Design then reports only
 what packs cover and Diagnose returns `INDETERMINATE` — the ticket + docs are the contract of record.
-See `sut/contract.md` (§ Sourceless SUTs) and `specs/001-sourceless-ticket-driven-mode.md`.
+See `sut/contract.md` (§ Sourceless SUTs) and `specs/002-sourceless-ticket-driven-mode.md`.
 
 The product under test is a **plugin** (`sut/<name>/`), so adding a product means writing a plugin,
 never touching `engine/` or `policies/`.
@@ -117,9 +117,11 @@ sut/<name>/
 ```
 
 - **`mock-shop`** is the reference site. **`restful-booker`** is the fuller example (adds `plugin.py`
-  for live auth + a `ui-packs/` lane) and proves the seam is generic — it dropped in with **no change
-  to `engine/` or `policies/`**. `engine/` and `policies/` must stay product-neutral; never hardcode
-  one SUT's endpoints, rules, or skills into them.
+  for live auth + a `ui-packs/` lane). **`widget-api`** is a third, **sourceless** SUT (no `source/` dir;
+  `runtime.mode: remote` required) — it proves the seam handles a plugin whose backend source Qensei
+  cannot read (design falls back to packs' `covers`, diagnose returns `INDETERMINATE`, freshness is a
+  no-op). All dropped in with **no change to `engine/` or `policies/`**, which must stay product-neutral;
+  never hardcode one SUT's endpoints, rules, or skills into them.
 - **`SUTConnector`** (`engine/sut.py`) is the one touch point. `get`/`post`/`delete` → `(status, json)`
   through a single `request()` choke point (merges auth headers, masks credentials before logging,
   idempotency-aware retry/backoff, TLS toggle). `source_module()`/`source_path()` expose the backend

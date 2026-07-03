@@ -1,8 +1,9 @@
 # Jira ticket provider
 
 The reference implementation of the [ticket provider contract](../contract.md). It reads a ticket
-from Jira and writes results, transitions, and bug reports back — through the host project's Jira
-MCP/API. It is **tenant-neutral**: every field is resolved through
+from Jira and writes results, transitions, and bug reports back (all writes are **human-gated** — see
+[Write logic](#write-logic-preserved-from-the-source-workflow-parameterized) below) — through the host
+project's Jira MCP/API. It is **tenant-neutral**: every field is resolved through
 [`jira.fields.json`](jira.fields.json), never hardcoded, so the same provider works on any Jira
 instance by selecting a profile.
 

@@ -95,7 +95,10 @@ sourceless one. This gate resolves each citation against the real file:
 If a plugin's source is a checked-out clone of a real backend (`runtime.mode == remote`), a stale
 clone means a lens could cite code that no longer matches production. The gate compares the clone's
 `HEAD` against `origin/HEAD`: in sync → **FRESH**; dirty/behind/ahead → **STALE** (exit `1`). For an
-`in_process` plugin (the mock — source *is* the app) it is a **FRESH** no-op.
+`in_process` plugin (the mock — source *is* the app) it is a **FRESH** no-op. For a **sourceless** SUT
+(no `source` declared) it is likewise a **FRESH** no-op — checked *before* the remote-clone path, so a
+sourceless-but-remote SUT never triggers the `HEAD` comparison; its ticket/doc snapshot is committed
+in-repo, always current.
 
 ## Where each gate fires
 

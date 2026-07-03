@@ -151,7 +151,10 @@ so the demo exercises the same normalization path a real tenant would. See
 
 ## The entry flow (ticket → spec)
 
-The ticket is the **input** to `/automate`, not an output:
+The ticket is the **input** to `/automate`, not an output. For a **sourceless** SUT (no readable backend
+source) the normalized ticket + docs are also the **contract of record** — the authority design and
+diagnose fall back to (see `sut/contract.md` § Sourceless SUTs and
+`specs/002-sourceless-ticket-driven-mode.md`):
 
 1. **Fetch + normalize** — the selected provider returns a normalized ticket.
 2. **Manual validation is the source of truth** — a tester (or the AI manual-QA pass) has

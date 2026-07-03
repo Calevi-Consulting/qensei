@@ -1,4 +1,4 @@
-# Spec 001 — Sourceless, ticket-driven mode with optional documentation
+# Spec 002 — Sourceless, ticket-driven mode with optional documentation
 
 > **Tracking issue**: [Calevi-Consulting/qensei#14](https://github.com/Calevi-Consulting/qensei/issues/14).
 

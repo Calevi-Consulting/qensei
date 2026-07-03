@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Sourceless SUT mode** (`specs/001-sourceless-ticket-driven-mode.md`): a SUT can declare no backend
+- **Sourceless SUT mode** (`specs/002-sourceless-ticket-driven-mode.md`): a SUT can declare no backend
   source (omit `source`, or `{"source": {"mode": "none"}}`) and still run the regression gate against its
   live runtime. `design` falls back to the ticket + docs, `diagnostics` returns `INDETERMINATE` (contract
   of record = the ticket), the source-freshness gate is a no-op, and the source-citing review lenses cite

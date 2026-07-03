@@ -119,7 +119,9 @@ make diagnose-testbug   # a test asserting the wrong rate         → TEST_BUG
 - **Ownership stays split**: humans own intent (the spec), the framework owns implementation
   (the pack), the deterministic gate owns "green".
 - **The manual pass is not throwaway work** — `/validate`'s evidence is precisely what
-  `/automate` converts into permanent coverage.
+  `/automate` converts into permanent coverage. (`/automate` can also start from a ticket validated
+  *outside* Qensei — it reads the ticket's `comments[]` for the manual evidence — so a prior `/validate`
+  run is the common path, not a hard requirement.)
 
 ## Try it
 

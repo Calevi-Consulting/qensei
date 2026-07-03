@@ -81,7 +81,9 @@ doing:
 The distinction the gate cares about is *cheating* a red gate (bad) versus *fixing*
 a wrong spec or lens with justification (good). When a case fails and you are not
 sure which it is, `engine/diagnostics.py` and the review panel help classify it — a
-`TEST_BUG` means fix the test; a `REAL_BUG` means keep the test red and file a bug.
+`TEST_BUG` means fix the test; a `REAL_BUG` means keep the test red and file a bug (for a **sourceless**
+SUT with no readable source, the classifier returns `INDETERMINATE` and a human adjudicates against the
+ticket).
 
 ## Where to start
 
