@@ -7,6 +7,7 @@ is exactly why the framework has backend source access.
 
 Heuristic (deliberately simple but principled):
   * the case throws / network error  -> ENV_OR_TRANSIENT
+  * the SUT is sourceless (no BUSINESS_RULES oracle) -> INDETERMINATE (contract of record = ticket)
   * the case has no contract_claim    -> INDETERMINATE (needs a human)
   * claim disagrees with the source contract -> TEST_BUG
   * claim agrees with the source contract but the running system violated it -> REAL_BUG
@@ -55,9 +56,28 @@ def diagnose(case_cls, sut):
         }
 
     claim = getattr(case, "contract_claim", None)
-    rules = _rules_index(sut)
     failures = [f.detail for f in expect.failures]
 
+    # Sourceless SUT: no BUSINESS_RULES oracle. REAL_BUG vs TEST_BUG cannot be decided
+    # mechanically — the ticket is BOTH the test's origin and the contract of record, so an
+    # independent judgment is impossible. The deterministic lens stays honest and defers; it
+    # never guesses a REAL/TEST verdict here. (Phase B retargets citations to the ticket/docs.)
+    if not sut.has_source:
+        return {
+            "verdict": "INDETERMINATE",
+            "case": case.id,
+            "failures": failures,
+            "contract_claim": claim,
+            "contract_of_record": "ticket",
+            "why": (
+                "the SUT is sourceless — there is no backend contract (BUSINESS_RULES) to compare "
+                "the claim against, so REAL_BUG vs TEST_BUG cannot be decided mechanically. The "
+                "contract of record is the ticket/docs; the review panel and the human must "
+                "adjudicate (a wrong ticket cannot be ruled out here)."
+            ),
+        }
+
+    rules = _rules_index(sut)
     if not claim or claim.get("rule") not in rules:
         return {
             "verdict": "INDETERMINATE",

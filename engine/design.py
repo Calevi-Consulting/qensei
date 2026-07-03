@@ -15,10 +15,6 @@ from engine.ui import discover_ui_cases
 
 
 def coverage(sut, packs_dir):
-    src = sut.source_module()
-    routes = [f"{m} {p}" for m, p, _ in getattr(src, "ROUTES", [])]
-    rules = [r["id"] for r in getattr(src, "BUSINESS_RULES", [])]
-
     covered = set()
     for case_cls in runner.discover_cases(packs_dir):
         covered.update(getattr(case_cls, "covers", []))
@@ -26,9 +22,26 @@ def coverage(sut, packs_dir):
     for case_cls in discover_ui_cases(str(sut.ui_packs_dir)):
         covered.update(getattr(case_cls, "covers", []))
 
+    # Sourceless SUT: there is no backend source to read, so the declared surface is unknown
+    # here — it is defined by the ticket + docs. Report what the packs cover; never invent
+    # phantom "gaps" (or a misleading "no gaps") against a surface we cannot see.
+    if not sut.has_source:
+        return {
+            "has_source": False,
+            "routes": [],
+            "rules": [],
+            "covered": sorted(covered),
+            "route_gaps": [],
+            "rule_gaps": [],
+        }
+
+    src = sut.source_module()
+    routes = [f"{m} {p}" for m, p, _ in getattr(src, "ROUTES", [])]
+    rules = [r["id"] for r in getattr(src, "BUSINESS_RULES", [])]
     route_gaps = [r for r in routes if r not in covered]
     rule_gaps = [r for r in rules if r not in covered]
     return {
+        "has_source": True,
         "routes": routes,
         "rules": rules,
         "covered": sorted(covered),
@@ -39,6 +52,14 @@ def coverage(sut, packs_dir):
 
 def print_design_report(sut, packs_dir):
     c = coverage(sut, packs_dir)
+    if not c.get("has_source", True):
+        print(f"\n  DESIGN report — '{sut.name}' is SOURCELESS (no backend source to read)\n")
+        print("  the backend surface is defined by the ticket + docs, not read from source, so")
+        print("  coverage-gap analysis against the backend surface is unavailable in this mode.")
+        print("  covered by existing packs: " + (", ".join(c["covered"]) or "(none)"))
+        print("\n  to design cases here, work from the ticket's acceptance criteria + product docs")
+        print("  (sut/<name>/skills/); DESIGN cannot enumerate endpoints/rules it cannot read.\n")
+        return c
     print(f"\n  DESIGN report — backend surface of '{sut.name}' (read from {sut.source_path()})\n")
     print(f"  endpoints ({len(c['routes'])}): " + ", ".join(c["routes"]))
     print(f"  business rules ({len(c['rules'])}): " + (", ".join(c["rules"]) or "(none)"))
