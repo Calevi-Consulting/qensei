@@ -1,0 +1,15 @@
+# Code owners for Qensei.
+#
+# When branch protection has "Require review from Code Owners" enabled, a PR that
+# touches an owned path needs an approving review from the listed owner(s) before
+# it can merge. This file only assigns owners — the enforcement lives in the
+# branch-protection / ruleset settings for `main`.
+
+# Default owner for everything in the repo.
+*           @mhereu
+
+# The deterministic engine and product-neutral governance are load-bearing and
+# must never carry per-SUT specifics — guard them explicitly.
+/engine/    @mhereu
+/policies/  @mhereu
+/.github/   @mhereu
