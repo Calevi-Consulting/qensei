@@ -86,7 +86,8 @@ flowchart LR
   access AND its tests: `source/` (backend), `skills/` + `learnings/` (manual-QA context), `packs/`
   (landed regressions: `case.py` + index-card `README.md`), `specs/` + `plans/` (intent contracts +
   implementation rationale), `tickets/`, `examples/`, and `manifest.json` (+ optional `plugin.py`).
-  `mock-shop/` and `restful-booker/` are the two reference sites; a real product is the same shape.
+  `mock-shop/` and `restful-booker/` are the two full reference sites (`widget-api/` is a minimal
+  **sourceless** fixture); a real product is the same shape.
   `make new-pack SUT=sut/<name>` scaffolds a pack into a site; `make regen-index` aggregates every
   site's cards into [delivered-regressions.md](delivered-regressions.md).
 - **`commands/`** — the **Claude Code slash commands** the assistant runs: `/validate` (verify a

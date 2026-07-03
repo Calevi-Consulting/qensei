@@ -75,9 +75,10 @@ Scope (confirmed with the maintainer):
   mode, not the only one; `sut/contract.md` documents the sourceless declaration and the optional-docs
   model.
 - **R12** — **Sourceless Phase-4 triage.** *(Phase A)* The deterministic `engine/diagnostics.py` lens,
-  lacking `BUSINESS_RULES`, resolves the case's `contract_claim` against the **ticket-declared rule** when
-  the claim references one, and otherwise returns `INDETERMINATE` (never a `REAL_BUG` / `TEST_BUG` inferred
-  off an absent oracle). *(Phase A)* The source-citing lenses (`r-mechanism`, `r-evidence`, `r-coverage`)
+  lacking `BUSINESS_RULES`, returns `INDETERMINATE` for any sourceless failure — never a `REAL_BUG` /
+  `TEST_BUG` inferred off an absent oracle. (Deterministically resolving the claim against a ticket-declared
+  rule is the AI `r-diagnosis` leg / Phase B, not the engine.) *(Phase A)* The source-citing lenses
+  (`r-mechanism`, `r-evidence`, `r-coverage`)
   **degrade explicitly** — they announce "source absent; finding advisory, not source-verified" and emit no
   `source:line`. *(Phase B)* Those lenses instead **retarget** their citations to a **ticket/doc anchor**
   (ticket AC / comment id / doc section). `r-diagnosis` reads ticket + docs + skills + spec in place of the
@@ -102,14 +103,18 @@ Scope (confirmed with the maintainer):
 - [x] **AC2** — **[integration-boundary]** `make test SUT=<sourceless>` runs cases against the **real
   runtime** and reports PASS/FAIL/SKIP with correct exit codes; empty / all-skipped / unreachable still
   trips the false-green guard (exit 2).
-- [x] **AC3** — the source-freshness gate is a no-op for a sourceless SUT and still enforced for a
-  source-backed SUT (engine unit test covers both).
+- [x] **AC3** — the source-freshness gate is a no-op for a sourceless SUT (engine test asserts `FRESH`).
+  The source-backed enforcement is a guarded early-return **before** the sourceless check, so this branch
+  leaves it behaviorally unchanged. *(The git-clone STALE path is reachable only for a remote source-backed
+  SUT; there is no such in-repo fixture, so it is not re-tested here.)*
 - [x] **AC4** — `python3 -m engine.design --sut <sourceless>` states the surface origin (ticket + docs,
   not source), reports only what the packs cover, and does not crash or report a misleading "fully
   covered". (Deriving candidate cases from the ticket's ACs is the AI-driven `/automate` leg, which reads
   the ticket; the deterministic `design.py` points the user there — it does not parse tickets itself.)
-- [x] **AC5** — a seeded failure on a sourceless SUT is diagnosed against the ticket-declared contract,
-  with output explicitly labeling the ticket as the contract of record.
+- [x] **AC5** — a seeded failure on a sourceless SUT diagnoses as `INDETERMINATE`, explicitly labeling the
+  ticket as the contract of record; the deterministic lens never emits `REAL_BUG` / `TEST_BUG` (no
+  independent oracle). It does not resolve the claim against the ticket — that is the AI `r-diagnosis` leg /
+  Phase B.
 - [x] **AC6** — documentation is **optional / best-effort**: `commands/automate.md` (R8) proceeds with the
   ticket alone when docs are absent and uses them for precision when present. (Docs are an AI-leg input —
   the SUT's `skills/` — not consumed by the deterministic engine, so there is no engine test for their
@@ -121,9 +126,10 @@ Scope (confirmed with the maintainer):
 - [x] **AC9** — a sourceless SUT fixture runs green in `qa-gate` (CI). *(Wired into the `checks` job; green locally, CI confirms on the PR.)*
 - [x] **AC10** — docs updated (README / overview / CLAUDE.md / `sut/contract.md`) for the sourceless +
   optional-docs model; CHANGELOG Unreleased entry; existing gates stay green.
-- [x] **AC11** — in sourceless mode, `engine/diagnostics.py` never emits `REAL_BUG` / `TEST_BUG` off an
-  absent `BUSINESS_RULES`: it resolves `contract_claim` against the ticket-declared rule or returns
-  `INDETERMINATE` (engine unit test).
+- [x] **AC11** — in sourceless mode, `engine/diagnostics.py` never emits `REAL_BUG` / `TEST_BUG`: it
+  returns `INDETERMINATE` unconditionally, labeling the ticket as the contract of record (engine unit
+  test). It does not resolve `contract_claim` against the ticket — deterministic ticket resolution is out
+  of scope for Phase A.
 - [ ] **AC12** — `citation_gate` resolves ticket/doc-anchored citations against the ticket/doc snapshot
   for a sourceless SUT (and still resolves `source:line` for a source-backed SUT); a fabricated /
   unresolvable anchor fails the gate (test).

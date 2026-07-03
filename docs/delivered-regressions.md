@@ -54,3 +54,11 @@ Browser-driven (`UICase`) regression: drives the booking **form** in a real brow
 
 [`sut/restful-booker/ui-packs/BOOK-UI-1-book-a-room/`](../sut/restful-booker/ui-packs/BOOK-UI-1-book-a-room/README.md)
 
+## Site: `widget-api`
+
+### WIDGET-1 — a created widget starts active
+
+Sourceless-SUT demo pack. Creates a widget via `POST /widgets` and asserts it comes back `active`, then re-reads it. Persona `new_user` (the stub runtime is ephemeral, so nothing durable is left behind).
+
+[`sut/widget-api/packs/WIDGET-1-create-widget/`](../sut/widget-api/packs/WIDGET-1-create-widget/README.md)
+
