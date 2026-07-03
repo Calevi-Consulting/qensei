@@ -128,8 +128,10 @@ which is why "backend access" is the framework's central abstraction.
 
 ## Status & next
 
-v0 runs the three capabilities end-to-end against **two** sites — `mock-shop` and `restful-booker` —
-with the full gate machinery (auth/env seams, pre-flight, personas/durability, selection lanes, the
-deterministic gates, CI fanned over both sites). The second site validated that the SUT seam is really
-generic: it dropped in with no change to `engine/` or `policies/`. Open next steps: the manual-validation
-leg, the ticket→spec handoff, and a real authenticated backend behind the booker's `live`-env path.
+v0 runs the three capabilities end-to-end against **three** sites — `mock-shop` and `restful-booker`
+(source-backed) and the **sourceless** `widget-api` — with the full gate machinery (auth/env seams,
+pre-flight, personas/durability, selection lanes, the deterministic gates; CI fans over the source-backed
+sites and the sourceless fixture runs in the `checks` job). The added sites validated that the SUT seam is
+really generic: they dropped in with no change to `engine/` or `policies/`, the no-source case included.
+The manual-validation (`/validate`) and ticket→spec (`/automate`) legs have shipped; the main open step is
+a real authenticated backend behind the booker's `live`-env path.

@@ -151,9 +151,14 @@ minimal **sourceless** fixture (no backend source — see [Sourceless SUTs](sut/
   for the same diagnosable REAL_BUG/TEST_BUG seam. Ships a `live` env (the real API under `/api`)
   that points the same plugin at the public site to exercise the remote + cookie/token-login seam
   (`QAF_ENV=live`). `make demo-booker` runs its full offline walkthrough.
+- **`sut/widget-api/`** — a minimal **sourceless** SUT: no readable backend source, so `design` reports
+  only what the packs cover and `diagnose` returns `INDETERMINATE` (the ticket is the contract of record).
+  Its `stub_runtime.py` stands in for the live remote backend Qensei never reads; it must run
+  `runtime.mode: remote`.
 
-That a *second*, differently-shaped site drops in with **no change to `engine/` or `policies/`**
-is what proves the SUT seam is genuinely generic.
+That two more, differently-shaped sites — a fuller real-mock (`restful-booker`) and a **no-source** plugin
+(`widget-api`) — drop in with **no change to `engine/` or `policies/`** is what proves the SUT seam is
+genuinely generic, the sourceless case included.
 
 ## Two testing approaches: REST and UI
 
@@ -195,6 +200,8 @@ sut/        the SITES under test — one self-contained plugin dir each + contra
                                tickets/ · examples/ · manifest.json
               restful-booker/  the same shape (+ plugin.py · ui-packs/ for the Playwright
                                UI tests) for automationintesting.online
+              widget-api/      a SOURCELESS SUT — no source/; stub_runtime.py stands in for
+                               the live remote backend Qensei never reads
 ticket/     the tracker-agnostic ticket-provider contract + jira config
             (a site's own tickets live under sut/<name>/tickets/)
 docs/       overview.md (architecture + lineage)
@@ -242,10 +249,11 @@ implementation: plans, packs, the engine. See [`policies/methodology.md`](polici
 ## Status
 
 v0 — runnable mock demo. The engine, the three capabilities, and the SUT-plugin seam are real
-and exercised end-to-end against **two** sites: `mock-shop` and `restful-booker`. The second
-site validates that the seam is genuinely generic (it dropped in with no change to `engine/` or
-`policies/`). Next: the manual-validation + ticket→spec handoff legs, and a real authenticated
-backend behind the `live`-env path the booker plugin demonstrates.
+and exercised end-to-end against **three** sites: `mock-shop` and `restful-booker` (source-backed)
+and the **sourceless** `widget-api`. The added sites validate that the seam is genuinely generic —
+they dropped in with no change to `engine/` or `policies/`, the no-source case included. The
+manual-validation (`/validate`) and ticket→spec (`/automate`) legs have shipped; next is a real
+authenticated backend behind the `live`-env path the booker plugin demonstrates.
 
 ## License
 

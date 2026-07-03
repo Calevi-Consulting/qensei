@@ -52,10 +52,18 @@ For the in-repo mock the source is in the repo and always present; a real remote
 data-durability claims. A claim sourced from priors, a test mock/fixture, or memory is **not** from
 the SUT source.
 
+**Sourceless SUT.** When the active SUT has no source (`SUTConnector.has_source` is False), there is no
+`sut/<name>/source/`: claims **retarget** to the in-repo **ticket/doc snapshot**, so a ticket anchor
+(`sut/<name>/{tickets,skills,learnings,specs}/<file>:<line>`, resolved by `citation_gate`) is "grounded in
+the stated contract" — **CITED**, not UNCITED (a fabricated / out-of-range anchor still does-not-clear).
+The SUT-source freshness gate is a no-op (the snapshot is in-repo), and `engine/diagnostics.py` returns
+`INDETERMINATE` (contract of record = the ticket), so R-DIAGNOSIS carries the REAL/TEST call.
+
 ## Decide per finding
 - **BLOCK** (hard) — only the non-negotiables: a literal weakening (R-FIDELITY `WEAKENING`), a leaked
   secret, a **stale SUT source** (a failed SUT-source freshness check — for the in-repo mock the
-  source is always fresh; a real remote backend uses a clone-freshness check), an unverified "green"
+  source is always fresh; a real remote backend uses a clone-freshness check; a **sourceless** SUT has no
+  source, so this is a no-op), an unverified "green"
   claimed on the regression gate. These stop the change.
 - **FIX** (rebuttable with evidence) — design objections (R-MECHANISM / R-EVIDENCE). The generator
   answers FIX, REBUT (citing a gate/CI run id, a SUT-source line, or a log), or CONCEDE-ESCALATE. A

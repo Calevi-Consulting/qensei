@@ -20,7 +20,9 @@ flowchart TD
   pre -- yes --> PF[/PRECONDITION_FAILED<br/>a real verdict — adjudicate/]
   pre -- no --> err{raised an exception?}
   err -- yes --> ENV[/ENV_OR_TRANSIENT<br/>infra, not a contract verdict/]
-  err -- no --> claim{contract_claim resolvable<br/>in BUSINESS_RULES?}
+  err -- no --> src{sut.has_source?}
+  src -- no --> INDsl[/INDETERMINATE<br/>sourceless — contract of record = ticket/]
+  src -- yes --> claim{contract_claim resolvable<br/>in BUSINESS_RULES?}
   claim -- no --> IND[/INDETERMINATE<br/>human adjudicates/]
   claim -- yes --> rate{claimed rate ==<br/>contract rate?}
   rate -- no --> TB[/TEST_BUG<br/>test asserts the wrong value —<br/>fix the test, do NOT weaken the spec/]
@@ -57,9 +59,10 @@ block a merge** — the human owns convergence; the panel *raises the floor*.
 | Lens | Role | Deterministic counterpart it complements |
 |------|------|------------------------------------------|
 | **r-diagnosis** | classify TEST_BUG / REAL_BUG / TRANSIENT / escalate, before any fix | `engine/diagnostics.py` |
-| **r-evidence** | anti-fabrication; verify each claim against raw source; the green dot is not evidence | `engine/citation_gate.py` |
-| **r-mechanism** | force timing/scheduling/state reasoning into the open with `source:line` citations | `engine/freshness_gate.py` |
+| **r-evidence** | anti-fabrication; verify each claim against raw source (or the ticket/doc snapshot for a sourceless SUT); the green dot is not evidence | `engine/citation_gate.py` |
+| **r-mechanism** | force timing/scheduling/state reasoning into the open with `source:line` (or ticket/doc-anchor) citations | `engine/freshness_gate.py` |
 | **r-fidelity** | catch an edit that weakens an acceptance criterion to go green | `engine/fidelity_lint.py` |
+| **r-coverage** | verify the pack exercises every AC and its `covers`/`contract_claim` resolve to real source (else `UNVERIFIED (sourceless)`) | — (coverage-vs-spec) |
 | **r-uplift** | (migration only) verify a ported legacy test adopted framework patterns | — |
 | **judge** | adjudicate the lenses' findings; write the escalation digest | — |
 

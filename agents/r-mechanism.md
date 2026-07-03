@@ -58,7 +58,7 @@ contract," not independently source-verified — surface it for the human.
 
 ## When you run
 - **Step 2 (plan)** — review the plan's SUT-mechanism assumptions **before** the test is written
-  (the planning phase of `/automate`, against a `sut/<name>/specs/<NNN>-…` intent contract).
+  (the planning phase of `/automate`, against a `sut/<name>/specs/<TICKET>-…` intent contract).
 - **Phase 4 triage loop** — when a failure in the `/automate` validate-and-iterate loop turns on
   timing / scheduling / run-eligibility / SUT-component behaviour.
 - **On-demand** — when a human points you at a failed run of the **regression gate** (`engine/run.py`
@@ -105,7 +105,7 @@ it.
 - **Advisory only — you never silently gate.** You FLAG and SURFACE; the panel never blocks a merge and
   the human owns convergence. Your agreement means "the reasoning is now visible and SUT-source-cited,"
   NOT "verified".
-- **Never weaken the spec.** If the SUT genuinely cannot satisfy a `sut/<name>/specs/<NNN>-…` acceptance
+- **Never weaken the spec.** If the SUT genuinely cannot satisfy a `sut/<name>/specs/<TICKET>-…` acceptance
   criterion, the correct outcome is a red test and a real bug — never a softened expectation to make a
   test pass. You surface the mechanism; you do not propose relaxing the intent contract.
 - **No citation, no conclusion.** Require the SUT-source line. For any topology / deployment-model

@@ -54,7 +54,7 @@ yet a running instance is reachable. Declare it by **omitting `source`** (or `{"
   mechanically. The source-freshness gate is a no-op.
 
 The contract authority then lives in the ticket (`ticket/contract.md`) and the SUT's `skills/` docs.
-See `specs/001-sourceless-ticket-driven-mode.md`.
+See `specs/002-sourceless-ticket-driven-mode.md`.
 
 ## Runtime access
 
@@ -92,11 +92,15 @@ Precedence: CLI flag > env var > `.env` > manifest default.
    (or adapt `engine/design.py` + `engine/diagnostics.py` to your source representation).
    For a **real** backend, set `source.repo` (+ `ref`), gitignore that `source.path`, and run
    `make sync-source SUT=sut/<name>` to clone/refresh the source before design/diagnostics read it.
+   For a **sourceless** SUT, omit `source` from both the `mkdir` and the manifest, set
+   `runtime.mode: "remote"`, and skip this step — design falls back to the ticket + docs and diagnose
+   returns `INDETERMINATE` (see § Sourceless SUTs above; `sut/widget-api/` is the worked example).
 3. Scaffold a pack INTO the site: `python scripts/new_pack.py --sut sut/<name> <TICKET> <slug>`
    (writes `sut/<name>/packs/<id>/` + `sut/<name>/specs/<id>.md`). Its case calls `sut.get/post`.
 4. Run the site's gate — it discovers only THIS site's packs:
    `python -m engine.run --sut sut/<name>` (or `make test SUT=sut/<name>`). CI validates every
    site, and a single chosen site on demand (see `.github/workflows/` / `.gitlab-ci.yml`).
 
-`sut/mock-shop/` (in_process mock) and `sut/restful-booker/` (in_process mock + a `live` remote
-env, a `plugin.py`, the cookie-login provider) are the two worked examples to copy.
+`sut/mock-shop/` (in_process mock), `sut/restful-booker/` (in_process mock + a `live` remote env, a
+`plugin.py`, the cookie-login provider), and `sut/widget-api/` (a **sourceless** remote SUT — no
+`source`; the ticket + `skills/` are the contract of record) are the worked examples to copy.

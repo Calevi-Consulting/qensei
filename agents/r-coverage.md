@@ -94,14 +94,16 @@ Classify each finding as exactly one of:
 
 ## Your output — the verdict / digest you return
 A short digest the JUDGE and the human consume. Per finding, emit:
-- the **verdict** (`CLAIM-MISMATCH` / `GAP`), the **pack + case id**, and the **spec AC** (quoted) or the
+- the **verdict** (`CLAIM-MISMATCH` / `GAP` / `UNVERIFIED (sourceless)`), the **pack + case id**, and the **spec AC** (quoted) or the
   **metadata key** (`covers` / `contract_claim` / `spec_ref`) at fault;
 - for a `CLAIM-MISMATCH`, the **SUT-source citation** (`sut/<name>/source/<file>:<line>` via the
   `SUTConnector`) showing the `ROUTES` / `BUSINESS_RULES` the declared value should have matched;
 - for a `GAP`, the AC that is unexercised and **what assertion would cover it**.
 
 End with a one-line roll-up: any `CLAIM-MISMATCH` → recommend reject; any `GAP` → coverage incomplete,
-human-confirmation required; otherwise → spec fully covered, metadata resolves.
+human-confirmation required; any `UNVERIFIED (sourceless)` → metadata cannot be resolved against source
+(the SUT is sourceless), surfaced for the human, not a block; otherwise → spec fully covered, metadata
+resolves.
 
 ## Discipline
 - **Never weaken the spec.** Coverage is measured against the spec as written; if the SUT genuinely cannot
