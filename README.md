@@ -47,6 +47,10 @@ All three need access to the backend under test — its **source** (to design ca
 diagnose failures) and its **runtime** (to execute cases). That shared dependency is the
 spine; see the [SUT contract](sut/contract.md).
 
+A SUT can also be **sourceless** — no readable backend source, only a live runtime: then Design
+reports what the packs cover and Diagnose returns `INDETERMINATE`, with the ticket + docs as the
+contract of record (see [Sourceless SUTs](sut/contract.md#sourceless-suts)).
+
 | Capability | What it does | Try it |
 |-----------|--------------|--------|
 | **Design** | reads the backend surface (endpoints + business rules) and reports coverage gaps + candidate cases | `make design` |

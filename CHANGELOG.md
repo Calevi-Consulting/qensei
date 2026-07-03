@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Sourceless SUT mode** (`specs/001-sourceless-ticket-driven-mode.md`): a SUT can declare no backend
+  source (omit `source`, or `{"source": {"mode": "none"}}`) and still run the regression gate against its
+  live runtime. `design` falls back to the ticket + docs, `diagnostics` returns `INDETERMINATE` (contract
+  of record = the ticket), the source-freshness gate is a no-op, and the source-citing review lenses
+  degrade explicitly. Source-backed SUTs are unchanged. Reference SUT: `sut/widget-api`.
+- **Ticket comments as an input.** The normalized ticket gains `comments[]`; `/automate` reads the
+  discussion (scope refinements, edge cases) and accepts a ticket validated **outside** Qensei — no prior
+  `/validate` run required.
+
 ## [0.1.0] - 2026-07-03
 
 Initial public release.

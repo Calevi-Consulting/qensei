@@ -84,7 +84,9 @@ resolves each citation against the real file:
 - file missing **or** line out of range → **FABRICATED** (exit `1`, hard block — a lens invented
   evidence);
 - the source dir is absent (e.g. a remote plugin with no clone) → **UNVERIFIABLE** (exit `3`, reported
-  distinctly — not the lens's fault);
+  distinctly — not the lens's fault). A **sourceless** SUT (no `source` declared) is the permanent form of
+  this: citation resolution is *inapplicable* by design, not a fabrication — the ticket/docs are the
+  contract of record;
 - otherwise → OK.
 
 ## Source freshness (`engine/freshness_gate.py`)

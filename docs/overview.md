@@ -28,7 +28,9 @@ flowchart TB
 ```
 
 Design and diagnostics need the backend **source**; regression needs the backend **runtime**. Both go
-through one `SUTConnector`.
+through one `SUTConnector`. A **sourceless** SUT has only the runtime — Design then reports only what the
+packs cover and Diagnose returns `INDETERMINATE` (the ticket is the contract of record); see
+[`sut/contract.md`](../sut/contract.md#sourceless-suts).
 
 ## Execution model — an AI coding assistant (Claude Code)
 

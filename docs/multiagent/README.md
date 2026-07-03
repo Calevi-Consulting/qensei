@@ -41,7 +41,8 @@ and compares the case's `contract_claim` to the runtime response —
 
 - claim disagrees with the contract → `TEST_BUG` (fix the test; never weaken the spec);
 - claim agrees but the running system violated it → `REAL_BUG` (keep the test red, file a bug);
-- the case threw → `ENV_OR_TRANSIENT`; no resolvable claim → `INDETERMINATE`.
+- the case threw → `ENV_OR_TRANSIENT`; no resolvable claim → `INDETERMINATE`; a **sourceless** SUT
+  (no `BUSINESS_RULES` to read) → `INDETERMINATE`, with the ticket as the contract of record.
 
 Because it has no judgement, it can hard-gate as a lint. The advisory lenses **complement**
 it for the calls the heuristic cannot make — an `INDETERMINATE` case, an undocumented flow,

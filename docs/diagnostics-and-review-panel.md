@@ -2,9 +2,10 @@
 
 When a case fails, the central question is: **TEST_BUG** (the test is wrong — fix it, never weaken the
 spec) or **REAL_BUG** (the system regressed — keep the test red, file a bug)? Answering it requires
-reading the backend **contract**, which is exactly why the framework has source access. Two layers
-cooperate: a deterministic classifier (`engine/diagnostics.py`) and the advisory review panel
-(`agents/`).
+reading the backend **contract**, which is exactly why the framework has source access. (When the SUT is
+**sourceless** — no readable source — there is no contract to read: the classifier returns `INDETERMINATE`
+and the ticket is the contract of record.) Two layers cooperate: a deterministic classifier
+(`engine/diagnostics.py`) and the advisory review panel (`agents/`).
 
 ## The deterministic classifier (`engine/diagnostics.py`)
 

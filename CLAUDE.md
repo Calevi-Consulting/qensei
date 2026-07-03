@@ -16,6 +16,10 @@ three capabilities over a **single backend connection** (the `SUTConnector`):
 - **Regress** — run regression packs against the live backend → the deterministic merge gate
 - **Diagnose** — classify a failure `REAL_BUG` vs `TEST_BUG` by reading the backend contract
 
+A SUT may be **sourceless** (no readable backend source, only a live runtime): Design then reports only
+what packs cover and Diagnose returns `INDETERMINATE` — the ticket + docs are the contract of record.
+See `sut/contract.md` (§ Sourceless SUTs) and `specs/001-sourceless-ticket-driven-mode.md`.
+
 The product under test is a **plugin** (`sut/<name>/`), so adding a product means writing a plugin,
 never touching `engine/` or `policies/`.
 
