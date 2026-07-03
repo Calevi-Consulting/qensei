@@ -1,0 +1,50 @@
+name: New SUT plugin
+description: Propose (or volunteer to add) a new product under test as a sut/<name>/ plugin.
+labels: ["enhancement", "good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Adding a product means writing a plugin under `sut/<name>/` — **without
+        touching `engine/` or `policies/`**. This is the recommended first
+        contribution. See `sut/contract.md` for the manifest keys and hooks, and
+        `sut/mock-shop/` as the reference site.
+  - type: input
+    id: name
+    attributes:
+      label: Proposed SUT name
+      placeholder: sut/my-service
+    validations:
+      required: true
+  - type: textarea
+    id: backend
+    attributes:
+      label: What is the backend under test?
+      description: A short description and a link if it is a public API/site.
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime mode
+      description: Does it run an in-process mock, or connect to a remote target?
+      options:
+        - in_process (bundled mock backend)
+        - remote (live target)
+        - not sure yet
+    validations:
+      required: true
+  - type: textarea
+    id: cases
+    attributes:
+      label: First regression cases
+      description: Which behaviors would the initial packs cover?
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Scope check
+      options:
+        - label: This adds only files under sut/<name>/ and does not modify engine/ or policies/.
+          required: true

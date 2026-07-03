@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose an improvement to the framework core (engine, commands, agents, policies).
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for changes to the product-neutral core. To add a new product
+        under test, use the **"New SUT plugin"** template instead — that path
+        never touches the core.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the need or the gap, not just the proposed solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: How might this work? Note any impact on the deterministic gate.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

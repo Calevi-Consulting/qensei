@@ -1,0 +1,47 @@
+name: Bug report
+description: Report a defect in the framework (engine, commands, policies) or a SUT plugin.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill in what you can — a failing
+        regression pack or a minimal reproduction is the most useful thing you
+        can include.
+  - type: input
+    id: affected-sut
+    attributes:
+      label: Affected SUT (if any)
+      description: The plugin under test, if the bug is site-specific.
+      placeholder: sut/mock-shop
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you observe, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands (e.g. `make test SUT=...`) and any relevant config.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Output of `git rev-parse --short HEAD` or the release tag.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
