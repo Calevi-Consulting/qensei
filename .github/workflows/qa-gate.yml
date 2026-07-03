@@ -64,7 +64,7 @@ jobs:
       - name: CVE scan (pip-audit)
         run: make cve
       - name: framework unit + integration tests
-        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py --junitxml=report-unit.xml
+        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py tools/tests/test_sourceless.py --junitxml=report-unit.xml
       - name: spec-fidelity lint (no weakened acceptance criteria)
         run: python3 -m engine.fidelity_lint --base "origin/${{ github.event.repository.default_branch }}"
       - name: secrets scan
