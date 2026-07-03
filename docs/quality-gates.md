@@ -78,15 +78,16 @@ sequenceDiagram
 
 ## Citation anti-fabrication (`engine/citation_gate.py`)
 
-A review lens grounds a claim in the backend source as `sut/<name>/source/<rel>:<line>`. This gate
-resolves each citation against the real file:
+A review lens grounds a claim in a real `file:line` — `sut/<name>/source/<rel>:<line>` for a source-backed
+SUT, or `sut/<name>/{tickets,skills,learnings,specs}/<rel>:<line>` (the ticket/doc snapshot) for a
+sourceless one. This gate resolves each citation against the real file:
 
 - file missing **or** line out of range → **FABRICATED** (exit `1`, hard block — a lens invented
   evidence);
-- the source dir is absent (e.g. a remote plugin with no clone) → **UNVERIFIABLE** (exit `3`, reported
-  distinctly — not the lens's fault). A **sourceless** SUT (no `source` declared) is the permanent form of
-  this: citation resolution is *inapplicable* by design, not a fabrication — the ticket/docs are the
-  contract of record;
+- a `source/` dir is absent (e.g. a remote plugin with no clone) → **UNVERIFIABLE** (exit `3`, reported
+  distinctly — not the lens's fault). A **sourceless** SUT (no `source` declared) instead cites the
+  ticket/doc snapshot, which IS in-repo — so its anchors resolve (or **FABRICATE** on a miss), and only a
+  genuinely absent `source/` clone stays UNVERIFIABLE;
 - otherwise → OK.
 
 ## Source freshness (`engine/freshness_gate.py`)

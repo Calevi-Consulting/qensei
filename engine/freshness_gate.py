@@ -5,7 +5,7 @@ If that source is a checked-out clone of a real backend (``runtime.mode == remot
 stale or dirty clone means a lens could cite code that no longer matches production. This
 gate checks the clone is in sync with its origin default branch before its source is trusted.
 
-  * sourceless plugin (no ``source`` declared)      -> FRESH (no-op, nothing to check)
+  * sourceless plugin (no ``source`` declared)      -> FRESH (its ticket/doc snapshot is in-repo)
   * in_process plugin (the mock: source IS the app) -> FRESH (no-op, nothing to sync)
   * remote plugin whose source dir is a git clone   -> compare local HEAD vs origin/HEAD
         clean & in sync -> FRESH ; ahead/behind/dirty/detached -> STALE (exit 1)
@@ -32,7 +32,10 @@ def check_freshness(sut_dir: str) -> tuple[str, str]:
     manifest = json.loads((d / "manifest.json").read_text())
     source = manifest.get("source") or {}
     if not source or source.get("mode") == "none":
-        return "FRESH", "sourceless SUT — no backend source to check"
+        # Phase B: for a sourceless SUT the ticket/docs are the contract of record. Their
+        # snapshot is the committed in-repo ticket + docs, so it is always current (a live-tracker
+        # staleness check is the AI leg's job — it snapshots a fetched ticket to a committed file).
+        return "FRESH", "sourceless SUT — the ticket/doc snapshot is in-repo, always current"
     source_dir = d / source["path"]
     mode = manifest.get("runtime", {}).get("mode")
 
