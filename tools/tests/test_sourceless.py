@@ -83,9 +83,10 @@ class SourcelessMode(unittest.TestCase):
         self.assertEqual(d.get("contract_of_record"), "ticket")
 
     def test_freshness_skips_sourceless(self):
-        # AC3: the source-freshness gate is a no-op (FRESH) for a sourceless SUT.
-        status, _ = freshness_gate.check_freshness(str(ROOT / WIDGET_SUT))
+        # AC3 / AC13: freshness is FRESH for a sourceless SUT — its ticket/doc snapshot is in-repo.
+        status, detail = freshness_gate.check_freshness(str(ROOT / WIDGET_SUT))
         self.assertEqual(status, "FRESH")
+        self.assertIn("snapshot", detail)
 
 
 if __name__ == "__main__":

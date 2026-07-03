@@ -185,10 +185,11 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
 
   **When the SUT is sourceless** (`SUTConnector.has_source` is False — no `source` declared), there is no
   `sut/<name>/source/...` to cite: the source-citing lenses (R-MECHANISM / R-EVIDENCE / R-COVERAGE)
-  **degrade explicitly** — a source claim becomes advisory / `UNCITED`-with-reason / a `MISSING-SOURCE`
-  hypothesis, reasoned from the ticket + docs, never fabricated — and `engine/diagnostics.py` returns
-  `INDETERMINATE` (contract of record = the ticket). R-FIDELITY and the never-weaken invariant are
-  unaffected. (A later phase retargets these citations to a ticket/doc snapshot.)
+  **retarget** their citations to the **ticket/doc snapshot** — a `sut/<name>/{tickets,skills,learnings,
+  specs}/<file>:<line>` anchor that `citation_gate` resolves against the committed in-repo ticket + docs
+  (so a fabricated anchor still fails). `engine/diagnostics.py` still returns `INDETERMINATE` (contract of
+  record = the ticket; a resolved ticket citation is "grounded in the stated contract", not independently
+  source-verified). R-FIDELITY and the never-weaken invariant are unaffected.
 
   **The citation must RESOLVE, not just name a source.** Freshness proves the source is current; it does
   not prove a cited `file:line` exists. The citation resolution check runs over the findings after the

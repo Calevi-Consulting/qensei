@@ -51,11 +51,13 @@ The **freshness** of that source depends on the runtime mode in `manifest.json`:
   freshness check is a no-op.
 - `remote` (a real backend): the source is a checked-out clone, so a **clone-freshness check** (local
   HEAD == origin default) must be green before any `sut/<name>/source/...` citation is trusted.
-- **sourceless** (`SUTConnector.has_source` is False — no `source` declared): there is no source to
-  resolve citations against **by design** — not the same as a clone that was merely not checked out.
-  The citation-resolution check is *inapplicable*, not failed: treat a would-be `sut/<name>/source/...`
-  claim as a labelled **MISSING-SOURCE hypothesis** (permanent), never fabrication, and fall back to raw
-  runtime / log / REST state (rule 2) for verification. The contract of record is the ticket — say so.
+- **sourceless** (`SUTConnector.has_source` is False — no `source` declared): there is no source to cite,
+  but the ticket + docs are the contract of record and ARE resolvable. The citation-resolution check now
+  resolves `sut/<name>/{tickets,skills,learnings,specs}/<file>:<line>` anchors against the in-repo
+  ticket/doc snapshot, so a source claim **retargets** to the ticket/doc line that grounds it and a
+  fabricated / out-of-range ticket anchor still fails (FABRICATED) — exactly like a bad source line. Only
+  an absent `source/` clone stays UNVERIFIABLE. The ticket is both origin and authority, so a resolved
+  ticket citation is "grounded in the stated contract", not independently source-verified — say so.
 
 ## When you run
 

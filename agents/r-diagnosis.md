@@ -59,11 +59,12 @@ freshness — wherever it runs (Phase 4 or on-demand), not "remember to check".
 
 ## When the SUT is sourceless
 For a **sourceless** SUT (`SUTConnector.has_source` is False — no `source` declared), the deterministic
-`engine/diagnostics.py` returns `INDETERMINATE` (no `BUSINESS_RULES` oracle) and you have **no SUT source
-to cite**. Reason from the ticket + docs + the plugin's `learnings/` / `skills/`, and treat the ticket as
-the **contract of record**. You cannot mechanically separate a TEST_BUG from a *wrong ticket* — when the
-ticket is the only oracle, return **`UNDOCUMENTED-ESCALATE`** with that reason rather than asserting
-REAL_BUG / TEST_BUG. Never fabricate a source citation.
+`engine/diagnostics.py` still returns `INDETERMINATE` (no `BUSINESS_RULES` oracle). You reason from the
+ticket + docs + the plugin's `learnings/` / `skills/`, treat the ticket as the **contract of record**, and
+you **cite the ticket/doc line** — `sut/<name>/tickets/<T>.md:<line>` (or `skills/`) — which `citation_gate`
+resolves against the in-repo snapshot (a fabricated anchor still fails). You still cannot mechanically
+separate a TEST_BUG from a *wrong ticket*: when the ticket is the only oracle, prefer
+**`UNDOCUMENTED-ESCALATE`** over asserting REAL_BUG / TEST_BUG. Never fabricate a citation.
 
 ## Read before concluding — do NOT guess
 1. **The case + its fixtures** — what it exercises and HOW it parallelises (markers, shard/dist split,

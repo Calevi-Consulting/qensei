@@ -226,13 +226,13 @@ Triage drives off **two complementary lenses**:
     backend regression to a structured bug report for the **human** to file via the ticket provider
     (human-gated; the panel never files it).
 
-  **Sourceless SUT — the source-citing lenses degrade.** When the active SUT has no source
-  (`SUTConnector.has_source` is False), `engine/diagnostics.py` returns `INDETERMINATE` (no
-  `BUSINESS_RULES` oracle) and **R-MECHANISM / R-EVIDENCE / R-COVERAGE** cannot cite a
-  `sut/<name>/source/<file>:<line>`. They **degrade explicitly** — "source absent; advisory, not
-  source-verified" — and reason from the ticket + docs instead of fabricating a citation; the contract of
-  record is the ticket (a wrong ticket cannot be ruled out). R-FIDELITY and the prime invariant are
-  unaffected — they never depended on source.
+  **Sourceless SUT — the source-citing lenses retarget to the ticket/docs.** When the active SUT has no
+  source (`SUTConnector.has_source` is False), `engine/diagnostics.py` returns `INDETERMINATE` (no
+  `BUSINESS_RULES` oracle), and **R-MECHANISM / R-EVIDENCE / R-COVERAGE** cite the **ticket/doc snapshot**
+  instead of source — a `sut/<name>/tickets/<T>.md:<line>` (or `skills/`) anchor that `citation_gate`
+  resolves in-repo, so fabrication still fails. The contract of record is the ticket (a wrong ticket cannot
+  be ruled out — a resolved ticket citation is "grounded in the stated contract", not independently
+  source-verified). R-FIDELITY and the prime invariant are unaffected — they never depended on source.
 
   **The panel is advisory and NEVER gates the merge.** The regression gate (`engine/run.py`) remains
   the source of truth for "green"; the human owns convergence.
