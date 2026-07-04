@@ -102,8 +102,8 @@ verify: lint cve pytest fidelity secrets ## full local CI: lint + CVE + pytest +
 	@echo "  verify: OK"
 
 # --- authoring tooling ------------------------------------------------------
-new-pack: ## scaffold a pack: make new-pack TICKET=SHOP-9 SLUG=widget-restock
-	python3 scripts/new_pack.py $(TICKET) $(SLUG)
+new-pack: ## scaffold a pack: make new-pack SUT=sut/mock-shop TICKET=SHOP-9 SLUG=widget-restock
+	python3 scripts/new_pack.py --sut $(SUT) $(TICKET) $(SLUG)
 
 regen-index: ## aggregate pack index cards into docs/delivered-regressions.md
 	python3 scripts/regen_index.py
