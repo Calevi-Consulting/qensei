@@ -6,7 +6,7 @@ capabilities over a single backend connection** (`engine/sut.py` `SUTConnector`)
 
 | Capability | Module | What it does |
 |-----------|--------|--------------|
-| **DESIGN** | `engine/design.py` | reads the backend source (`ROUTES` + `BUSINESS_RULES`) and the packs' `covers`, reports coverage gaps |
+| **DESIGN** | `engine/design.py` | reads the backend source (`ROUTES` + `BUSINESS_RULES`) and the packs' `covers`, reports coverage gaps ([design-coverage.md](design-coverage.md)) |
 | **REGRESS** | `engine/run.py` + `engine/runner.py` | runs the packs against the live backend — the merge gate |
 | **DIAGNOSE** | `engine/diagnostics.py` + `engine/diagnose.py` | on a failure, classifies REAL_BUG vs TEST_BUG by reading the backend contract |
 

@@ -53,7 +53,7 @@ contract of record (see [Sourceless SUTs](sut/contract.md#sourceless-suts)).
 
 | Capability | What it does | Try it |
 |-----------|--------------|--------|
-| **Design** | reads the backend surface (endpoints + business rules) and reports coverage gaps + candidate cases | `make design` |
+| **Design** | reads the backend surface (endpoints + business rules) and reports coverage gaps + candidate cases ([how it's used](docs/design-coverage.md)) | `make design` |
 | **Regress** | runs the pack suite against a live backend — the deterministic gate | `make test` |
 | **Diagnose** | classifies a failure as **REAL_BUG** vs **TEST_BUG** by reading the backend contract | `make diagnose-realbug` / `make diagnose-testbug` |
 

@@ -206,4 +206,5 @@ violated it ⇒ **REAL_BUG** (keep the test red, file a bug).
 
 `README.md` and `docs/overview.md` are the entry points. `sut/contract.md` is the plugin contract
 (manifest keys + `plugin.py` hooks). `docs/walkthrough.md` narrates the end-to-end journey on
-`SHOP-456`; `agents/README.md` documents the review-panel protocol.
+`SHOP-456`; `docs/design-coverage.md` shows how a `make design` coverage report is used to find and
+close a gap; `agents/README.md` documents the review-panel protocol.
