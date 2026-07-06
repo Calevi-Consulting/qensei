@@ -52,12 +52,19 @@ gate:
     - if: '$SITE'        # a single site was chosen -> gate-one handles it
       when: never
     - when: on_success
-  parallel:
-    matrix:
-      - SUT: ["sut/mock-shop", "sut/restful-booker"]
+  # Sites auto-discovered from sut/*/manifest.json (stdlib; see engine/sites.py) so an adopter who
+  # replaces the example SUTs does not edit this. Runs every gate site and reports each; fails if any
+  # fails (rc collected, not fail-fast). GitLab's static `parallel:matrix` cannot take a computed
+  # list, so this loop replaces it.
   script:
-    - SITE_NAME=$(basename "$SUT")
-    - QAF_SITES="$SUT" poetry run pytest tests/test_sites.py --junitxml="report-$SITE_NAME.xml"
+    - |
+      rc=0
+      for SUT in $(python -m engine.sites); do
+        SITE_NAME=$(basename "$SUT")
+        echo "== gate: $SUT =="
+        QAF_SITES="$SUT" poetry run pytest tests/test_sites.py --junitxml="report-$SITE_NAME.xml" || rc=1
+      done
+      exit $rc
   artifacts:
     when: always
     reports:

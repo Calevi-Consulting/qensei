@@ -29,10 +29,13 @@ if str(ROOT) not in sys.path:
 
 from engine import preflight as preflight_mod  # noqa: E402
 from engine.case import Expect  # noqa: E402
+from engine.sites import gate_sites  # noqa: E402
 from engine.sut import SUTConnector  # noqa: E402
 from engine.ui import discover_ui_cases  # noqa: E402
 
-ALL_SITES = ["sut/mock-shop", "sut/restful-booker"]
+# Auto-discovered from sut/*/manifest.json (see engine/sites.py) — a site with no ui-packs just
+# contributes zero UI cases, so the same gate-site list is correct for the UI lane.
+ALL_SITES = gate_sites(ROOT)
 SITES = [s.strip() for s in os.environ.get("QAF_SITES", ",".join(ALL_SITES)).split(",") if s.strip()]
 
 

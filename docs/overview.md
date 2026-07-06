@@ -82,7 +82,9 @@ flowchart LR
   `citation_gate.py` / `freshness_gate.py`.
 - **`policies/`** — product-neutral governance (spec phases, ownership, test philosophy, security,
   release-safety). [quality-gates.md](quality-gates.md) shows how the policies become forcing functions.
-- **`sut/`** — the SITES under test, one **self-contained** plugin dir each. A site owns its backend
+- **`sut/`** — the SITES under test, one **self-contained** plugin dir each. The shipped ones are
+  **replaceable reference examples** ([`sut/README.md`](../sut/README.md)); a real adopter swaps in
+  their own (`make new-sut`). A site owns its backend
   access AND its tests: `source/` (backend), `skills/` + `learnings/` (manual-QA context), `packs/`
   (landed regressions: `case.py` + index-card `README.md`), `specs/` + `plans/` (intent contracts +
   implementation rationale), `tickets/`, `examples/`, and `manifest.json` (+ optional `plugin.py`).

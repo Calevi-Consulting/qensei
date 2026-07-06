@@ -76,6 +76,7 @@ def main(argv=None) -> int:
     sut_dir = ROOT / sut
     if not (sut_dir / "manifest.json").exists():
         print(f"  no SUT plugin at {sut} (expected a manifest.json there)")
+        print(f"  create the plugin first:  make new-sut SUT={sut}   (see sut/contract.md § Adding a new SUT)")
         return 2
 
     pack_id = f"{ticket}-{slug}"

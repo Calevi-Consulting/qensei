@@ -6,6 +6,10 @@ assumed. For the slide version of this story, see the
 [teaching deck](qensei-teaching-deck.pdf); for the reference docs, start at
 [overview.md](overview.md).
 
+> **`mock-shop` / `SHOP-456` are a reference example** — they exist to make this story runnable. A
+> real adopter replaces them with their own SUT plugin (`make new-sut`; see
+> [`sut/README.md`](../sut/README.md)); the methodology below is identical for your product.
+
 The journey has four stops:
 
 ```

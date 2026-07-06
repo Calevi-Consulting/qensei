@@ -34,6 +34,7 @@ jobs:
     outputs:
       matrix: ${{ steps.pick.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
       - id: pick
         env:
           SITE: ${{ github.event.inputs.site }}
@@ -42,7 +43,10 @@ jobs:
             name="${SITE#sut/}"
             echo "matrix={\"include\":[{\"sut\":\"$SITE\",\"site\":\"$name\"}]}" >> "$GITHUB_OUTPUT"
           else
-            echo 'matrix={"include":[{"sut":"sut/mock-shop","site":"mock-shop"},{"sut":"sut/restful-booker","site":"restful-booker"}]}' >> "$GITHUB_OUTPUT"
+            # Auto-discovered from sut/*/manifest.json (stdlib; no toolchain install needed) so the
+            # matrix adapts to whatever plugins exist — an adopter who replaces the example SUTs
+            # does not edit this. See engine/sites.py.
+            echo "matrix=$(python3 -m engine.sites --matrix)" >> "$GITHUB_OUTPUT"
           fi
 
   # Code quality + security + framework tests — site-independent, on every push/PR.

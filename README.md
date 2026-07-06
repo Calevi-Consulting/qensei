@@ -140,6 +140,12 @@ selected SUT's own `packs/` dir. CI fans the gate over every site; all must be g
 `sut/mock-shop/` and `sut/restful-booker/` are the two full reference sites; `sut/widget-api/` is a
 minimal **sourceless** fixture (no backend source — see [Sourceless SUTs](sut/contract.md#sourceless-suts)).
 
+> **These are reference examples, not fixed parts of the product.** A real adopter deletes them (or
+> keeps one as a reference) and wraps their own products as plugins under `sut/<name>/` — the engine,
+> the gates, and the CI / pytest site matrices auto-discover whatever lives there (`engine/sites.py`).
+> Scaffold yours: `make new-sut SUT=sut/<name>` → `make new-pack SUT=sut/<name> TICKET=… SLUG=…`. See
+> [`sut/README.md`](sut/README.md) and [`sut/contract.md`](sut/contract.md#adding-a-new-sut-a-new-site).
+
 - **`sut/mock-shop/`** — a toy shop backend (products / cart / checkout with a 10%-off-at-3-items
   rule). The reference plugin: the same engine runs `SHOP-123` (cart total) and `SHOP-456` (bulk
   discount), and the diagnostics lens tells a seeded regression of the discount rule (REAL_BUG)
@@ -158,7 +164,10 @@ minimal **sourceless** fixture (no backend source — see [Sourceless SUTs](sut/
 
 That two more, differently-shaped sites — a fuller real-mock (`restful-booker`) and a **no-source** plugin
 (`widget-api`) — drop in with **no change to `engine/` or `policies/`** is what proves the SUT seam is
-genuinely generic, the sourceless case included.
+genuinely generic, the sourceless case included. *Adding* a SUT touches nothing else (the CI matrices and
+pytest bridges auto-discover it); *removing* the shipped examples touches only a few **non-engine** spots —
+the Makefile demo defaults, the example-coupled framework tests, and narrative docs — listed in
+[`sut/contract.md` § Replacing the shipped example SUTs](sut/contract.md#replacing-the-shipped-example-suts).
 
 ## Two testing approaches: REST and UI
 

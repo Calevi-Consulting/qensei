@@ -7,7 +7,7 @@ TESTBUG_PACK ?= sut/mock-shop/examples/diagnostics/SHOP-789-bad-test
 SERVE_APP    ?= sut/mock-shop/source/app.py
 
 .PHONY: help demo demo-booker design test smoke gate-report diagnose-realbug diagnose-testbug \
-        serve check lint-offline test-engine fidelity coverage-lint citations freshness sync-source secrets new-pack regen-index \
+        serve check lint-offline test-engine fidelity coverage-lint citations freshness sync-source secrets new-sut new-pack regen-index \
         install pytest test-ui ui-watch lint lint-fix cve verify
 
 help: ## list targets
@@ -105,6 +105,9 @@ verify: lint cve pytest fidelity coverage-lint secrets ## full local CI: lint + 
 	@echo "  verify: OK"
 
 # --- authoring tooling ------------------------------------------------------
+new-sut: ## scaffold a NEW SUT plugin: make new-sut SUT=sut/acme [SOURCELESS=1]
+	python3 scripts/new_sut.py $(SUT) $(if $(SOURCELESS),--sourceless,)
+
 new-pack: ## scaffold a pack: make new-pack SUT=sut/mock-shop TICKET=SHOP-9 SLUG=widget-restock
 	python3 scripts/new_pack.py --sut $(SUT) $(TICKET) $(SLUG)
 
