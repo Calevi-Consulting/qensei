@@ -8,6 +8,6 @@ check. Demonstrates the persona machinery: `keep_name` (stable protected id), `f
 survives across boots, so the second run takes the "re-use, do not recreate" path.
 
 - Spec: [`sut/mock-shop/specs/SHOP-DUR-account-durability.md`](../../specs/SHOP-DUR-account-durability.md)
-- Covers: `POST /accounts`, `GET /accounts/{id}`
+- Covers: `POST /accounts`, `GET /accounts/{name}`
 - Tags: `durability`
 - Run: `python3 -m engine.run --sut sut/mock-shop`

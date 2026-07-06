@@ -21,7 +21,7 @@ class AccountDurability(RegressionCase):
     persona = "existing_data"
     tags = frozenset({"durability"})
     severity = "high"
-    covers = ["POST /accounts", "GET /accounts/{id}"]
+    covers = ["POST /accounts", "GET /accounts/{name}"]
 
     def run(self, sut, expect):
         def find(name):
