@@ -103,4 +103,32 @@ Precedence: CLI flag > env var > `.env` > manifest default.
 
 `sut/mock-shop/` (in_process mock), `sut/restful-booker/` (in_process mock + a `live` remote env, a
 `plugin.py`, the cookie-login provider), and `sut/widget-api/` (a **sourceless** remote SUT — no
-`source`; the ticket + `skills/` are the contract of record) are the worked examples to copy.
+`source`; the ticket + `skills/` are the contract of record) are the worked examples to copy — and to
+**delete** once your own SUTs exist (see below).
+
+## Replacing the shipped example SUTs
+
+`mock-shop`, `restful-booker`, `restful-booker-live`, and `widget-api` are **reference examples**.
+A real adopter removes them (or keeps one as a live reference) once their own plugins exist.
+
+**Auto-adapts — no edit needed** (all glob/`engine/sites.py`-discovered): the regression gate
+(`engine/runner.py`), the UI lane (`engine/ui.py`), the design + diagnostics readers, the
+deterministic gates (`fidelity_lint`, `coverage_lint`), the pytest **site bridges**
+(`tests/test_sites.py`, `tests/test_ui.py`), and **both CI site matrices**
+(`.github/workflows/qa-gate.yml`, `.gitlab-ci.yml`). Drop in a new `sut/<name>/` and these pick it up;
+delete one and they stop running it. The false-green guard (exit `2` on "no cases discovered") keeps
+an empty `sut/` from looking green.
+
+**Must be updated by hand** (these reference an example SUT by name):
+
+| What | Where | Action on removal |
+|---|---|---|
+| Makefile demo/diagnose defaults | `Makefile` (`SUT ?=`, `REALBUG_PACK`, `TESTBUG_PACK`, `SERVE_APP`, `demo-booker`) | Repoint at one of your SUTs, or ignore if you do not use the `demo`/`diagnose-*`/`serve` targets |
+| Example-coupled framework tests | `tools/tests/test_multisite.py`, `test_sourceless.py`, `test_source_sync.py` | These assert on the shipped plugins — adapt to your SUTs or remove; they are examples, not core |
+| Durable-state isolation | `tests/conftest.py` (`QAF_MOCK_STATE`, `QAF_BOOKER_STATE`) | A mock with **durable** state needs its own env line to stay isolated under `pytest -n auto` |
+| Narrative docs | `docs/walkthrough.md`, `docs/design-coverage.md`, `docs/delivered-regressions.md`, `README.md` | These narrate `mock-shop` / `SHOP-456`; update or drop the references |
+
+Nothing under `engine/` or `policies/` is on this list — the seam holds. Note the `--sourceless`
+`widget-api` and any `remote` SUT are **not** in the default offline gate (they need live creds/env);
+run them with `QAF_SITES=sut/<name>` (+ `--env`). Scaffold your own with
+`make new-sut SUT=sut/<name> [SOURCELESS=1]`.
