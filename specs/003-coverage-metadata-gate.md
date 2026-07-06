@@ -2,7 +2,14 @@
 
 > **Tracking issue**: [Calevi-Consulting/qensei#27](https://github.com/Calevi-Consulting/qensei/issues/27).
 
-## Status: INCOMPLETE
+## Status: COMPLETE
+
+> **Phase A + B delivered.** Phase A: `engine/coverage_lint.py` + tests + wiring (AC0–AC12, AC14).
+> Phase B: the R9 process backstop (AC13) — `r-coverage` made non-skippable in `commands/automate.md`
+> (4b + the 4e exit condition) and a `r-coverage`/GAP attestation line in the PR template. All 15
+> acceptance criteria are met and checked. The spec-status-integrity checks noted under Phasing remain
+> a future fast-follow with **no assigned AC** (they depend on normalising the Status vocabulary and
+> would not have caught PR #26), so they do not gate COMPLETE.
 
 ## Context
 
@@ -49,14 +56,16 @@ data fix" constraint the tracking issue noted is already satisfied.
   house style (see R6). Baking a single style into `engine/` would invert the framework promise
   "adding a product is writing a plugin, never touching `engine/`".
 - **R1 (the module)** — a new `engine/coverage_lint.py`, pure Python 3 stdlib, exit-coded (`0` pass /
-  `1` any BLOCK; `2` reserved for the false-green-guard convention). It globs
-  `sut/*/packs/*/case.py` + `sut/*/ui-packs/*/case.py`, pairs each `case.py` with its sibling
-  `README.md` and its `spec_ref`-resolved `specs/<ID>.md`, and **evaluates every pack
-  unconditionally with no git baseline** — the structural property that closes the new-pack blind
-  spot shared by `fidelity_lint` (baseline diff) and `design.py` (forward-only). It reuses
-  `fidelity_lint`'s AST helpers (`_cases` / `_attr` / `_eval_value`, which read
+  `1` any BLOCK; `2` no packs discovered, the false-green-guard convention). It discovers packs
+  through **each SUT's declared `packs_dir` / `ui_packs_dir`** (via `SUTConnector`, per R0 — never the
+  literal `packs`/`ui-packs` names, so a SUT that customises `tests.packs` is not silently skipped),
+  pairs each `case.py` with its sibling `README.md` and its `spec_ref`-resolved `specs/<ID>.md`, and
+  **evaluates every pack unconditionally with no git baseline** — the structural property that closes
+  the new-pack blind spot shared by `fidelity_lint` (baseline diff) and `design.py` (forward-only). It
+  reuses `fidelity_lint`'s AST helpers (`_cases` / `_attr` / `_eval_value`, which read
   `covers` / `contract_claim` / `spec_ref` without importing `case.py`) and `design.py`'s
-  `has_source` branch.
+  `has_source` branch. Explicit paths (a pre-commit hook passing changed `case.py`/`README.md` files)
+  are mapped to their pack dir directly, so the hook is dir-name-agnostic.
 - **R2 (covers-consistency — BLOCK)** — the AST-extracted `case.py` `covers` set must equal the
   sibling README `Covers:` token set. This is a **cross-check of two independently-authored copies,
   never a derivation** (see Alternatives). Governance decision: this is a hard BLOCK (a dissent
@@ -80,10 +89,12 @@ data fix" constraint the tracking issue noted is already satisfied.
   `has_source` is False (`widget-api`): SKIP covers-validity (R3) and contract_claim resolution (R4)
   and report each as `UNVERIFIED (sourceless)` — never FAIL. The source-independent checks
   (R2 consistency, R5 spec_ref, R6 README-Covers-present) **still run and still gate**.
-- **R8 (duplicate-body detector — WARN only)** — an AST/body fingerprint that flags a `run()` body
-  near-identical to a sibling's (it would flag `BOOK-UI-2` as a near-verbatim copy of `BOOK-UI-1`).
-  Deterministic, but legitimate parametric sibling packs resemble each other, so its false-positive
-  rate disqualifies it from BLOCK: it emits a WARN (exit `0`), surfaced for a human.
+- **R8 (duplicate-body detector — WARN only)** — an AST fingerprint (`ast.dump` of the `run()` body,
+  docstring stripped) that flags a `run()` body **verbatim (modulo docstring)** to a sibling's (it
+  would flag `BOOK-UI-2` as a copy of `BOOK-UI-1`). It is deliberately a WARN, not a BLOCK: legitimate
+  parametric sibling packs can be near-identical, and a copy with any real edit (a renamed variable, a
+  changed literal) evades the exact fingerprint — so it is a best-effort second net surfaced for a
+  human (exit `0`), never a gate.
 - **R9 (semantic backstop — process, never a merge gate)** — the AC-exercise question ("does `run()`
   actually drive the behaviour each acceptance criterion means?") stays with `r-coverage`'s GAP
   verdict; it is inherently semantic and must not sit in a deterministic gate seat. Make it
@@ -102,47 +113,47 @@ data fix" constraint the tracking issue noted is already satisfied.
 
 ## Acceptance Criteria
 
-- [ ] **AC0** — `engine/coverage_lint.py` exists, is pure Python 3 stdlib (no runtime deps), and
+- [x] **AC0** — `engine/coverage_lint.py` exists, is pure Python 3 stdlib (no runtime deps), and
   exits `0` on pass / `1` on any BLOCK finding; a WARN finding alone exits `0`.
-- [ ] **AC1 (no regression)** — running it over the current tree (with #28 already merged) exits `0`:
+- [x] **AC1 (no regression)** — running it over the current tree (with #28 already merged) exits `0`:
   green on `mock-shop`, `restful-booker`, and `widget-api`.
-- [ ] **AC2** — covers-consistency: a pack whose `case.py` `covers` set differs from its README
+- [x] **AC2** — covers-consistency: a pack whose `case.py` `covers` set differs from its README
   `Covers:` token set produces a BLOCK naming the pack and the differing tokens; a reconstruction of
   PR #26's `BOOK-UI-2` (`case.py` covers `[GET /ui, GET /room/, POST /booking/]`, README
   `[GET /ui, GET /room/]`) is BLOCKed.
-- [ ] **AC3** — the README `Covers:` parser accepts both `- Covers:` and `- **Covers:**`;
+- [x] **AC3** — the README `Covers:` parser accepts both `- Covers:` and `- **Covers:**`;
   `widget-api`'s bold line and the plain lines all parse to the correct token set (no false BLOCK on
   `widget-api`). Fixtures use the real observed strings.
-- [ ] **AC4** — a README with no parseable `Covers:` line produces a BLOCK.
-- [ ] **AC5** — covers-validity (source-backed SUT): a `covers` token resolving to neither a ROUTE nor
+- [x] **AC4** — a README with no parseable `Covers:` line produces a BLOCK.
+- [x] **AC5** — covers-validity (source-backed SUT): a `covers` token resolving to neither a ROUTE nor
   a `BUSINESS_RULES` id produces a BLOCK. (A regression fixture reproduces `SHOP-DUR`'s pre-#28
   `GET /accounts/{id}` against source `GET /accounts/{name}` and asserts BLOCK; the live tree passes
   post-#28.)
-- [ ] **AC6** — contract_claim (source-backed SUT): a `contract_claim` rule id absent from
+- [x] **AC6** — contract_claim (source-backed SUT): a `contract_claim` rule id absent from
   `BUSINESS_RULES` produces a BLOCK; the 3 packs carrying a real rule id pass.
-- [ ] **AC7** — spec_ref: a case whose `spec_ref` names no existing `specs/<ID>.md` under its SUT
+- [x] **AC7** — spec_ref: a case whose `spec_ref` names no existing `specs/<ID>.md` under its SUT
   produces a BLOCK; all current `spec_ref`s resolve.
-- [ ] **AC8 (sourceless degradation)** — for a `has_source == False` SUT, covers-validity and
+- [x] **AC8 (sourceless degradation)** — for a `has_source == False` SUT, covers-validity and
   contract_claim resolution are SKIPPED and reported `UNVERIFIED (sourceless)` (never FAIL);
   consistency, spec_ref-resolves, and README-Covers-present still run and still gate;
   `source_module()` is never called on a sourceless SUT (no `ValueError`). Asserted end-to-end on
   `widget-api`.
-- [ ] **AC9 (new-pack, no baseline)** — the gate evaluates a pack present in the working tree but not
+- [x] **AC9 (new-pack, no baseline)** — the gate evaluates a pack present in the working tree but not
   at `HEAD`, proving it does not share `fidelity_lint`'s baseline blind spot.
-- [ ] **AC10 (duplicate-body)** — the detector emits a WARN (exit `0`) when a `run()` body is
+- [x] **AC10 (duplicate-body)** — the detector emits a WARN (exit `0`) when a `run()` body is
   near-identical to a sibling's (`BOOK-UI-2` vs `BOOK-UI-1`) and never a BLOCK for it.
-- [ ] **AC11 (fragility, encodes the admitted limitation)** — a co-copied-README variant where
+- [x] **AC11 (fragility, encodes the admitted limitation)** — a co-copied-README variant where
   `case.py` and README agree on the *wrong* `covers` → all gated checks stay GREEN and only the
   duplicate-body detector WARNs. This fixes the known evasion as a test, not prose.
-- [ ] **AC12 (integration-boundary — real SUT tree)** — the gate is exercised against the **actual**
+- [x] **AC12 (integration-boundary — real SUT tree)** — the gate is exercised against the **actual**
   `sut/*` tree (all three real SUTs, resolving `covers` against the real `source_module()` for the
   two source-backed ones and degrading for the sourceless one), not a mock of the source — and is
   wired as its own step in the `qa-gate.yml` `checks` job (runs on every push/PR incl. forks) and as
   a `coverage-lint` target in `make check` / `make verify`, with a matching pre-commit hook.
-- [ ] **AC13 (process backstop)** — `commands/automate.md` Phase 4b makes `r-coverage`
+- [x] **AC13 (process backstop)** — `commands/automate.md` Phase 4b makes `r-coverage`
   non-skippable before the exit gate, and the PR template carries the `r-coverage` / GAP
   human-attestation line.
-- [ ] **AC14** — `tools/tests/` contains stdlib `unittest` cases covering: consistent-pass,
+- [x] **AC14** — `tools/tests/` contains stdlib `unittest` cases covering: consistent-pass,
   inconsistent-block, unresolvable-cover-block, contract_claim-mismatch-block, dangling-spec_ref-block,
   missing-Covers-line-block, both-Covers-formats-parse, sourceless-skips-validity-runs-consistency,
   duplicate-body-warn-not-block, co-copied-README-fragility, and new-pack-no-baseline.
@@ -198,6 +209,25 @@ data fix" constraint the tracking issue noted is already satisfied.
 - **Phase B (fast-follow, same module) — the process backstop + spec-status integrity.** R9
   (`automate.md` Phase 4b + PR-template attestation — AC13), and the deferred Phase-6.5 spec-status
   checks once the status vocabulary is normalized or the parser provably tolerates both forms.
+
+## Amendments
+
+Changes to the **requirement text** made after the spec was first committed (#29), recorded here for
+traceability rather than folded silently into implementation. Both were surfaced to and approved by
+the maintainer during the Phase-A implementation (#30); neither weakens an acceptance criterion.
+
+- **A1 — R1 discovery (was: literal glob).** As first written, R1 said the gate "globs
+  `sut/*/packs/*/case.py` + `sut/*/ui-packs/*/case.py`". This contradicted **R0**, which already
+  required locating packs via each SUT's `packs_dir` / `ui_packs_dir`, and the literal glob carried a
+  latent false-GREEN: a SUT that customises `tests.packs` in its manifest would have all its packs
+  silently skipped. R1 was reconciled to R0's already-stated intent — discovery through each SUT's
+  declared dirs (via `SUTConnector`), with explicit pre-commit paths still mapped to their pack dir.
+  *Rationale:* fix a spec self-contradiction and close the false-GREEN; strictly more coverage, not less.
+- **A2 — R8 wording (was: "near-identical").** R8's "flags a `run()` body near-identical to a
+  sibling's" was tightened to "**verbatim (modulo docstring)**", matching what an `ast.dump`
+  fingerprint can actually decide, and R8 now states plainly that a copy with any real edit evades it —
+  so the WARN-only status is honest about the heuristic's reach. *Rationale:* accuracy; no behavioural
+  change (it was always a WARN, never a gate).
 
 ## Executive Summary
 

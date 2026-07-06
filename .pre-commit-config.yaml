@@ -13,6 +13,13 @@ repos:
         files: ^sut/.*/(packs|ui-packs)/.*/case\.py$
         pass_filenames: true
 
+      - id: coverage-lint
+        name: coverage-metadata gate (covers match README + resolve against the SUT)
+        entry: python3 -m engine.coverage_lint
+        language: system
+        files: ^sut/.*/(packs|ui-packs)/.*/(case\.py|README\.md)$
+        pass_filenames: true
+
       - id: engine-tests
         name: engine + gate unit tests
         entry: python3 -m unittest discover -s tools/tests
