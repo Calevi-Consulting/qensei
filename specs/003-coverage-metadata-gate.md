@@ -208,6 +208,25 @@ data fix" constraint the tracking issue noted is already satisfied.
   (`automate.md` Phase 4b + PR-template attestation — AC13), and the deferred Phase-6.5 spec-status
   checks once the status vocabulary is normalized or the parser provably tolerates both forms.
 
+## Amendments
+
+Changes to the **requirement text** made after the spec was first committed (#29), recorded here for
+traceability rather than folded silently into implementation. Both were surfaced to and approved by
+the maintainer during the Phase-A implementation (#30); neither weakens an acceptance criterion.
+
+- **A1 — R1 discovery (was: literal glob).** As first written, R1 said the gate "globs
+  `sut/*/packs/*/case.py` + `sut/*/ui-packs/*/case.py`". This contradicted **R0**, which already
+  required locating packs via each SUT's `packs_dir` / `ui_packs_dir`, and the literal glob carried a
+  latent false-GREEN: a SUT that customises `tests.packs` in its manifest would have all its packs
+  silently skipped. R1 was reconciled to R0's already-stated intent — discovery through each SUT's
+  declared dirs (via `SUTConnector`), with explicit pre-commit paths still mapped to their pack dir.
+  *Rationale:* fix a spec self-contradiction and close the false-GREEN; strictly more coverage, not less.
+- **A2 — R8 wording (was: "near-identical").** R8's "flags a `run()` body near-identical to a
+  sibling's" was tightened to "**verbatim (modulo docstring)**", matching what an `ast.dump`
+  fingerprint can actually decide, and R8 now states plainly that a copy with any real edit evades it —
+  so the WARN-only status is honest about the heuristic's reach. *Rationale:* accuracy; no behavioural
+  change (it was always a WARN, never a gate).
+
 ## Executive Summary
 
 *(Provisional — to be finalized before the implementation PR.)* `engine/coverage_lint.py` is a
