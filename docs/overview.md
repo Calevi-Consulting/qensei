@@ -75,6 +75,23 @@ flowchart LR
 
 ## Layers on disk
 
+The repo at a glance:
+
+```
+qensei/
+├── engine/       the deterministic core — the gate, no AI (sut.py · case.py · runner.py · design.py · diagnostics.py + gates)
+├── sut/          the SITES under test — one self-contained plugin dir each (replaceable examples; + contract.md)
+├── commands/     Claude Code slash commands the assistant runs — /validate · /automate · /report-bug
+├── agents/       the advisory review panel — read-only diagnostic lenses + the judge (never gates a merge)
+├── policies/     product-neutral governance — spec phases · ownership · test philosophy · security · release-safety
+├── ticket/       the tracker-agnostic ticket-provider contract (+ jira config); a site's own tickets live under sut/<name>/tickets/
+├── tools/tests/  the framework's own zero-dependency unittest suite (engine + seam)
+├── tests/        the pytest site-integration bridge — runs each SUT's packs as parallel cases
+└── docs/         the documentation set (you are here)
+```
+
+Expanded:
+
 - **`engine/`** — the core: `sut.py` (backend access), `case.py` (the soft-assert regression unit +
   matchers + personas hooks), `runner.py` (the gate), `run.py` (CLI + false-green guard),
   `design.py`, `diagnostics.py`, `source_sync.py` (SUT source provisioning), plus `config.py` / `credentials.py` / `masking.py` / `preflight.py` /

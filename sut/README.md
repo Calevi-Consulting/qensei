@@ -12,6 +12,27 @@ Nothing in `engine/` or `policies/` is product-specific.
 | `restful-booker-live` | the same site pointed at a real remote host (no in-process mock) |
 | `widget-api` | a **sourceless** SUT — no readable backend source; the ticket + `skills/` are the contract of record |
 
+## Anatomy of a plugin
+
+Every `sut/<name>/` has the **same shape** — a site owns its backend access *and* its tests:
+
+```
+sut/<name>/
+├── manifest.json     # the contract: runtime (in_process mock | remote live) · envs · creds · where tests live
+├── plugin.py         # OPTIONAL hooks: REQUIREMENTS · resolve_creds · isolate · sweep
+├── source/           # the backend under test — read by design + diagnostics (ROUTES + BUSINESS_RULES); absent if sourceless
+├── packs/            # REST tests — one dir per case (a RegressionCase in case.py + an index README.md)
+├── ui-packs/         # UI tests — one dir per case (a UICase; Playwright; opt-in lane)
+├── specs/            # the intent per case (a case's spec_ref points here)
+├── tickets/          # the site's own tickets
+├── skills/  learnings/  # per-site manual-QA domain knowledge (loaded on demand)
+└── examples/         # worked report + diagnostics samples
+```
+
+The engine discovers `packs/*/case.py` (REST) and `ui-packs/*/case.py` (UI) for the selected SUT
+only. `restful-booker` is the fuller example (it adds `plugin.py` + `ui-packs/`); a sourceless SUT
+(`widget-api`) omits `source/`. Full manifest keys + hooks: [`contract.md`](contract.md).
+
 ## Add your own product
 
 ```bash
