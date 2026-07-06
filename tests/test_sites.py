@@ -26,9 +26,12 @@ if str(ROOT) not in sys.path:
 
 from engine import preflight as preflight_mod  # noqa: E402
 from engine import runner  # noqa: E402
+from engine.sites import gate_sites  # noqa: E402
 from engine.sut import SUTConnector  # noqa: E402
 
-ALL_SITES = ["sut/mock-shop", "sut/restful-booker"]
+# Auto-discovered from sut/*/manifest.json (in_process + has packs) — no hardcoded site list, so an
+# adopter who replaces the example SUTs does not have to edit this bridge. See engine/sites.py.
+ALL_SITES = gate_sites(ROOT)
 SITES = [s.strip() for s in os.environ.get("QAF_SITES", ",".join(ALL_SITES)).split(",") if s.strip()]
 
 
