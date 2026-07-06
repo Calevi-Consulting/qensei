@@ -2,12 +2,14 @@
 
 > **Tracking issue**: [Calevi-Consulting/qensei#27](https://github.com/Calevi-Consulting/qensei/issues/27).
 
-## Status: INCOMPLETE
+## Status: COMPLETE
 
-> **Phase A delivered** (`engine/coverage_lint.py` + tests + wiring): AC0–AC12, AC14 met and checked.
-> **Phase B pending** (AC13 — the R9 process backstop: non-skippable `r-coverage` in
-> `commands/automate.md` Phase 4b + PR-template attestation). Status stays INCOMPLETE until Phase B
-> lands, per the Phase-6.5 reconciliation rule (do not flag COMPLETE with an unchecked criterion).
+> **Phase A + B delivered.** Phase A: `engine/coverage_lint.py` + tests + wiring (AC0–AC12, AC14).
+> Phase B: the R9 process backstop (AC13) — `r-coverage` made non-skippable in `commands/automate.md`
+> (4b + the 4e exit condition) and a `r-coverage`/GAP attestation line in the PR template. All 15
+> acceptance criteria are met and checked. The spec-status-integrity checks noted under Phasing remain
+> a future fast-follow with **no assigned AC** (they depend on normalising the Status vocabulary and
+> would not have caught PR #26), so they do not gate COMPLETE.
 
 ## Context
 
@@ -148,7 +150,7 @@ data fix" constraint the tracking issue noted is already satisfied.
   two source-backed ones and degrading for the sourceless one), not a mock of the source — and is
   wired as its own step in the `qa-gate.yml` `checks` job (runs on every push/PR incl. forks) and as
   a `coverage-lint` target in `make check` / `make verify`, with a matching pre-commit hook.
-- [ ] **AC13 (process backstop)** — `commands/automate.md` Phase 4b makes `r-coverage`
+- [x] **AC13 (process backstop)** — `commands/automate.md` Phase 4b makes `r-coverage`
   non-skippable before the exit gate, and the PR template carries the `r-coverage` / GAP
   human-attestation line.
 - [x] **AC14** — `tools/tests/` contains stdlib `unittest` cases covering: consistent-pass,

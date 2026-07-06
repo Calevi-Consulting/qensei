@@ -237,6 +237,16 @@ Triage drives off **two complementary lenses**:
   **The panel is advisory and NEVER gates the merge.** The regression gate (`engine/run.py`) remains
   the source of truth for "green"; the human owns convergence.
 
+  **R-COVERAGE is non-skippable on a new or changed pack — even when the gate is green.** A green pack
+  can still under-cover: an acceptance criterion the pack never *exercises*, or a `covers` /
+  `contract_claim` that resolves to nothing, is invisible to the gate. So R-COVERAGE MUST be run on
+  every new/changed pack and its GAP verdict surfaced in the status update; each GAP is then **resolved,
+  or explicitly accepted by the human**, before Phase 4 exits (4e). This is a required *ritual*, not a
+  merge block — the verdict stays advisory (a human adjudicates each GAP; the deterministic gate still
+  owns "green"). Its deterministic companion `engine/coverage_lint.py` (spec 003) hard-gates the
+  mechanical half (`covers` ↔ README + source resolution, `spec_ref`); R-COVERAGE covers the semantic
+  half — does `run()` actually exercise each criterion — that a gate cannot decide.
+
 Classify each failure into one of the rows below. Surface the triage explicitly in the status update
 so the human can override:
 
@@ -282,8 +292,9 @@ cause are the stop signal. This mirrors the panel's `2× same finding → STOP` 
 ### 4e — Exit
 
 The loop ends when either:
-- The gate is green on **every configured environment** AND no existing pack regressed → proceed to
-  Phase 5.
+- The gate is green on **every configured environment** AND no existing pack regressed AND
+  **R-COVERAGE has run on the new/changed pack with every GAP resolved or explicitly human-accepted**
+  (4b — non-skippable) → proceed to Phase 5.
 - The loop budget is exhausted on the same root cause → escalate, do not merge.
 - A triage category of **SUT genuine regression** or **infrastructure** was hit → escalate, do not
   merge.
