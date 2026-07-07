@@ -1,15 +1,13 @@
-"""BOOK-UI-1 — book a room through the web UI (new_user, Playwright UI).
+"""BOOK-UI-2 — validation blocks an incomplete booking through the web UI (new_user, Playwright UI).
 
-The UI counterpart to the REST packs: instead of calling POST /booking/ directly, it drives the
-site's booking FORM in a real browser (fill fields, pick a room, submit) and asserts the on-screen
-confirmation — genuine end-to-end coverage through the front-end. Run headed (`make ui-watch`) to
-watch the verification live. Against the mock this is deterministic and offline; pointed at the
-live site's UI it exercises the real front-end.
+The UI counterpart to the REST validation path: instead of submitting a valid booking, it attempts
+to submit the booking form with a required field missing and verifies that the browser blocks the
+submission before any request reaches the backend.
 """
 from engine.ui import UICase
 
 
-class BookingValidationError(UICase):
+class ValidationBlocksIncompleteBooking(UICase):
     id = "BOOK-UI-2"
     title = "booking validation error"
     spec_ref = "sut/restful-booker/specs/BOOK-UI-2-validation-error.md"
@@ -17,22 +15,39 @@ class BookingValidationError(UICase):
     tags = frozenset({"ui"})
     severity = "high"
     requires = ["rooms_available"]
-    covers = ["GET /ui", "GET /room/", "POST /booking/"]
+    covers = ["GET /ui", "GET /room/"]
 
     def run(self, page, base_url, expect):
         page.goto(base_url)
 
-        # the room <select> is populated from GET /room/ on load — wait for an option to be ATTACHED
-        # (an <option> is never "visible" to Playwright, so the default visible-wait would time out)
         page.wait_for_selector("#room option", state="attached")
+
         page.fill("#firstname", "Ada")
-        page.fill("#lastname", "Lovelace")
-        page.select_option("#room", "1")          # seeded room 1 @ 100/night
+        # leave lastname blank intentionally
+
+        page.select_option("#room", "1")
+
         page.fill("#checkin", "2025-10-01")
-        page.fill("#checkout", "2025-10-04")       # 3 nights -> total 300, no long-stay discount
+        page.fill("#checkout", "2025-10-04")
+
         page.click("#book-btn")
 
-        page.wait_for_selector("#confirmation:not([hidden])")
-        confirmation = page.text_content("#confirmation") or ""
-        expect.that("confirmed" in confirmation.lower(), f"booking confirmation shown: {confirmation!r}")
-        expect.that("300" in confirmation, f"total (3 x 100) shown in confirmation: {confirmation!r}")
+        form_valid = page.eval_on_selector(
+            "#booking-form",
+            "f => f.checkValidity()",
+        )
+
+        expect.that(
+            form_valid is False,
+            "form should be invalid (lastname required, left blank)",
+        )
+
+        expect.that(
+            page.is_hidden("#confirmation"),
+            "no booking confirmation shown",
+        )
+
+        expect.that(
+            page.is_hidden("#error"),
+            "no backend error shown (request never submitted)",
+        )
