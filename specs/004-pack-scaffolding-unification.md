@@ -8,8 +8,9 @@
 
 ## Status: INCOMPLETE
 
-Proposal authored for review. Not yet implemented. Surface for human approval before implementing
-(Interactive Mode).
+Phase A implemented (the `--ui` scaffolder + shared templates + tests + docs). Phase B — rewire
+`commands/automate.md` to invoke the scaffolder (the one unchecked criterion below) — remains, so the
+spec stays INCOMPLETE until it is met.
 
 ## Context
 
@@ -63,30 +64,30 @@ properties.
 
 ## Acceptance Criteria
 
-- [ ] `python3 scripts/new_pack.py --sut sut/restful-booker --ui BOOK-9 cancel-flow` creates
+- [x] `python3 scripts/new_pack.py --sut sut/restful-booker --ui BOOK-9 cancel-flow` creates
   `sut/restful-booker/ui-packs/BOOK-9-cancel-flow/case.py` (a `UICase` subclass with
   `run(self, page, base_url, expect)`), `.../README.md`, and `sut/restful-booker/specs/BOOK-9-cancel-flow.md`
   (stub, only if absent).
-- [ ] The UI mode refuses to overwrite an existing `ui-packs/<id>/` (atomic claim), mirroring the REST mode.
-- [ ] The REST path (`new_pack.py` without `--ui`) is byte-for-byte unchanged versus its pre-change output
+- [x] The UI mode refuses to overwrite an existing `ui-packs/<id>/` (atomic claim), mirroring the REST mode.
+- [x] The REST path (`new_pack.py` without `--ui`) is byte-for-byte unchanged versus its pre-change output
   (guarded by a golden-output test), and all existing engine/tooling tests remain green.
-- [ ] The `case.py` / `README.md` / spec-stub templates for both kinds exist in exactly one module,
+- [x] The `case.py` / `README.md` / spec-stub templates for both kinds exist in exactly one module,
   imported/consumed by `new_pack.py` for both modes; no second copy of the skeleton remains in the codebase.
 - [ ] `commands/automate.md` Phase 3 invokes the scaffolder (`make new-pack` / `new_pack.py`, with `--ui`
   for the UI fallback) for file creation, and its prose no longer independently describes the pack skeleton.
-- [ ] A `make new-ui-pack SUT=... TICKET=... SLUG=...` target exists and appears in `make help`.
-- [ ] The generated `UICase` skeleton's `run()` is an explicit TODO placeholder (not a passing assertion),
+- [x] A `make new-ui-pack SUT=... TICKET=... SLUG=...` target exists and appears in `make help`.
+- [x] The generated `UICase` skeleton's `run()` is an explicit TODO placeholder (not a passing assertion),
   so an un-filled skeleton does not merge as a false-green pack.
-- [ ] `scripts/new_pack.py` self-documents the UI mode: its module docstring carries a `--ui` usage
+- [x] `scripts/new_pack.py` self-documents the UI mode: its module docstring carries a `--ui` usage
   example (alongside the existing REST examples) showing the resulting `ui-packs/<id>/` + `specs/<id>.md`
   paths, and the `--ui` argparse argument has `help=` text — so `python3 scripts/new_pack.py --help` and the
   file header describe the UI mode without relying on external docs.
-- [ ] Docs updated: the "Scaffolding" line in `CLAUDE.md` and the pack-authoring section of
+- [x] Docs updated: the "Scaffolding" line in `CLAUDE.md` and the pack-authoring section of
   `sut/contract.md` mention the UI scaffolder.
 
 ### Integration-boundary AC
 
-- [ ] A scaffolded UI pack is **discovered and collected by the real Playwright UI bridge**: after
+- [x] A scaffolded UI pack is **discovered and collected by the real Playwright UI bridge**: after
   `python3 scripts/new_pack.py --sut sut/restful-booker --ui <id> <slug>`, the pack appears as a
   parametrized case under `tests/test_ui.py` (e.g. collection lists `restful-booker::<ID>`), exercising the
   actual `discover_ui_cases` → `ui_packs_dir` discovery path — not a mocked file check. (Scaffolding writes
