@@ -7,7 +7,7 @@ TESTBUG_PACK ?= sut/mock-shop/examples/diagnostics/SHOP-789-bad-test
 SERVE_APP    ?= sut/mock-shop/source/app.py
 
 .PHONY: help demo demo-booker design test smoke gate-report diagnose-realbug diagnose-testbug \
-        serve check lint-offline test-engine fidelity citations freshness sync-source secrets new-pack regen-index \
+        serve check lint-offline test-engine fidelity coverage-lint citations freshness sync-source secrets new-sut new-pack regen-index \
         install pytest test-ui ui-watch lint lint-fix cve verify
 
 help: ## list targets
@@ -44,7 +44,7 @@ serve: ## run the SUT's mock backend standalone (prints its port)
 	python3 $(SERVE_APP)
 
 # --- deterministic quality gates (the forcing functions) --------------------
-check: test-engine fidelity lint-offline secrets ## offline pre-commit ritual (tests + fidelity + lint + secrets)
+check: test-engine fidelity coverage-lint lint-offline secrets ## offline pre-commit ritual (tests + fidelity + coverage-lint + lint + secrets)
 	@echo "  check: OK"
 
 lint-offline: ## ruff lint IF the toolchain is present (keeps `check` zero-dependency; CI always enforces it)
@@ -59,6 +59,9 @@ test-engine: ## unit tests for the engine core + gates
 
 fidelity: ## spec-fidelity lint — block a weakened acceptance criterion
 	python3 -m engine.fidelity_lint
+
+coverage-lint: ## coverage-metadata gate — case.py covers must match README + resolve against the SUT
+	python3 -m engine.coverage_lint
 
 citations: ## resolve every source:line a lens cited (anti-fabrication)
 	@git diff --name-only | xargs -r python3 -m engine.citation_gate || true
@@ -98,10 +101,13 @@ lint-fix: ## ruff lint applying safe autofixes
 cve: ## scan dependencies for known CVEs with pip-audit (needs `make install`)
 	poetry run pip-audit
 
-verify: lint cve pytest fidelity secrets ## full local CI: lint + CVE + pytest + fidelity + secrets
+verify: lint cve pytest fidelity coverage-lint secrets ## full local CI: lint + CVE + pytest + fidelity + coverage-lint + secrets
 	@echo "  verify: OK"
 
 # --- authoring tooling ------------------------------------------------------
+new-sut: ## scaffold a NEW SUT plugin: make new-sut SUT=sut/acme [SOURCELESS=1]
+	python3 scripts/new_sut.py $(SUT) $(if $(SOURCELESS),--sourceless,)
+
 new-pack: ## scaffold a pack: make new-pack SUT=sut/mock-shop TICKET=SHOP-9 SLUG=widget-restock
 	python3 scripts/new_pack.py --sut $(SUT) $(TICKET) $(SLUG)
 

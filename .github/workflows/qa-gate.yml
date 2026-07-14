@@ -34,6 +34,7 @@ jobs:
     outputs:
       matrix: ${{ steps.pick.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
       - id: pick
         env:
           SITE: ${{ github.event.inputs.site }}
@@ -42,7 +43,10 @@ jobs:
             name="${SITE#sut/}"
             echo "matrix={\"include\":[{\"sut\":\"$SITE\",\"site\":\"$name\"}]}" >> "$GITHUB_OUTPUT"
           else
-            echo 'matrix={"include":[{"sut":"sut/mock-shop","site":"mock-shop"},{"sut":"sut/restful-booker","site":"restful-booker"}]}' >> "$GITHUB_OUTPUT"
+            # Auto-discovered from sut/*/manifest.json (stdlib; no toolchain install needed) so the
+            # matrix adapts to whatever plugins exist — an adopter who replaces the example SUTs
+            # does not edit this. See engine/sites.py.
+            echo "matrix=$(python3 -m engine.sites --matrix)" >> "$GITHUB_OUTPUT"
           fi
 
   # Code quality + security + framework tests — site-independent, on every push/PR.
@@ -64,9 +68,11 @@ jobs:
       - name: CVE scan (pip-audit)
         run: make cve
       - name: framework unit + integration tests
-        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py tools/tests/test_sourceless.py --junitxml=report-unit.xml
+        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py tools/tests/test_sourceless.py tools/tests/test_coverage_lint.py --junitxml=report-unit.xml
       - name: spec-fidelity lint (no weakened acceptance criteria)
         run: python3 -m engine.fidelity_lint --base "origin/${{ github.event.repository.default_branch }}"
+      - name: coverage-metadata gate (covers match README + resolve against the SUT)
+        run: python3 -m engine.coverage_lint
       - name: secrets scan
         run: make secrets
       - uses: actions/upload-artifact@v4

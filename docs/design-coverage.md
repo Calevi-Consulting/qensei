@@ -4,6 +4,9 @@
 backend's declared surface from the SUT **source** and cross-references what the packs cover, to
 report **coverage gaps** and candidate cases.
 
+> The `mock-shop` source shown below is a **reference example**; the same `make design` reads YOUR
+> SUT's source once you add a plugin (`make new-sut`; see [`sut/README.md`](../sut/README.md)).
+
 It is **deterministic** — plain Python 3 stdlib, no AI, and no runtime (it reads source only). And it
 is a **decision aid, not a code generator**: its output is read by a QA (or the AI assistant) who
 decides what to build. Nothing pipes the report into test generation.
