@@ -148,34 +148,47 @@ when the ticket was validated outside Qensei (its description + AC + comments + 
 criteria validated through the **web UI** become a UI (Playwright) pack. Many tickets yield one of
 each. Pick per criterion, and prefer REST where an API path covers it (faster, less brittle).
 
-**REST automated test** — a `RegressionCase` pack under `sut/<name>/packs/<TICKET-ID>-<short-desc>/`:
+**Scaffold the skeleton, then fill it in — do not hand-author the file layout.** The pack structure (the
+`case.py` / `README.md` skeleton) has one canonical source: the mechanical scaffolder
+(`scripts/new_pack.py`). Create the pack from it, then replace its TODO placeholders with the real
+metadata and assertions:
 
-1. A `case.py` holding a `RegressionCase` subclass (`engine/case.py`) plus an index `README.md`.
-2. The case declares the contract the DESIGN and DIAGNOSE layers read:
+- **REST:** `make new-pack SUT=sut/<name> TICKET=<TICKET-ID> SLUG=<short-desc>`
+- **UI:** `make new-ui-pack SUT=sut/<name> TICKET=<TICKET-ID> SLUG=<short-desc>` (or
+  `python3 scripts/new_pack.py --sut sut/<name> --ui <TICKET-ID> <short-desc>`)
+
+Each emits `case.py` + an index `README.md` under `packs/<id>/` (REST) or `ui-packs/<id>/` (UI), plus a
+`specs/<id>.md` stub only if Phase 2 has not already written the full spec (the scaffolder never clobbers
+an existing one). The scaffolded `run()` is a deliberately failing TODO, so a pack that reaches the gate
+un-filled stays red — never a false green.
+
+**REST automated test** — fill the scaffolded `sut/<name>/packs/<TICKET-ID>-<short-desc>/` (a
+`RegressionCase`, `engine/case.py`):
+
+1. The case declares the contract the DESIGN and DIAGNOSE layers read:
    - `id`, `title`, `spec_ref` (the `sut/<name>/specs/…` intent it satisfies);
    - `persona` — `new_user` or `existing_data`, per Phase 1;
    - `covers` — the backend surface it exercises (endpoints + business-rule ids), read by DESIGN;
    - `contract_claim` — the business-rule value the case relies on (e.g. `{rule, rate, min_qty}`),
      read by **`engine/diagnostics.py`** to tell REAL_BUG from TEST_BUG. Add it whenever the case
      pins a business rule — it is what makes a failure diagnosable.
-3. `run(self, sut, expect)` calls the SUT **runtime** through the connector (`sut.get` / `sut.post`)
+2. `run(self, sut, expect)` calls the SUT **runtime** through the connector (`sut.get` / `sut.post`)
    with **soft assertions** (`expect.equal` / `expect.approx` / `expect.that`). Encode **behavioral
    contracts**, not internal call sequences.
 
-**UI automated test** — a `UICase` pack under `sut/<name>/ui-packs/<TICKET-ID>-<short-desc>/`:
+**UI automated test** — fill the scaffolded `sut/<name>/ui-packs/<TICKET-ID>-<short-desc>/` (a `UICase`,
+`engine/ui.py`). The SUT plugin must declare a `ui.path` in its manifest (where the web UI is served):
 
-1. A `case.py` holding a `UICase` subclass (`engine/ui.py`) plus an index `README.md`. The SUT plugin
-   must declare a `ui.path` in its manifest (where the web UI is served).
-2. Same declarative metadata (`id`, `title`, `spec_ref`, `persona`, `covers`, `severity`), plus the
+1. Same declarative metadata (`id`, `title`, `spec_ref`, `persona`, `covers`, `severity`), plus the
    `ui` tag so it runs in the opt-in UI lane (`make test-ui`).
-3. `run(self, page, base_url, expect)` drives the front-end with a **real browser** — a Playwright
+2. `run(self, page, base_url, expect)` drives the front-end with a **real browser** — a Playwright
    `page` — and asserts on what the user sees (`page.goto`, `page.fill`, `page.click`,
    `page.wait_for_selector`, then `expect.that(...)`). Pin **stable element ids / roles**, not
    layout. `sut/restful-booker/ui-packs/BOOK-UI-1-book-a-room/` is the worked example.
 
 **Both** are **self-cleaning** (`new_user` starts clean and leaves nothing behind; `existing_data`
-find-or-creates a durable and never deletes it) and ship an index-card `README.md` (one-paragraph
-summary, persona, `Spec:` link, `Covers:`, run command).
+find-or-creates a durable and never deletes it); flesh out the scaffolded index-card `README.md`
+(one-paragraph summary, persona, `Spec:` link, `Covers:`, run command).
 
 ## Phase 4 — Validate (iterative, with the review panel)
 

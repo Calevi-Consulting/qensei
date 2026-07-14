@@ -6,11 +6,11 @@
 > `engine/`, so it carries an internal assignee and is **not** a good-first-issue (per-SUT packs remain
 > fine for external collaborators).
 
-## Status: INCOMPLETE
+## Status: COMPLETE
 
-Phase A implemented (the `--ui` scaffolder + shared templates + tests + docs). Phase B — rewire
-`commands/automate.md` to invoke the scaffolder (the one unchecked criterion below) — remains, so the
-spec stays INCOMPLETE until it is met.
+Both phases implemented: Phase A (the `--ui` scaffolder + shared templates + tests + docs) and Phase B
+(`commands/automate.md` Phase 3 now invokes the scaffolder for file creation). All acceptance criteria
+below are met.
 
 ## Context
 
@@ -73,7 +73,7 @@ properties.
   (guarded by a golden-output test), and all existing engine/tooling tests remain green.
 - [x] The `case.py` / `README.md` / spec-stub templates for both kinds exist in exactly one module,
   imported/consumed by `new_pack.py` for both modes; no second copy of the skeleton remains in the codebase.
-- [ ] `commands/automate.md` Phase 3 invokes the scaffolder (`make new-pack` / `new_pack.py`, with `--ui`
+- [x] `commands/automate.md` Phase 3 invokes the scaffolder (`make new-pack` / `new_pack.py`, with `--ui`
   for the UI fallback) for file creation, and its prose no longer independently describes the pack skeleton.
 - [x] A `make new-ui-pack SUT=... TICKET=... SLUG=...` target exists and appears in `make help`.
 - [x] The generated `UICase` skeleton's `run()` is an explicit TODO placeholder (not a passing assertion),
@@ -137,8 +137,13 @@ duplication once Phase A establishes the single source of truth.
 
 ## Executive Summary
 
-*(To finalize just before opening the implementation PR.)* Proposes one canonical source of pack-structure
-templates consumed by both authoring frontends, a new UI-pack mode for the mechanical scaffolder
-(`make new-ui-pack` / `new_pack.py --ui`) that closes the gap behind the PR #26 copy-paste defect, and a
-rewiring of `/automate` to build on the scaffolder instead of re-describing the pack layout. Keeps the
-mechanical path zero-dependency, no-AI, and deterministic; additive and revertible.
+Establishes one canonical source of pack structure and closes the UI-scaffolding gap behind the #26
+copy-paste defect. **Phase A** adds a UI mode to the mechanical scaffolder (`make new-ui-pack` /
+`new_pack.py --ui`) that emits a `UICase` skeleton into `ui-packs/` with the REST mode's atomic-claim,
+naming-validation, and auto-discovery guarantees — plus a golden guard keeping REST output byte-identical
+and an honest (failing-TODO) skeleton that cannot merge as a false green. **Phase B** rewires `/automate`
+Phase 3 to invoke the scaffolder for file creation instead of re-describing the layout, so pack structure
+has a single source of truth. The mechanical path stays zero-dependency, no-AI, and deterministic; the
+change is additive and revert-to-undo. Reviewers should look first at `scripts/new_pack.py` (REST
+templates untouched; `--ui` routing) and `tools/tests/test_new_pack.py` (including the integration-boundary
+discovery test).
