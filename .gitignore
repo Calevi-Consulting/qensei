@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 *.egg-info/
+# macOS Finder metadata
+.DS_Store
 .qa-runs/
 .env
 # durable stores (existing_data demos) — created at runtime, not tracked
