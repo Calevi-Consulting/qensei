@@ -199,8 +199,9 @@ violated it ⇒ **REAL_BUG** (keep the test red, file a bug).
   root; re-run `make install` to refresh the wiring. Per-SUT skills are loaded on demand by the
   commands (via `--sut`), never wired globally.
 - ruff: line-length 120, selects `E,F,W,I,B,UP` (config in `pyproject.toml`).
-- Scaffolding: `make new-pack SUT=... TICKET=... SLUG=...`; `make regen-index` rolls pack index-cards
-  into `docs/delivered-regressions.md`.
+- Scaffolding: `make new-pack SUT=... TICKET=... SLUG=...` (REST `RegressionCase` → `packs/`) or
+  `make new-ui-pack SUT=... TICKET=... SLUG=...` (browser-driven `UICase` → `ui-packs/`); both also emit
+  a `specs/<id>.md` stub. `make regen-index` rolls pack index-cards into `docs/delivered-regressions.md`.
 
 ## Documentation map
 
