@@ -97,6 +97,9 @@ Precedence: CLI flag > env var > `.env` > manifest default.
    returns `INDETERMINATE` (see § Sourceless SUTs above; `sut/widget-api/` is the worked example).
 3. Scaffold a pack INTO the site: `python scripts/new_pack.py --sut sut/<name> <TICKET> <slug>`
    (writes `sut/<name>/packs/<id>/` + `sut/<name>/specs/<id>.md`). Its case calls `sut.get/post`.
+   For a **browser-driven** pack add `--ui` (or `make new-ui-pack SUT=sut/<name> TICKET=... SLUG=...`):
+   it writes a `UICase` into `sut/<name>/ui-packs/<id>/` (Playwright `run(self, page, base_url, expect)`),
+   discovered by the UI lane (`make test-ui`). Requires the site to declare a `ui.path` in its manifest.
 4. Run the site's gate — it discovers only THIS site's packs:
    `python -m engine.run --sut sut/<name>` (or `make test SUT=sut/<name>`). CI validates every
    site, and a single chosen site on demand (see `.github/workflows/` / `.gitlab-ci.yml`).

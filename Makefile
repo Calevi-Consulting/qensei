@@ -7,7 +7,7 @@ TESTBUG_PACK ?= sut/mock-shop/examples/diagnostics/SHOP-789-bad-test
 SERVE_APP    ?= sut/mock-shop/source/app.py
 
 .PHONY: help demo demo-booker design test smoke gate-report diagnose-realbug diagnose-testbug \
-        serve check lint-offline test-engine fidelity coverage-lint citations freshness sync-source secrets new-sut new-pack regen-index \
+        serve check lint-offline test-engine fidelity coverage-lint citations freshness sync-source secrets new-sut new-pack new-ui-pack regen-index \
         install pytest test-ui ui-watch lint lint-fix cve verify
 
 help: ## list targets
@@ -110,6 +110,9 @@ new-sut: ## scaffold a NEW SUT plugin: make new-sut SUT=sut/acme [SOURCELESS=1]
 
 new-pack: ## scaffold a pack: make new-pack SUT=sut/mock-shop TICKET=SHOP-9 SLUG=widget-restock
 	python3 scripts/new_pack.py --sut $(SUT) $(TICKET) $(SLUG)
+
+new-ui-pack: ## scaffold a UI pack: make new-ui-pack SUT=sut/restful-booker TICKET=BOOK-UI-9 SLUG=cancel-flow
+	python3 scripts/new_pack.py --sut $(SUT) --ui $(TICKET) $(SLUG)
 
 regen-index: ## aggregate pack index cards into docs/delivered-regressions.md
 	python3 scripts/regen_index.py
