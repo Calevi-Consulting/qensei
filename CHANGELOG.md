@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Design panel + non-discretionary panel tiers** (`specs/005-design-panel-and-invocation-tiers.md`,
+  WS-A/B/C): a new design-stage lens, **`r-design`**, reviews the (spec, plan) pair at `/automate` Phase 2b
+  before any pack code exists, with its findings recorded per-finding in the plan
+  (`F<n> APPLIED|REJECTED|FLAGGED|DEFERRED`) and gated by `engine/design_panel_lint.py`. Phase-4 panel
+  invocation is now **tiered** (R-DIAGNOSIS as a subagent on every non-green result; the full panel on
+  flags / `REAL_BUG` / 2nd cycle / reshape ack / a pack's first landing) and **recorded** in every
+  validation report (`### Panel`), gated by `engine/panel_section_lint.py`. A read-only **ORIENT** step
+  now precedes every lens, returning the record (`rejected_fixes`, `contradicts_subject`,
+  `prior_attempts`). Both lints are stdlib, wired in pre-commit, `make check` and CI (changed files only).
 - **Sourceless SUT mode** (`specs/002-sourceless-ticket-driven-mode.md`): a SUT can declare no backend
   source (omit `source`, or `{"source": {"mode": "none"}}`) and still run the regression gate against its
   live runtime. `design` falls back to the ticket + docs, `diagnostics` returns `INDETERMINATE` (contract
