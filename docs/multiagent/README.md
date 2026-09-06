@@ -19,10 +19,17 @@ live runs.
 
 ## Read next
 
+Three docs, three questions: **review-panel.md** is *how* the lenses run together on one failure;
+**r-design.md** is *what* the design-stage lens checks before code exists; **execution-architecture.md**
+is *when* each dispatch happens and who decides.
+
 - **[`review-panel.md`](./review-panel.md)** — the protocol: the orchestration sequence,
   entry points, the invocation tiers, the rebuttal / loop-budget rules, and the escalation digest contract.
 - **[`r-design.md`](./r-design.md)** — the design-stage lens: the one that runs at `/automate` Phase 2b,
   **before** code exists, and reports into the human spec-approval gate.
+- **[`execution-architecture.md`](./execution-architecture.md)** — the timeline: at what moment of
+  `/automate` a subagent appears, under what condition, and who decides. Read it first if you are asking
+  "should I spawn something here?".
 - **Invocation is recorded, deterministically.** `engine/design_panel_lint.py` (a touched plan says whether
   R-DESIGN ran, with one disposition per finding) and `engine/panel_section_lint.py` (a touched validation
   report says whether the Phase-4 panel ran) gate the *record*, never the verdict — see
