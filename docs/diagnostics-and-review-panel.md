@@ -64,9 +64,12 @@ block a merge** — the human owns convergence; the panel *raises the floor*.
 | **r-fidelity** | catch an edit that weakens an acceptance criterion to go green | `engine/fidelity_lint.py` |
 | **r-coverage** | verify the pack exercises every AC and its `covers`/`contract_claim` resolve to real source (else `UNVERIFIED (sourceless)`) | — (coverage-vs-spec) |
 | **r-uplift** | (migration only) verify a ported legacy test adopted framework patterns | — |
+| **r-design** | (design stage, `/automate` Phase 2b) review the (spec, plan) pair before any pack code exists; findings go to the human at the spec-approval gate | `engine/design_panel_lint.py` (the Phase-2b record) |
 | **judge** | adjudicate the lenses' findings; write the escalation digest | — |
 
-Each advisory lens has a **deterministic companion** that *can* gate (right column). The lens supplies
+Each advisory lens has a **deterministic companion** that *can* gate (right column). Invocation itself is
+gated too: `engine/panel_section_lint.py` requires every touched validation report to record whether the
+Phase-4 panel `ran:` or was `waived:` (see [the invocation tiers](multiagent/review-panel.md)). The lens supplies
 judgement (e.g. *is this restructured assertion a disguised weakening or a legitimate reshape?*); the
 companion supplies the non-negotiable, identical-input-identical-verdict check. See
 [quality-gates.md](quality-gates.md) for the companions and `agents/README.md` for the full registry.

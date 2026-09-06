@@ -20,7 +20,9 @@ live runs.
 ## Read next
 
 - **[`review-panel.md`](./review-panel.md)** — the protocol: the orchestration sequence,
-  entry points, the rebuttal / loop-budget rules, and the escalation digest contract.
+  entry points, the invocation tiers, the rebuttal / loop-budget rules, and the escalation digest contract.
+- **[`r-design.md`](./r-design.md)** — the design-stage lens: the one that runs at `/automate` Phase 2b,
+  **before** code exists, and reports into the human spec-approval gate.
 - **[`../../agents/`](../../agents/)** — the lens definitions (one Markdown agent file each).
 
 ## The lenses
@@ -33,6 +35,7 @@ live runs.
 | **R-MECHANISM** | [`agents/r-mechanism.md`](../../agents/r-mechanism.md) | Forces SUT-mechanism reasoning (timing / SLA / scheduling / run-eligibility / coalescing / component state) into the open, anchored to exact SUT-source lines (or the ticket/doc snapshot for a sourceless SUT). | `CITED` / `UNCITED` / `MISREAD` |
 | **R-COVERAGE** | [`agents/r-coverage.md`](../../agents/r-coverage.md) | Coverage-fidelity: flags an acceptance criterion the pack never **exercises**, and a `covers` / `contract_claim` that resolves to no real `ROUTES` / `BUSINESS_RULES`. | `COVERED` / `GAP` / `CLAIM-MISMATCH` |
 | **R-FIDELITY** | [`agents/r-fidelity.md`](../../agents/r-fidelity.md) | Spec-fidelity check on every test edit: did the change loosen an assertion to turn red green? Advisory companion to the deterministic fidelity lint. | `WEAKENING-DETECTED` / `RESHAPE-ESCALATE` |
+| **R-DESIGN** | [`agents/r-design.md`](../../agents/r-design.md) | Design-stage: reviews the (spec, plan) pair at Phase 2b **before** implementation — ticket-scope → AC traceability, persona, the false-SKIP class, shared durables, write-then-read synchrony, `covers` / `contract_claim` vs what the plan exercises. Findings go to the human at the spec-approval gate; no JUDGE at 2b. **Not part of the failure-triage panel.** | ≤6 ranked findings `F1..Fn`, each `BLOCK-WORTHY` / `FIX` / `FLAG` + `needs_mechanism` / `needs_evidence` |
 | **R-UPLIFT** | [`agents/r-uplift.md`](../../agents/r-uplift.md) | Migration-only — verifies a port from a legacy repo adopted this framework's patterns without losing the behavioural contract. **Not part of the failure-triage panel.** | `UPLIFTED` / `ANTIPATTERN-IMPORTED` / `BEHAVIOR-LOST` |
 
 ## Relationship to the deterministic engine

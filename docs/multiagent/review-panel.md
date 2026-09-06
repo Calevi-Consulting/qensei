@@ -14,10 +14,10 @@ backend.
 
 ## The lenses
 
-Seven lenses, all read-only and advisory (`agents/`):
+Eight lenses, all read-only and advisory (`agents/`):
 
 - **JUDGE** — adjudicates the findings, runs the rebuttal protocol, writes the escalation digest.
-- **R-DIAGNOSIS** — diagnoses the failure BEFORE any fix (`TEST_BUG` / `REAL_BUG` / `TRANSIENT` /
+- **R-DIAGNOSIS** — diagnoses the failure BEFORE any fix (`TEST_BUG` / `REAL_BUG` / `ENV_OR_TRANSIENT` / `INDETERMINATE` /
   `UNDOCUMENTED-ESCALATE`); the judgment-side complement to the deterministic `engine/diagnostics.py`.
 - **R-EVIDENCE** — anti-fabrication, raw gate/run-state verification, cross-test / durable / env-divergence.
 - **R-MECHANISM** — verifies SUT-mechanism reasoning (timing / scheduling / run-eligibility / coalescing /
@@ -29,6 +29,11 @@ Seven lenses, all read-only and advisory (`agents/`):
 - **R-UPLIFT** — **migration-only**; verifies a legacy test ported into this framework adopted its patterns
   without dropping the behavioural contract. **Not part of the failure-triage sequence below** — it runs
   only in the legacy→framework migration variant, never in greenfield spec authoring or Phase-4 triage.
+- **R-DESIGN** — **design-stage**; reviews the (spec, plan) pair at `/automate` Phase 2b **before** any pack
+  code exists (ticket-scope → AC traceability, persona, REST-first vs UI, the false-SKIP class, shared
+  durables, write-then-read synchrony, `covers` / `contract_claim` vs what the plan exercises). Its findings
+  land in the existing Phase-2 human approval gate; there is no JUDGE at 2b. **Not part of the failure-triage
+  sequence below** — see `docs/multiagent/r-design.md`.
 
 There is **also a deterministic code lens**, `engine/diagnostics.py`, that classifies a failure
 `REAL_BUG` vs `TEST_BUG` mechanically — it compares a case's `contract_claim` to the SUT's declared
@@ -36,6 +41,39 @@ contract (`BUSINESS_RULES`, read via the SUTConnector source) and the runtime re
 **R-DIAGNOSIS** lens *complements* it for the judgment calls the heuristic cannot make (`INDETERMINATE`
 cases, undocumented flows, serial-pass / parallel-fail execution-flow gaps). Same vocabulary, added
 judgement. When the two disagree, surface both — the deterministic verdict is evidence, not an override.
+
+## Invocation tiers (and the under-invocation failure mode)
+
+**Why this section exists.** A panel whose trigger is discretionary prose under-fires: in practice
+**every deterministic gate in this repo fires every time, and every remember-to instruction does not**.
+The framework this panel was ported from measured it directly (2026-08-11): the driving agent triaged
+three Phase-4 failures inline — all three classifications were later confirmed **correct** — yet the
+retroactive panel still surfaced **five** pre-merge-worthy findings (a teardown window that had leaked
+data on a shared environment, silent fallbacks that made 4/5 ACs vacuously passable, bodiless
+error-status assertions, a substring hole, a pre-flight probing the wrong verb). The lesson: the panel's
+value is **independent depth per lens**, not the triage label — so "the failure looks simple" is never
+a reason to skip it. The only lens that DID fire that day was the one wired to a deterministic gate.
+
+The fix is two-fold — a cheap always-on tier so the choice is never all-or-nothing, and a deterministic
+record so skipping is visible:
+
+| Tier | When | What runs | Cost |
+|---|---|---|---|
+| **1 — always** | every non-green gate result, before any fix | **R-DIAGNOSIS as a subagent** (never inline self-triage), preceded by ORIENT and, when the case carries a `contract_claim`, the deterministic `engine/diagnostics.py` | one agent, minutes |
+| **2 — full panel** | any of: `needs_evidence` / `needs_mechanism` flagged · verdict `REAL_BUG` / `UNDOCUMENTED-ESCALATE` · 2nd cycle on the same root cause · the fix needs a fidelity reshape ack (`--allow-reshape`) · the branch lands a **new pack** (its first landing) | flagged lenses (parallel) + citation gate + JUDGE | 2-4 agents |
+| **record** | every validation report | `### Panel` section: `- ran: <ref>` or `- waived: <reason>` — `engine/panel_section_lint.py` (pre-commit + `make check` + CI, changed files only) | free |
+
+The record lint gates **presence, not verdict** — the lenses remain advisory (see Invariants) and a
+waiver is legitimate (a docs/tooling-only change; no non-green result this cycle); the human reads the
+waiver on the PR. On-demand entry (a human hands the agent a failure) starts at Tier 1 the same way.
+
+That last Tier-2 trigger — a pack's first landing — is the non-obvious one, and it is the one that pays:
+in the case above the inline triage was 3/3 correct and the retroactive panel still found five defects.
+A green gate on a new pack proves the pack passes; it does not prove the pack is the right pack.
+
+The same tiering applies **before** code exists: `/automate` Phase 2b runs **R-DESIGN** (Tier 1, always,
+as a subagent) over the (spec, plan) pair, escalating to R-MECHANISM / R-EVIDENCE on its flags, with its
+record gated by `engine/design_panel_lint.py`. See `docs/multiagent/r-design.md`.
 
 ## Two implementations (coexist)
 
@@ -76,7 +114,13 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
                   └─────────────────────┬─────────────────────┘
                                         ▼     SAME lenses, SAME sequence
              ┌──────────────────────────────────────────────────────┐
-             │ 1. R-DIAGNOSIS  (always, first)                      │
+             │ 0. ORIENT  (read the RECORD — not a lens, no verdict)│
+             │ index card · spec ACs · plans · learnings · reports  │
+             │ -> rejected_fixes / contradicts_subject / attempts   │
+             └──────────────────────────┬───────────────────────────┘
+                                        ▼
+             ┌──────────────────────────────────────────────────────┐
+             │ 1. R-DIAGNOSIS  (always, tier 1 — as a subagent)     │
              │ SUT-source freshness self-gate -> stale? -> ESCALATE │
              │ -> verdict + needs_evidence / needs_mechanism        │
              └──────────────────────────┬───────────────────────────┘
@@ -123,11 +167,28 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
    cannot be silently consumed — the enforcement is at the **point of consumption**, not "remember to
    check".
 
+0.5. **⓪′ ORIENT — read the RECORD before anyone reasons.** A read-only step (`general-purpose`,
+   **not a lens** — it makes no judgement and returns no verdict) reads what this repo already knows
+   about the subject, preferring primary sources over inference: the pack's index card
+   (`sut/<name>/packs/<id>/README.md` — its gotchas encode failures already paid for), the spec's
+   acceptance criteria (which no proposal may weaken), the plan(s) under `sut/<name>/plans/`,
+   `sut/<name>/learnings/*.md` + `skills/*.md`, prior `validation-reports/*` mentioning the pack, and the
+   case source itself. It returns `sources_read` (real paths only), `documented_disposition` (a standing
+   "leave RED, …" verbatim if one exists, else "none found"), `rejected_fixes` (approaches already
+   rejected as weakening — a lens re-proposing one burns a whole cycle), `known_traps`, `prior_attempts`
+   (how many times this same failure was already "fixed" — the JUDGE's loop-budget input),
+   `acceptance_criteria`, and `contradicts_subject` (anything in the record that disputes a premise
+   asserted in the failure brief — the brief's author can be wrong, and catching it here is far cheaper
+   than after three lenses have built on it). **Best-effort by design**: if it returns nothing the panel
+   proceeds, and every downstream prompt says the record is absent and that "already known" claims are
+   unestablished. Every lens and the JUDGE receive the record and argue *against* it instead of
+   rediscovering it.
+
 1. **① R-DIAGNOSIS — diagnose BEFORE any fix.** Reads the case + fixtures + both knowledge stores
    (`policies/` framework-shape, `sut/<name>/learnings/` + `sut/<name>/skills/` domain/system-shape) + the
    spec (`sut/<name>/specs/<id>.md`) + the SUT source via the SUTConnector. When the case carries a resolvable
    `contract_claim`, run `engine/diagnostics.py` first and echo its verdict; R-DIAGNOSIS exists for the
-   calls the heuristic cannot make. Verdict `TEST_BUG` / `REAL_BUG` / `TRANSIENT` / `UNDOCUMENTED-ESCALATE`,
+   calls the heuristic cannot make. Verdict `TEST_BUG` / `REAL_BUG` / `ENV_OR_TRANSIENT` / `INDETERMINATE` / `UNDOCUMENTED-ESCALATE`,
    cited. Sets `needs_evidence` / `needs_mechanism` flags for the next step.
 
 2. **② Triage lenses (as relevant).** R-EVIDENCE (raw gate/run state, anti-fabrication, cross-test /
@@ -232,4 +293,4 @@ lenses, the conditional skip, the freshness self-gate, the verdicts, the outcome
   is not a collision when it is shared on purpose.
 
 See the per-lens docs in `agents/` (`judge`, `r-diagnosis`, `r-evidence`, `r-mechanism`, `r-fidelity`,
-`r-coverage`, `r-uplift`) for each lens's full contract, and `docs/overview.md` for the architecture and lineage.
+`r-coverage`, `r-uplift`, `r-design`) for each lens's full contract, and `docs/overview.md` for the architecture and lineage.

@@ -40,12 +40,15 @@ advisory by construction.
 | **r-mechanism** | SUT-mechanism lens — forces timing / SLA / scheduling / run-eligibility / coalescing / component-state reasoning into the open with exact `sut/<name>/source/<file>:<line>` citations (or ticket/doc-snapshot anchors for a sourceless SUT), and surfaces every mechanism call for human review (CITED / UNCITED / MISREAD). | plan-step · Phase-4 loop · on-demand | `false` |
 | **r-fidelity** | Spec-fidelity lens — catches edits that WEAKEN an acceptance criterion to turn a red test green (lowered thresholds, equality→inequality, dropped persona markers, ungated xfail, lost coverage); escalates restructured assertions (reshapes) for human confirmation, never auto-passing them. | Phase-4 loop (post-edit) · pre-commit · on-demand | `false` |
 | **r-coverage** | Coverage-fidelity lens — verifies the pack EXERCISES every acceptance criterion the spec states, and that its `covers` / `contract_claim` resolve to real ROUTES / BUSINESS_RULES in the SUT source (the mapping DESIGN reports over and DIAGNOSE relies on); complements r-fidelity by catching under-coverage and dangling metadata (COVERED / GAP / CLAIM-MISMATCH); for a **sourceless** SUT, `covers` / `contract_claim` cannot resolve against source, so it flags `UNVERIFIED (sourceless)` rather than `CLAIM-MISMATCH` (AC-exercise coverage still applies). | Phase-4 loop (post-edit) · on-demand | `false` |
+| **r-design** | Design-stage lens — reviews the (spec, plan) pair at `/automate` Phase 2b BEFORE any pack code exists: ticket-scope → AC traceability, ACs vs the risk the ticket carries, persona, REST-first vs UI, precondition ↔ assertion decoupling (the false-SKIP class), cross-pack durable reuse, shared state under `-n auto`, write-then-read synchrony (→ `needs_mechanism`), `covers` / `contract_claim` vs what the plan exercises, the sourceless case. ≤6 ranked findings `F1..Fn`; the GENERATOR proposes a disposition per finding in the plan and the human ratifies it — no JUDGE at 2b. Record gated by `engine/design_panel_lint.py`. | plan-step | `false` |
 | **r-uplift** | Migration-uplift lens — verifies a ported legacy test adopted this framework's patterns (REST-first via the SUTConnector, typed facades, personas, soft-assert cases, self-cleaning) without importing legacy anti-patterns or dropping the behavioural contract the legacy test encoded. | migration-only | `false` |
 
 ## Notes
 
-- **judge** presides; the other six are the lenses it adjudicates. **r-uplift** is the only
-  lens outside the failure-triage panel — it runs in the migration variant only.
+- **judge** presides over the failure-triage panel; **r-diagnosis**, **r-evidence**, **r-mechanism**,
+  **r-fidelity** and **r-coverage** are the lenses it adjudicates. Two lenses run outside that panel:
+  **r-design** (design-stage, `/automate` Phase 2b — its findings go to the human at the spec-approval
+  gate, deliberately with no judge) and **r-uplift** (the migration variant only).
 - Each lens is read-only (it writes only to its own memory dir), never files a ticket itself,
   and never weakens a spec: if the SUT genuinely cannot satisfy an acceptance criterion, the
   test is correctly red and the bug is real.
@@ -65,7 +68,11 @@ advisory by construction.
     `disallowedTools` belt, the notebook/multi-edit variants), not against Bash-driven writes.
 - The deterministic counterparts that *can* gate live in `engine/` — the regression gate
   (`engine/run.py`), the mechanical REAL_BUG-vs-TEST_BUG classifier (`engine/diagnostics.py`), the
-  spec-fidelity lint (`engine/fidelity_lint.py`), the citation anti-fabrication gate
-  (`engine/citation_gate.py`), and the source-freshness gate (`engine/freshness_gate.py`). The lenses
+  spec-fidelity lint (`engine/fidelity_lint.py`), the coverage-metadata gate (`engine/coverage_lint.py`),
+  the citation anti-fabrication gate (`engine/citation_gate.py`), the source-freshness gate
+  (`engine/freshness_gate.py`), and the two **record** gates that make panel invocation visible —
+  `engine/design_panel_lint.py` (a touched plan says whether R-DESIGN ran, and what was decided per
+  finding) and `engine/panel_section_lint.py` (a touched validation report says whether the Phase-4
+  panel ran). The record gates check presence, never verdict. The lenses
   in this directory complement those checks with judgement; they do not replace the gate and they do
   not become one.
