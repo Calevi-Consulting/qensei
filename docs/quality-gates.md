@@ -12,8 +12,8 @@ never replace them.
 | Citation anti-fabrication | `engine/citation_gate.py` | a `source:line` a lens cited that does not resolve | `1` fabricated / `3` unverifiable |
 | Source freshness | `engine/freshness_gate.py` | a stale/dirty remote source clone | `1` |
 | Secret detection | `make secrets` + gitleaks | a hardcoded credential | `1` |
-| Design-panel record | `engine/design_panel_lint.py` | a touched `sut/<name>/plans/*.md` with no `## Design panel` record (`ran:` + one `F<n> APPLIED\|REJECTED\|FLAGGED\|DEFERRED` line per finding, or `waived:`) | `1` |
-| Review-panel record | `engine/panel_section_lint.py` | a touched validation report with no `### Panel` `ran:`/`waived:` line | `1` |
+| Design-panel record | `engine/design_panel_lint.py` | a touched `sut/<name>/plans/*.md` with no `## Design panel` record (`ran:` + one `F<n> APPLIED\|REJECTED\|FLAGGED\|DEFERRED` line per finding, or `waived:`) | `1` / `2` if `--changed` cannot list the changed files |
+| Review-panel record | `engine/panel_section_lint.py` | a touched validation report with no `### Panel` `ran:`/`waived:` line | `1` / `2` if `--changed` cannot list the changed files |
 | Engine + gate units | `make test-engine` | a broken engine module | `1` |
 | Code lint | `make lint` (ruff) | a lint violation | `1` |
 | Dependency CVE scan | `make cve` (pip-audit) | a known vulnerability in a dependency | `1` |
@@ -27,8 +27,8 @@ missing) — `make verify` runs all of them together.
 ```bash
 make check         # the offline pre-commit ritual (zero-dep): test-engine + fidelity + secrets
 make fidelity      # spec-fidelity lint over sut/*/{packs,ui-packs}/*/case.py (every site)
-make design-panel  # Phase-2b record lint over plans changed vs HEAD (sut/*/plans/*.md)
-make panel-record  # Phase-4 record lint over validation reports changed vs HEAD
+make design-panel  # Phase-2b record lint over plans changed vs HEAD + untracked (= engine.design_panel_lint --changed)
+make panel-record  # Phase-4 record lint over validation reports changed vs HEAD + untracked (--changed)
 make lint          # ruff lint            (needs `make install`)
 make cve           # pip-audit CVE scan   (needs `make install`)
 make pytest        # REST packs + engine tests under pytest -n auto (UI excluded)

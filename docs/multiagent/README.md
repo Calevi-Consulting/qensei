@@ -23,6 +23,10 @@ live runs.
   entry points, the invocation tiers, the rebuttal / loop-budget rules, and the escalation digest contract.
 - **[`r-design.md`](./r-design.md)** — the design-stage lens: the one that runs at `/automate` Phase 2b,
   **before** code exists, and reports into the human spec-approval gate.
+- **Invocation is recorded, deterministically.** `engine/design_panel_lint.py` (a touched plan says whether
+  R-DESIGN ran, with one disposition per finding) and `engine/panel_section_lint.py` (a touched validation
+  report says whether the Phase-4 panel ran) gate the *record*, never the verdict — see
+  [`../quality-gates.md`](../quality-gates.md).
 - **[`../../agents/`](../../agents/)** — the lens definitions (one Markdown agent file each).
 
 ## The lenses

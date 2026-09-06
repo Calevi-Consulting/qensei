@@ -12,7 +12,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from engine.design_panel_lint import check_text, is_lintable_path, main
+from engine.design_panel_lint import check_text, declared_count, is_lintable_path, main
 
 RAN = (
     "## Design panel\n"
@@ -124,6 +124,78 @@ class VacuousPass(unittest.TestCase):
         self.assertIn("0 disposition", reason)
 
 
+class ReviewFindings(unittest.TestCase):
+    """Pins from the independent pre-merge code review (language-pitfall angle), each verified."""
+
+    def test_out_of_sequence_labels_fail(self):
+        reason = check_text("## Design panel\n- ran: 2 findings\n- F1 APPLIED: a\n- F3 REJECTED: b\n")
+        self.assertIsNotNone(reason)
+        self.assertIn("expected F1..F2", reason)
+
+    def test_a_wrapped_ran_line_still_carries_its_count(self):
+        """A soft-wrapped `ran:` (lazy continuation) used to hide the count -> presence-only pass."""
+        text = "## Design panel\n- ran: R-DESIGN\n  3 findings; R-MECHANISM (needs_mechanism)\n"
+        reason = check_text(text)
+        self.assertIsNotNone(reason)
+        self.assertIn("3 finding(s)", reason)
+
+    def test_the_count_is_r_designs_not_the_first_number(self):
+        self.assertEqual(declared_count("R-MECHANISM 2 findings verified; R-DESIGN 3 findings"), 3)
+        self.assertEqual(declared_count("R-DESIGN 4 findings (2026-09-06, as a subagent)"), 4)
+
+    def test_a_date_does_not_read_as_a_count(self):
+        self.assertIsNone(declared_count("R-DESIGN, 2026-09-06 findings recorded below"))
+        self.assertIsNone(declared_count("ran on 2026-09-06 findings: none"))
+
+    def test_a_hyphenated_token_does_not_read_as_a_count(self):
+        self.assertIsNone(declared_count("R-DESIGN 1 finding-free pass"))
+        self.assertIsNone(declared_count("a finding-free pass"))
+
+    def test_a_sub_header_inside_the_section_does_not_end_it(self):
+        text = "## Design panel\n- ran: R-DESIGN 2 findings\n### Dispositions\n- F1 APPLIED: a\n- F2 REJECTED: b\n"
+        self.assertIsNone(check_text(text))
+
+    def test_a_same_level_header_does_end_it(self):
+        text = "## Design panel\n- ran: R-DESIGN 2 findings\n## Rollout\n- F1 APPLIED: a\n- F2 REJECTED: b\n"
+        self.assertIsNotNone(check_text(text))
+
+    def test_tilde_fences_are_stripped_and_do_not_split_the_record(self):
+        text = "## Design panel\n- ran: 1 finding\n~~~sh\n# comment\n~~~\n- F1 APPLIED: x\n"
+        self.assertIsNone(check_text(text))
+        self.assertIsNotNone(check_text("## Design panel\n~~~\n- ran: 1 finding\n- F1 APPLIED: x\n~~~\n"))
+
+    def test_a_comment_opener_inside_a_fence_does_not_swallow_the_section(self):
+        text = "```md\n<!-- guidance\n```\n## Design panel\n<!-- real comment -->\n- waived: docs only\n"
+        self.assertIsNone(check_text(text))
+
+    def test_bold_labels_are_accepted(self):
+        self.assertIsNone(check_text("## Design panel\n- **ran:** 1 finding\n- **F1 APPLIED**: x\n"))
+        self.assertIsNone(check_text("## Design panel\n- ran: 1 finding\n- **F1 APPLIED:** x\n"))
+
+    def test_disposition_case_is_forgiven(self):
+        self.assertIsNone(check_text("## Design panel\n- ran: 1 finding\n- f1 applied: x\n"))
+
+    def test_an_unreadable_plan_is_a_lint_failure_not_a_traceback(self):
+        with tempfile.TemporaryDirectory() as tmp, _chdir(tmp):
+            d = Path("sut/acme/plans")
+            d.mkdir(parents=True)
+            (d / "2026-09-06-x.md").write_bytes(b"## Design panel\n- waived: docs \x97 only\n")  # cp1252 em dash
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = main(["sut/acme/plans/2026-09-06-x.md"])
+        self.assertEqual(rc, 1)
+        self.assertIn("unreadable", out.getvalue())
+
+    def test_changed_mode_exits_2_when_git_cannot_answer(self):
+        """A git failure must never read as clean — the false-green-guard convention."""
+        with tempfile.TemporaryDirectory() as tmp, _chdir(tmp):  # not a git repo
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = main(["--changed"])
+        self.assertEqual(rc, 2)
+        self.assertIn("refusing to report clean", out.getvalue())
+
+
 class Scope(unittest.TestCase):
     def test_sut_plan_is_lintable(self):
         self.assertTrue(is_lintable_path("sut/mock-shop/plans/2026-09-06-shop-456-bulk-discount.md"))
@@ -175,9 +247,6 @@ def _chdir(path):
         os.chdir(prev)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 class RealPlans(unittest.TestCase):
     """Every plan actually committed under sut/<name>/plans/ carries a record the lint accepts.
 
@@ -194,3 +263,6 @@ class RealPlans(unittest.TestCase):
             rel = plan.relative_to(root).as_posix()
             self.assertTrue(is_lintable_path(rel), rel)
             self.assertIsNone(check_text(plan.read_text(encoding="utf-8")), rel)
+
+if __name__ == "__main__":
+    unittest.main()
