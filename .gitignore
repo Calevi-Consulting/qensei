@@ -17,7 +17,7 @@ report*.json
 # 'rm -rf .tooling' reverts the bootstrap.
 .tooling/
 # Claude Code project wiring — generated (opt-in) by scripts/install.sh; source of
-# truth is commands/ + agents/ + policies/ at the repo root
+# truth is commands/ + agents/ + workflows/ + policies/ at the repo root
 .claude/
 # Provisioned SUT source clones — a real SUT sets manifest.source.repo and `make sync-source`
 # materialises source.path as a git clone. The example SUTs' committed
