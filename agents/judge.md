@@ -35,6 +35,13 @@ The artifact under review (a diff / a failure + traceback / a claim), the approv
 - **R-MECHANISM** — `CITED` / `UNCITED` / `MISREAD` (+ surfaced SUT-mechanism calls)
 - **R-UPLIFT** (advisory) — test-quality / coverage uplift suggestions → always `FLAG`
 
+You also receive the **ORIENT record** (step ⓪′ of the protocol — what the repo already knew before any
+lens reasoned). Use it: a proposal listed under `rejected_fixes` does not clear as a `FIX` — it was
+already rejected as a weakening; `contradicts_subject` means the failure brief's own premise is disputed
+by the record, so verify the premise before the causal arrow; `prior_attempts` is your loop-budget input
+(this is rewrite #N of the same failure). If the record is absent, treat every "already known" claim as
+unestablished rather than assuming the record agrees with the lenses.
+
 There is **also a deterministic code lens**, `engine/diagnostics.py`, that classifies a failure as
 `REAL_BUG` vs `TEST_BUG` mechanically by reading the SUT contract (`BUSINESS_RULES`) and comparing
 the case's `contract_claim` to the runtime response. The advisory **R-DIAGNOSIS** lens *complements*

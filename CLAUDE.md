@@ -33,7 +33,9 @@ This distinction governs almost every design decision — keep it straight:
   - `commands/` — slash commands the assistant runs: `/validate` (verify a ticket vs a live SUT),
     `/automate` (a validated result → an automated REST/UI pack), `/report-bug`.
   - `agents/` — the advisory **review panel**, read-only diagnostic lenses (`r-diagnosis`,
-    `r-evidence`, `r-mechanism`, `r-fidelity`, `r-coverage`, `r-uplift`, adjudicated by `judge`).
+    `r-evidence`, `r-mechanism`, `r-fidelity`, `r-coverage`, `r-uplift`, adjudicated by `judge`; plus
+    `r-design`, the design-stage lens that reviews the (spec, plan) pair at `/automate` Phase 2b, before
+    any pack code — its findings go to the human, with no judge).
     **Advisory only — they raise the floor, they never gate a merge.**
   - `policies/` — product-neutral governance the assistant follows.
 - **Humans own intent** (specs, acceptance criteria, scope, approvals); **the framework owns
@@ -173,6 +175,11 @@ by the advisory `r-fidelity` lens:
   downgrades intentional-refactor findings to warnings.
 - `engine/citation_gate.py` (`make citations`) — resolves every `source:line` a lens cited (anti-fabrication).
 - `engine/freshness_gate.py` (`make freshness`) — SUT source-clone freshness before a citation is trusted.
+- `engine/design_panel_lint.py` (`make design-panel`) + `engine/panel_section_lint.py` (`make panel-record`)
+  — the **record** gates: a touched `sut/<name>/plans/*.md` must say whether R-DESIGN ran (and carry one
+  `F<n> APPLIED|REJECTED|FLAGGED|DEFERRED` line per finding); a touched validation report must carry a
+  `### Panel` `ran:`/`waived:` line. Presence, never verdict — the panel stays advisory, but skipping it
+  is visible. Pre-commit + `make check` + CI, changed files only.
 - `make secrets` + gitleaks (pre-commit) — no hardcoded credentials in VCS.
 
 When a case fails, `engine/diagnostics.py` reads the SUT's `BUSINESS_RULES`: claim disagrees with the
