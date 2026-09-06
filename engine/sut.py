@@ -81,6 +81,7 @@ class SUTConnector:
         self.settings = settings or Settings.load()
         self._httpd = None
         self._thread = None
+        self._seeded = False
         self._plugin = ...  # sentinel: not yet loaded
         self._base_url = self._resolve_base_url()
         rt = self.manifest.get("runtime", {})
@@ -130,6 +131,18 @@ class SUTConnector:
                 return env_mode
         return self.manifest.get("runtime", {}).get("mode")
 
+    @property
+    def seeded(self) -> bool:
+        """Whether this connector booted a runtime with a **seeded fault** injected.
+
+        True only when an ``in_process`` runtime was started with a truthy ``buggy`` kwarg — the
+        framework's demo path for showing REAL_BUG detection (``--seed-bug``). A ``remote`` runtime
+        drops every ``runtime_kwargs`` (there is no factory to pass them to), so seeding requested
+        against one is reported as **not applied** rather than stamped as if it had been: a provenance
+        marker that can be wrong is worse than none.
+        """
+        return self._seeded
+
     def start(self, **runtime_kwargs):
         rt = self.manifest["runtime"]
         mode = self.runtime_mode()
@@ -145,6 +158,7 @@ class SUTConnector:
             self._base_url = f"http://127.0.0.1:{self._httpd.server_address[1]}"
             self._thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
             self._thread.start()
+            self._seeded = bool(runtime_kwargs.get("buggy"))
         elif mode == "remote":
             if not self._base_url:
                 raise ValueError("remote runtime resolved no base_url (set --env/--base_url)")
