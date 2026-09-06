@@ -10,7 +10,7 @@
 > coalescing, IM offered load, `--dist=loadfile`, per-arm rollout, multi-repo routing) is deliberately
 > **not** ported — `engine/`, `agents/` and `policies/` stay product-neutral.
 
-## Status: INCOMPLETE
+## Status: COMPLETE
 
 ## Context
 
@@ -154,7 +154,7 @@ step rather than "the JUDGE remembers".
 
 ### WS-D — Deterministic orchestrator
 
-- [ ] `workflows/review-panel.js` exists with `meta` (name `review-panel`, four phases), the subject gate
+- [x] `workflows/review-panel.js` exists with `meta` (name `review-panel`, four phases), the subject gate
   (throws on string `args`, throws when none of `failure|env|pipeline|spec|diff|pack` is supplied, throws
   when `sut` is missing), ORIENT (`general-purpose`), the deterministic `engine.diagnose` step when `pack`
   is given, R-DIAGNOSIS (`r-diagnosis`, verdict enum `TEST_BUG | REAL_BUG | ENV_OR_TRANSIENT | INDETERMINATE
@@ -163,19 +163,19 @@ step rather than "the JUDGE remembers".
   0/1/3 mapped to resolved / fabricated / unverifiable), and JUDGE (`judge`, decision enum
   `BLOCK | FIX | FLAG | ESCALATE | PANEL_CLEAR`). Returns `{ decision, digest, record, diagnostics,
   diagnosis, lenses, citation_gate, verdict }`.
-- [ ] `workflows/README.md` documents invocation (`args` shape, `--sut` requirement, return shape) and why
+- [x] `workflows/README.md` documents invocation (`args` shape, `--sut` requirement, return shape) and why
   it coexists with the model-driven path.
-- [ ] `scripts/install.sh` symlinks `.claude/workflows -> ../workflows` alongside `commands` / `agents`, and
+- [x] `scripts/install.sh` symlinks `.claude/workflows -> ../workflows` alongside `commands` / `agents`, and
   the generated `.claude/CLAUDE.md` lists it.
 
 ### WS-E — Execution architecture
 
-- [ ] `docs/multiagent/execution-architecture.md` exists per R8, using qensei's cast (R-DESIGN, R-DIAGNOSIS,
+- [x] `docs/multiagent/execution-architecture.md` exists per R8, using qensei's cast (R-DESIGN, R-DIAGNOSIS,
   R-EVIDENCE, R-MECHANISM, R-COVERAGE, R-UPLIFT, JUDGE; lints `fidelity_lint`, `coverage_lint`,
   `citation_gate`, `freshness_gate`, `design_panel_lint`, `panel_section_lint`, the gate's false-green guard)
   and qensei's phases (`/automate` 0–5), with worked examples drawn from this repo (SHOP-456 seeded REAL_BUG;
   BOOK-UI-2 as the design-panel case).
-- [ ] `docs/multiagent/README.md` links it and states which of the three docs answers which question.
+- [x] `docs/multiagent/README.md` links it and states which of the three docs answers which question.
 
 ### Integration-boundary AC
 
@@ -187,10 +187,13 @@ step rather than "the JUDGE remembers".
 - [x] **The record lints fire through the real hook path**: with a scratch plan lacking the section staged,
   `make check` fails naming `[DESIGN-PANEL-RECORD-MISSING]`; with the section added it passes. Same for a
   scratch validation report and `[PANEL-SECTION-MISSING]`.
-- [ ] **The orchestrator has run end-to-end against the live in-process SUT**: `workflows/review-panel.js`
+- [x] **The orchestrator has run end-to-end against the live in-process SUT**: `workflows/review-panel.js`
   invoked via the Workflow tool with `{ sut: "sut/mock-shop", pack: "sut/mock-shop/packs/SHOP-456-discount",
-  failure: <the seeded REAL_BUG output> }` completes all four phases, the citation-gate step's raw output is
-  echoed in the JUDGE digest, and the decision is recorded in the PR's validation report `### Panel` line.
+  seed_bug: true, failure: <the seeded REAL_BUG output> }` completed all four phases (6 agents, 0 errors),
+  the citation-gate step's raw output is echoed verbatim in the JUDGE digest (18 anchors, exit 0, with a
+  negative control proving non-vacuity), and the decision (`ESCALATE`) is recorded in the PR-2 validation
+  report's `### Panel` line. The run also refuted the premise of its own brief and surfaced a verified
+  framework-shape finding — see the report.
 
 ## Risks & Assumptions
 
@@ -262,4 +265,15 @@ R-MECHANISM 7/7 CITED, every citation resolving), and the hook path was driven t
 should look first at `engine/design_panel_lint.py` + its tests, `agents/r-design.md`, and the demonstrator's
 `## Design panel` record in `sut/mock-shop/plans/`.
 
-_(PR 2 — WS-D + WS-E: populate before opening.)_
+**PR 2 (WS-D + WS-E).** Adds the protocol as a deterministic Workflow-tool script
+(`workflows/review-panel.js`: ORIENT → `engine.diagnostics` → R-DIAGNOSIS → flagged R-EVIDENCE / R-MECHANISM
+in parallel → `engine.citation_gate` → JUDGE, with a subject gate that throws rather than convening a panel
+against a null subject) and the timeline doc that says when each dispatch happens and who decides
+(`docs/multiagent/execution-architecture.md`: three laws, the cast, the gate table with exit codes, the
+dispatch-conditions table, the lens-or-lint tree and its graduation path, worked examples from this repo).
+The orchestrator was run for real against the live in-process SUT: it refuted the false premise in the brief
+it was handed, declined to file a bug and said why, surfaced the deterministic-lens / R-DIAGNOSIS
+disagreement without resolving it, and produced one verified framework-shape finding (a seeded gate red is
+indistinguishable from a genuine one in the artifact) that is left with the human. Reviewers should look
+first at `workflows/review-panel.js` (the subject gate and the two mechanical steps) and at the PR-2
+validation report's account of that run.

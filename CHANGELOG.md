@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   validation report (`### Panel`), gated by `engine/panel_section_lint.py`. A read-only **ORIENT** step
   now precedes every lens, returning the record (`rejected_fixes`, `contradicts_subject`,
   `prior_attempts`). Both lints are stdlib, wired in pre-commit, `make check` and CI (changed files only).
+- **Deterministic review-panel orchestrator** (spec 005 WS-D/E): `workflows/review-panel.js` implements the
+  panel protocol as a Workflow-tool script over the same `agents/` lenses and the same `engine/` gates —
+  ORIENT → `engine.diagnostics` → R-DIAGNOSIS → flagged R-EVIDENCE / R-MECHANISM in parallel →
+  `engine.citation_gate` → JUDGE — with a subject gate that throws rather than convening a panel against a
+  null subject. `scripts/install.sh` wires `.claude/workflows`. The model-driven path stays the always-on
+  default; the orchestrator is human-triggered. `docs/multiagent/execution-architecture.md` documents the
+  timeline: the three laws, every dispatch condition, the lens-or-lint decision and its graduation path.
 - **Sourceless SUT mode** (`specs/002-sourceless-ticket-driven-mode.md`): a SUT can declare no backend
   source (omit `source`, or `{"source": {"mode": "none"}}`) and still run the regression gate against its
   live runtime. `design` falls back to the ticket + docs, `diagnostics` returns `INDETERMINATE` (contract
