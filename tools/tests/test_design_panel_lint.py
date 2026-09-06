@@ -150,3 +150,19 @@ def _chdir(path):
 if __name__ == "__main__":
     unittest.main()
 
+class RealPlans(unittest.TestCase):
+    """Every plan actually committed under sut/<name>/plans/ carries a record the lint accepts.
+
+    Integration pin for spec 005's demonstrator: the first real R-DESIGN run in this repo landed its
+    findings + dispositions in `sut/mock-shop/plans/…`, and that record is what the lint gates. If the
+    record format and the lint ever drift apart, this is where it shows — on a real file, not a fixture.
+    """
+
+    def test_every_committed_plan_passes(self):
+        root = Path(__file__).resolve().parents[2]
+        plans = sorted(root.glob("sut/*/plans/*.md"))
+        self.assertTrue(plans, "expected at least one plan under sut/*/plans/ (the spec-005 demonstrator)")
+        for plan in plans:
+            rel = plan.relative_to(root).as_posix()
+            self.assertTrue(is_lintable_path(rel), rel)
+            self.assertIsNone(check_text(plan.read_text(encoding="utf-8")), rel)
