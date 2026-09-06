@@ -20,6 +20,20 @@ repos:
         files: ^sut/.*/(packs|ui-packs)/.*/(case\.py|README\.md)$
         pass_filenames: true
 
+      - id: design-panel-lint
+        name: design-panel record (a touched sut/<name>/plans/*.md says whether R-DESIGN ran)
+        entry: python3 -m engine.design_panel_lint
+        language: system
+        files: ^sut/[^/]+/plans/[^/]+\.md$
+        pass_filenames: true
+
+      - id: panel-record-lint
+        name: review-panel record (a touched validation report says whether the panel ran)
+        entry: python3 -m engine.panel_section_lint
+        language: system
+        files: ^validation-reports/.*\.md$
+        pass_filenames: true
+
       - id: engine-tests
         name: engine + gate unit tests
         entry: python3 -m unittest discover -s tools/tests
