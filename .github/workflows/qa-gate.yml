@@ -74,9 +74,9 @@ jobs:
       - name: coverage-metadata gate (covers match README + resolve against the SUT)
         run: python3 -m engine.coverage_lint
       - name: design-panel record (touched sut/<name>/plans/*.md carry the Phase-2b record)
-        run: git diff --name-only "origin/${{ github.event.repository.default_branch }}...HEAD" -- 'sut/*/plans/*.md' | xargs -r python3 -m engine.design_panel_lint
+        run: python3 -m engine.design_panel_lint --changed --base "origin/${{ github.event.repository.default_branch }}...HEAD"
       - name: review-panel record (touched validation reports carry the Panel section)
-        run: git diff --name-only "origin/${{ github.event.repository.default_branch }}...HEAD" -- 'validation-reports/*.md' | xargs -r python3 -m engine.panel_section_lint
+        run: python3 -m engine.panel_section_lint --changed --base "origin/${{ github.event.repository.default_branch }}...HEAD"
       - name: secrets scan
         run: make secrets
       - uses: actions/upload-artifact@v4

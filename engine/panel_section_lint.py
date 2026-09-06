@@ -9,18 +9,13 @@ reason).
 
 It gates PRESENCE, not content. The lenses stay advisory and a waiver is legitimate (a docs-only or
 tooling-only change; no non-green gate result this cycle); the human reads the waiver on the PR. Scope
-is **changed files only** (pre-commit ``pass_filenames``; ``make panel-record`` covers files changed
-vs ``HEAD`` *and* untracked ones; CI diffs against the base ref), so historical reports are never
-retro-gated. ``TEMPLATE.md`` is out of scope by name.
+is **changed files only** — pre-commit passes the staged paths; ``--changed [--base REF]`` (used by
+``make panel-record`` and CI) computes files changed vs ``HEAD``/``REF`` plus untracked ones — so
+historical reports are never retro-gated. ``TEMPLATE.md`` is out of scope by name.
 
-Three rules close the vacuous-pass hole (found on the pre-merge re-verification of spec 005 — a report
-copied verbatim from the template satisfied the first version of this lint):
-
-* the entry must sit **inside** the ``Panel`` section (from its header to the next markdown header),
-  not anywhere in the file;
-* HTML comments and fenced code blocks are stripped before matching, so guidance text and
-  examples cannot satisfy the lint (and a `# …` line inside a fence cannot end the section early);
-* an unfilled placeholder — a value starting with ``<`` — is not an entry.
+Rules that close the vacuous-pass hole (``engine/record_lint.py``): the entry must sit **inside** the
+``Panel`` section; fenced code and HTML comments are stripped first; an unfilled ``<placeholder>`` is not
+an entry. A bold label (``- **ran:** …``) is accepted.
 
 Expected shape anywhere in the report::
 
@@ -28,39 +23,27 @@ Expected shape anywhere in the report::
     - ran: R-DIAGNOSIS tier 1 (TEST_BUG, no flags); JUDGE digest in the PR description   # or
     - waived: docs-only change, no failing case this cycle
 
-Exit codes: ``0`` pass (including "no lintable path given"), ``1`` a touched report lacks the record.
+Exit codes: ``0`` pass (including "nothing to check"), ``1`` a touched report lacks the record or
+cannot be read, ``2`` ``--changed`` could not determine the changed files (never a silent pass).
 """
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 
-HEADER_RE = re.compile(r"(?mi)^#{2,4}\s+Panel\b")
-# `(?!<)`: an unfilled `<placeholder>` is not a record.
-ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*(ran|waived)\s*:\s*(?!<)\S+")
-COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
-# Fenced code is illustrative, never a record: strip it like a comment, which also keeps a `# …` line
-# inside a fence from being mistaken for the next markdown header.
-FENCE_RE = re.compile(r"```.*?```", re.S)
-NEXT_HEADER_RE = re.compile(r"(?m)^#{1,6}\s")
+from engine.record_lint import lint_paths, resolve_paths, section_body
+
+PATHSPECS = ["validation-reports/*.md"]
+HEADER_RE = re.compile(r"(?mi)^(?P<h>#{2,4})\s+Panel\b")
+# `\**` tolerates a bold label; `(?!<)` rejects an unfilled `<placeholder>`.
+ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*\**(ran|waived)\**\s*:\**\s*(?!<)\S+")
 
 HELP = (
     "add a `### Panel` section with `- ran: <digest / verdict ref>` or `- waived: <reason>` — "
     "the review-panel invocation record (docs/multiagent/review-panel.md § Invocation tiers). "
     "The panel is advisory: this gates the RECORD, never the verdict"
 )
-
-
-def section_body(text: str, header_re: re.Pattern[str]) -> str | None:
-    """The text between the first ``header_re`` match and the next markdown header (HTML comments and
-    fenced code stripped first); ``None`` when the section is absent."""
-    text = FENCE_RE.sub("", COMMENT_RE.sub("", text))
-    m = header_re.search(text)
-    if m is None:
-        return None
-    rest = text[m.end():]
-    nxt = NEXT_HEADER_RE.search(rest)
-    return rest[: nxt.start()] if nxt else rest
 
 
 def check_text(text: str) -> str | None:
@@ -82,28 +65,21 @@ def is_lintable_path(path: str) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
-    paths = argv if argv is not None else sys.argv[1:]
-    failures: list[str] = []
-    for path in paths:
-        if not is_lintable_path(path):
-            continue
-        try:
-            with open(path, encoding="utf-8") as fh:
-                text = fh.read()
-        except FileNotFoundError:
-            continue  # deleted in this change — nothing left to record
-        reason = check_text(text)
-        if reason:
-            failures.append(f"  [PANEL-SECTION-MISSING] {path} — {reason}")
-    if failures:
-        print("\n".join(failures))
-        print(
-            "\n  panel-record lint: every touched validation report must record the review-panel "
-            "outcome (ran / waived). The panel is advisory; this gates the RECORD, not the verdict."
-        )
-        return 1
-    print("  panel-record lint: clean")
-    return 0
+    ap = argparse.ArgumentParser(description="Qensei review-panel record lint (validation reports)")
+    ap.add_argument("paths", nargs="*", help="report files to check (pre-commit passes the staged ones)")
+    ap.add_argument("--changed", action="store_true",
+                    help="check reports changed vs --base (default HEAD) plus untracked ones")
+    ap.add_argument("--base", default=None, help="revision (or A...B range) for --changed; default HEAD")
+    args = ap.parse_args(argv)
+    paths, rc = resolve_paths(args, PATHSPECS, "panel-record lint")
+    if paths is None:
+        return rc
+    return lint_paths(
+        paths, is_lintable=is_lintable_path, check_text=check_text, tag="PANEL-SECTION-MISSING",
+        name="panel-record lint",
+        epilogue="every touched validation report must record the review-panel outcome (ran / waived). "
+                 "The panel is advisory; this gates the RECORD, not the verdict.",
+    )
 
 
 if __name__ == "__main__":

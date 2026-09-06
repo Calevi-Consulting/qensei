@@ -75,6 +75,43 @@ class VacuousPass(unittest.TestCase):
         self.assertIsNotNone(check_text("# R\n### Panel\nprose\n## Result\n- ran: x\n"))
 
 
+class ReviewFindings(unittest.TestCase):
+    """Pins from the independent pre-merge code review (language-pitfall angle), each verified."""
+
+    def test_tilde_fences_are_stripped(self):
+        self.assertIsNotNone(check_text("# R\n### Panel\n~~~\n- ran: example\n~~~\n"))
+        self.assertIsNone(check_text("# R\n### Panel\n~~~sh\n# comment\n~~~\n- waived: docs only\n"))
+
+    def test_a_comment_opener_inside_an_earlier_fence_does_not_swallow_the_section(self):
+        text = "```md\n<!-- guidance\n```\n### Panel\n<!-- the template's comment -->\n- waived: docs only\n"
+        self.assertIsNone(check_text(text))
+
+    def test_a_sub_header_inside_the_section_does_not_end_it(self):
+        self.assertIsNone(check_text("# R\n### Panel\n#### Detail\n- waived: docs only\n"))
+
+    def test_bold_label_is_accepted(self):
+        self.assertIsNone(check_text("# R\n### Panel\n- **waived:** docs only\n"))
+        self.assertIsNone(check_text("# R\n### Panel\n- **ran**: tier 1\n"))
+
+    def test_an_unreadable_report_is_a_lint_failure_not_a_traceback(self):
+        with tempfile.TemporaryDirectory() as tmp, _chdir(tmp):
+            d = Path("validation-reports")
+            d.mkdir()
+            (d / "r.md").write_bytes(b"### Panel\n- waived: docs \x97 only\n")
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = main(["validation-reports/r.md"])
+        self.assertEqual(rc, 1)
+        self.assertIn("unreadable", out.getvalue())
+
+    def test_changed_mode_exits_2_when_git_cannot_answer(self):
+        with tempfile.TemporaryDirectory() as tmp, _chdir(tmp):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = main(["--changed"])
+        self.assertEqual(rc, 2)
+
+
 class Scope(unittest.TestCase):
     def test_validation_reports_only(self):
         self.assertTrue(is_lintable_path("validation-reports/2026-09-06-x.md"))
@@ -128,7 +165,6 @@ def _chdir(path):
         yield
     finally:
         os.chdir(prev)
-
 
 if __name__ == "__main__":
     unittest.main()

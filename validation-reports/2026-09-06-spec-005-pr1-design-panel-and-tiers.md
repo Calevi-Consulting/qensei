@@ -13,8 +13,9 @@
   `F1..FN` each exactly once, or `- waived: <reason>`) and `engine/panel_section_lint.py` (a touched
   validation report must carry `### Panel` with `ran:` / `waived:`; `TEMPLATE.md` excluded by name). Both gate
   presence, never verdict. Wired in `.pre-commit-config.yaml`, `make design-panel` / `make panel-record`
-  (inside `make check`, diff vs `HEAD`), and the CI `checks` job (diff vs the base ref). `tools/tests/`: +35
-  unittest pins (all polarities, the ownership wording in the failure message, the real-plan pin).
+  (inside `make check`, diff vs `HEAD`), and the CI `checks` job (diff vs the base ref). `tools/tests/`: +67
+  unittest pins (all polarities, the ownership wording in the failure message, the real-plan and
+  real-template pins, and every hole the two re-verification passes found).
 - **`agents/r-design.md`** — the design-stage lens: freshness self-gate, ten product-neutral checklist items,
   ≤6 ranked findings `F1..Fn` with severity + citation-or-`hypothesis:` + one alternative, `needs_mechanism` /
   `needs_evidence`, and the hard limit that it never writes a disposition. `docs/multiagent/r-design.md` in the
@@ -92,15 +93,36 @@ before merge. All three belong to the vacuous-pass family the source framework h
 | H4 | CI actually ran the lints over the new plan and report | OK — the `checks` job log shows `design-panel lint: clean` / `panel-record lint: clean` with the files passed | — |
 
 Also stated where it was only implied: the `ran:` count is R-DESIGN's; a Tier-2 lens's output folds into
-the `F<n>` line it bears on. +10 test pins (44 across the two lint modules). Design decisions re-examined
-and kept: no JUDGE at 2b; the GENERATOR proposes / the human ratifies; changed-files-only scope; F1
+the `F<n>` line it bears on. Design decisions re-examined and kept: no JUDGE at 2b; the GENERATOR proposes / the human ratifies; changed-files-only scope; F1
 DEFERRED on the demonstrator (amending a human-approved spec is the human's call).
+
+**Independent code review** (`/code-review 39`, run twice — both times the orchestrator and most angles
+died on the session rate limit; two angles completed and their findings were verified by hand, all real):
+
+| Finding (language-pitfall angle) | Fix |
+|---|---|
+| a soft-wrapped `- ran:` line hid the count → presence-only pass | the `ran:` entry spans its indented continuation lines |
+| the count read the **first** `N finding`, and `\b\d+` matched a date's tail (`2026-09-06 findings` → 6) — the demonstrator passed only because `4 findings` came first | the count is **R-DESIGN's** (`R-DESIGN N findings` preferred; otherwise a number not preceded by a word/`-`/`.` char) |
+| only ``` fences stripped; comments stripped *before* fences, so a `<!--` inside a fence paired with a real `-->` and swallowed the header | ``` and `~~~` fences stripped first, comments second |
+| any later header ended the section, sub-headers included | the section ends only at a header of the same or a higher level |
+| bold labels (`- **F1 APPLIED**:`) and lowercase dispositions rejected with a "missing record" message | accepted (case-forgiven; the set stays closed) |
+| `git diff … \| xargs` in Make/CI: no pipefail, whitespace paths, a git error → **silent "clean", exit 0** | the lints own their scoping: `--changed [--base REF]` via `git … -z`; a git failure is **exit 2** (false-green-guard convention) |
+| a non-UTF-8 file or a directory → traceback, batch abandoned | reported as an `unreadable` lint failure; the batch continues |
+| `RealPlans` was defined after the `__main__` guard (skipped when the file is run directly) | moved above it |
+
+| Finding (conventions angle) | Fix |
+|---|---|
+| three inconsistent pin counts in this report | reconciled |
+| WS-A AC 6 named two docs that did not mention the lint; AC 4 claimed out-of-sequence labels were pinned | both docs now name the record gates; the pin exists |
+| `check_text` over the 10-statement guideline | split (`declared_count`, `_reconcile`) |
+| commit summaries not in the imperative | rewritten before merge |
+| the spec's implementation commits precede the spec commit (Phase 6.5 "same commit") | pushed in one push; recorded here as a deviation, not hidden |
 
 ## Phase 3 — Tests
 
 | Check | Command | Result |
 |---|---|---|
-| Engine + gate units | `make test-engine` | **128 passed** (was 80; +48 lint pins incl. the real-plan and real-template pins) |
+| Engine + gate units | `make test-engine` | **147 passed** (was 80; +67 lint pins across the two lint modules) |
 | Regression gate (offline ritual) | `make check` | OK — fidelity, coverage-lint, **design-panel: clean**, **panel-record: clean**, lint, secrets |
 | Full local CI | `make verify` | OK — ruff, pip-audit, pytest 87 passed, fidelity, coverage-lint, secrets |
 | Hook path, negative polarity (integration AC 2) | scratch plan + scratch report, `git add -N`, `make check` | **fails** naming `[DESIGN-PANEL-RECORD-MISSING]`; `make panel-record` names `[PANEL-SECTION-MISSING]` |

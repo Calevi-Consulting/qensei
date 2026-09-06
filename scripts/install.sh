@@ -231,6 +231,8 @@ Product-neutral development governance. Read the relevant file when it applies:
 Advisory, read-only diagnostic lenses: `judge`, `r-diagnosis`, `r-evidence`,
 `r-fidelity`, `r-coverage`, `r-mechanism`, `r-uplift`, and the design-stage `r-design` (runs at
 `/automate` Phase 2b, before code exists). They raise the floor; they never gate a merge.
+Whether a panel ran is recorded and linted (`engine/design_panel_lint.py` on `sut/<name>/plans/*.md`,
+`engine/panel_section_lint.py` on validation reports) — the record is gated, the verdict never is.
 
 ## Domain knowledge — per SUT, loaded on demand (NOT loaded here)
 Each product under test is a plugin under `sut/<name>/`. Its domain/system-shape
