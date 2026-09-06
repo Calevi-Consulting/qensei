@@ -127,6 +127,12 @@ class VacuousPass(unittest.TestCase):
 class ReviewFindings(unittest.TestCase):
     """Pins from the independent pre-merge code review (language-pitfall angle), each verified."""
 
+    def test_an_annotated_entry_is_accepted_and_still_carries_its_count(self):
+        self.assertIsNone(check_text("## Design panel\n- waived (docs-only): revision of a landed pack\n"))
+        reason = check_text("## Design panel\n- ran (tier 1): R-DESIGN 2 findings\n- F1 APPLIED: a\n")
+        self.assertIsNotNone(reason)
+        self.assertIn("2 finding(s)", reason)
+
     def test_out_of_sequence_labels_fail(self):
         reason = check_text("## Design panel\n- ran: 2 findings\n- F1 APPLIED: a\n- F3 REJECTED: b\n")
         self.assertIsNotNone(reason)

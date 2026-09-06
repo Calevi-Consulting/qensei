@@ -114,7 +114,7 @@ lint-fix: ## ruff lint applying safe autofixes
 cve: ## scan dependencies for known CVEs with pip-audit (needs `make install`)
 	$(POETRY) run pip-audit
 
-verify: lint cve pytest fidelity coverage-lint secrets ## full local CI: lint + CVE + pytest + fidelity + coverage-lint + secrets
+verify: lint cve pytest fidelity coverage-lint design-panel panel-record secrets ## full local CI: lint + CVE + pytest + fidelity + coverage-lint + panel records + secrets
 	@echo "  verify: OK"
 
 # --- authoring tooling ------------------------------------------------------

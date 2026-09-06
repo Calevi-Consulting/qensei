@@ -13,7 +13,7 @@
   `F1..FN` each exactly once, or `- waived: <reason>`) and `engine/panel_section_lint.py` (a touched
   validation report must carry `### Panel` with `ran:` / `waived:`; `TEMPLATE.md` excluded by name). Both gate
   presence, never verdict. Wired in `.pre-commit-config.yaml`, `make design-panel` / `make panel-record`
-  (inside `make check`, diff vs `HEAD`), and the CI `checks` job (diff vs the base ref). `tools/tests/`: +67
+  (inside `make check`, diff vs `HEAD`), and the CI `checks` job (diff vs the base ref). `tools/tests/`: +70
   unittest pins (all polarities, the ownership wording in the failure message, the real-plan and
   real-template pins, and every hole the two re-verification passes found).
 - **`agents/r-design.md`** — the design-stage lens: freshness self-gate, ten product-neutral checklist items,
@@ -118,13 +118,22 @@ died on the session rate limit; two angles completed and their findings were ver
 | commit summaries not in the imperative | rewritten before merge |
 | the spec's implementation commits precede the spec commit (Phase 6.5 "same commit") | pushed in one push; recorded here as a deviation, not hidden |
 
+**Cloud multi-agent review** (`/code-review ultra`, 21 agents, 2 rounds — the pass the rate-limited local
+runs could not finish). Two nit findings, both confirmed by hand before fixing, plus one refuted:
+
+| Finding | Fix |
+|---|---|
+| `ENTRY_RE` rejected `- waived (Phase 4): …` — **the shape this very report uses at its `### Panel` line**; it passed only because the adjacent `- ran:` line matched, so a report waiving only Phase 4 would have been told it had no entry at all | an optional `(annotation)` between the keyword and the colon, in both lints and in `RAN_RE` |
+| `make verify`, labelled "full local CI", omitted the two gates this PR adds to `make check` and to the CI `checks` job — a dev would pass locally and fail on CI | `verify` now runs `design-panel` + `panel-record` |
+| *(refuted)* the `validation-reports` pathspec vs. the regex disagreeing on nested reports | no change — the reviewer's own verification found the claim does not hold |
+
 ## Phase 3 — Tests
 
 | Check | Command | Result |
 |---|---|---|
-| Engine + gate units | `make test-engine` | **147 passed** (was 80; +67 lint pins across the two lint modules) |
+| Engine + gate units | `make test-engine` | **150 passed** (was 80; +70 lint pins across the two lint modules) |
 | Regression gate (offline ritual) | `make check` | OK — fidelity, coverage-lint, **design-panel: clean**, **panel-record: clean**, lint, secrets |
-| Full local CI | `make verify` | OK — ruff, pip-audit, pytest 87 passed, fidelity, coverage-lint, secrets |
+| Full local CI | `make verify` | OK — ruff, pip-audit, pytest 87 passed, fidelity, coverage-lint, **design-panel, panel-record**, secrets |
 | Hook path, negative polarity (integration AC 2) | scratch plan + scratch report, `git add -N`, `make check` | **fails** naming `[DESIGN-PANEL-RECORD-MISSING]`; `make panel-record` names `[PANEL-SECTION-MISSING]` |
 | Hook path, positive polarity | same files with the records added | `design-panel lint: clean` · `panel-record lint: clean` |
 | Citations in the demonstrator plan | `python3 -m engine.citation_gate sut/mock-shop/plans/…` | 5 citations, all resolve |
