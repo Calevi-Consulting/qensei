@@ -205,6 +205,19 @@ Every factual assertion in a durable document should be backed by one of:
 
 Guessing dressed up as fact is the worst of both worlds — it looks authoritative but is unreliable, and the error is invisible to readers who trust the doc. When no ready path to verification exists in the current session, mark the claim as uncertainty rather than write it as fact.
 
+**A gate-state claim carries the invocation that produced it.** "The gate is red" / "the gate is green"
+is an environmental claim about a command's output, and this framework can produce *either* colour on
+demand: `--seed-bug` injects a fault, so a red run — exit 1, a failing case, a JUnit `<failure>` — is
+manufacturable for any SUT. Quote the command line alongside the verdict (`python3 -m engine.run --sut
+sut/<name>` vs the same with `--seed-bug`), and when reading someone else's claim, ask for it. The
+artifact now declares its own provenance (`engine/report.py` emits `qensei.seeded`), so a report can be
+checked directly; a claim made in prose cannot.
+
+This rule exists because the case is not hypothetical: a review-panel run was handed a brief asserting
+"gate red on sut/mock-shop" and found the gate green — the red existed only because the brief's own
+`seed_bug` flag put it there. The panel caught it by re-running the gate itself rather than trusting the
+claim. See `validation-reports/2026-09-06-spec-005-pr2-orchestrator-and-architecture.md`.
+
 **Commonly-leaked unverified claims** (watch for these):
 
 - **Environmental / operational**: "seed job X populates table Y", "flag Z enables W", "the staging environment has data for Q"
