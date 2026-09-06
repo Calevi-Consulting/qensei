@@ -7,7 +7,7 @@ TESTBUG_PACK ?= sut/mock-shop/examples/diagnostics/SHOP-789-bad-test
 SERVE_APP    ?= sut/mock-shop/source/app.py
 
 .PHONY: help demo demo-booker design test smoke gate-report diagnose-realbug diagnose-testbug \
-        serve check lint-offline test-engine fidelity coverage-lint citations freshness sync-source secrets new-sut new-pack new-ui-pack regen-index \
+        serve check lint-offline test-engine fidelity coverage-lint design-panel panel-record citations freshness sync-source secrets new-sut new-pack new-ui-pack regen-index \
         install pytest test-ui ui-watch lint lint-fix cve verify
 
 help: ## list targets
@@ -44,7 +44,7 @@ serve: ## run the SUT's mock backend standalone (prints its port)
 	python3 $(SERVE_APP)
 
 # --- deterministic quality gates (the forcing functions) --------------------
-check: test-engine fidelity coverage-lint lint-offline secrets ## offline pre-commit ritual (tests + fidelity + coverage-lint + lint + secrets)
+check: test-engine fidelity coverage-lint design-panel panel-record lint-offline secrets ## offline pre-commit ritual (tests + fidelity + coverage-lint + panel records + lint + secrets)
 	@echo "  check: OK"
 
 lint-offline: ## ruff lint IF the toolchain is present (keeps `check` zero-dependency; CI always enforces it)
@@ -62,6 +62,12 @@ fidelity: ## spec-fidelity lint — block a weakened acceptance criterion
 
 coverage-lint: ## coverage-metadata gate — case.py covers must match README + resolve against the SUT
 	python3 -m engine.coverage_lint
+
+design-panel: ## Phase-2b record — a plan changed vs HEAD must say whether R-DESIGN ran (+ per-finding dispositions)
+	@git diff --name-only HEAD -- 'sut/*/plans/*.md' | xargs -r python3 -m engine.design_panel_lint
+
+panel-record: ## Phase-4 record — a validation report changed vs HEAD must say whether the panel ran / was waived
+	@git diff --name-only HEAD -- 'validation-reports/*.md' | xargs -r python3 -m engine.panel_section_lint
 
 citations: ## resolve every source:line a lens cited (anti-fabrication)
 	@git diff --name-only | xargs -r python3 -m engine.citation_gate || true
