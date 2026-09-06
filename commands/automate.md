@@ -161,6 +161,9 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
      GENERATOR's proposal; the human ratifies them at the approval gate.** `engine/design_panel_lint.py`
      (pre-commit, `make design-panel`, `make check`, CI — changed plans only) reconciles the declared count
      against the labelled lines. It gates the RECORD, never the verdict — `REJECTED` passes like `APPLIED`.
+     The declared count is **R-DESIGN's**; a Tier-2 lens's output is folded into the `F<n>` line it bears on
+     (or named in the `ran:` prose), never labelled separately. Only lines inside the section count, HTML
+     comments are ignored, and an unfilled `<placeholder>` is not a record.
 
 ## Phase 3 — Implement (translate the functional test to a REST **or** UI automated pack)
 

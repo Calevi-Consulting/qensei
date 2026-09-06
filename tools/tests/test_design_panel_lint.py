@@ -96,6 +96,27 @@ class CheckText(unittest.TestCase):
         self.assertIn("human", reason.lower())
 
 
+class VacuousPass(unittest.TestCase):
+    """Same family as the panel-record lint's: a copied template or an example in a comment must
+    never satisfy the record on its own, and only the section's own lines count."""
+
+    def test_placeholder_values_are_not_entries(self):
+        self.assertIsNotNone(check_text("## Design panel\n- ran: <N> findings\n- F1 APPLIED: <reason>\n"))
+        self.assertIsNotNone(check_text("## Design panel\n- waived: <reason>\n"))
+
+    def test_example_inside_an_html_comment_does_not_count(self):
+        self.assertIsNotNone(check_text("## Design panel\n<!--\n- ran: 1 finding\n- F1 APPLIED: x\n-->\n"))
+
+    def test_entries_outside_the_section_do_not_count(self):
+        self.assertIsNotNone(check_text("## Notes\n- ran: 1 finding\n- F1 APPLIED: x\n\n## Design panel\nprose\n"))
+
+    def test_dispositions_outside_the_section_are_not_counted(self):
+        text = "## Design panel\n- ran: 2 findings\n\n## Rollout\n- F1 APPLIED: a\n- F2 REJECTED: b\n"
+        reason = check_text(text)
+        self.assertIsNotNone(reason)
+        self.assertIn("0 disposition", reason)
+
+
 class Scope(unittest.TestCase):
     def test_sut_plan_is_lintable(self):
         self.assertTrue(is_lintable_path("sut/mock-shop/plans/2026-09-06-shop-456-bulk-discount.md"))

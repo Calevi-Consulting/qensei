@@ -116,13 +116,14 @@ step rather than "the JUDGE remembers".
 - [x] `engine/design_panel_lint.py`: `check_text()` passes `ran:` + matching `F1..Fn` dispositions, passes
   `ran:` with no declared count, passes `waived: <reason>`; fails a missing section, a missing entry, an
   empty entry, a declared count with fewer/more dispositions, duplicate or out-of-sequence labels, an
-  unknown disposition word, a disposition without a reason. `is_lintable_path()` accepts
-  `sut/<name>/plans/<file>.md` only. The failure message names the **proposal/human** ownership and says
+  unknown disposition word, a disposition without a reason, an unfilled `<placeholder>` value, an entry
+  inside an HTML comment, and entries or dispositions outside the `Design panel` section. `is_lintable_path()`
+  accepts `sut/<name>/plans/<file>.md` only. The failure message names the **proposal/human** ownership and says
   there is **no JUDGE** at 2b. Covered by `tools/tests/test_design_panel_lint.py` (unittest) pinning each
   polarity above.
 - [x] The lint is wired: `.pre-commit-config.yaml` hook over `^sut/[^/]+/plans/.*\.md$` (pass_filenames), a
-  `make design-panel` target scoped to plans changed vs `HEAD`, included in `make check`, and in the CI
-  `checks` job scoped to the PR diff.
+  `make design-panel` target scoped to plans changed vs `HEAD` **plus untracked ones** (a new plan is the
+  common case), included in `make check`, and in the CI `checks` job scoped to the PR diff.
 - [x] `agents/README.md` registry, `docs/multiagent/README.md`, `docs/diagnostics-and-review-panel.md`,
   `docs/quality-gates.md` (gate table), `CLAUDE.md`, and the generated `.claude/CLAUDE.md` index in
   `scripts/install.sh` name R-DESIGN and the new lint.
@@ -134,12 +135,14 @@ step rather than "the JUDGE remembers".
   states the tiers as non-discretionary (R-DIAGNOSIS as a subagent on every non-green result; inline
   self-triage is not a substitute).
 - [x] `engine/panel_section_lint.py`: passes `### Panel` + `ran:`/`waived:` with content; fails a missing
-  section, a missing entry, an empty entry. `is_lintable_path()` accepts `validation-reports/*.md` and
+  section, a missing entry, an empty entry, an unfilled `<placeholder>` value, an entry inside an HTML comment,
+  and an entry outside the section — so **the real `TEMPLATE.md` content does not satisfy it** (pinned by
+  test). `is_lintable_path()` accepts `validation-reports/*.md` and
   **rejects `validation-reports/TEMPLATE.md`** (the template shows the shape without satisfying the lint).
   Covered by `tools/tests/test_panel_section_lint.py`.
 - [x] `validation-reports/TEMPLATE.md` carries a `### Panel` section with the two forms as guidance.
 - [x] The lint is wired: pre-commit hook over `^validation-reports/.*\.md$`, a `make panel-record` target
-  scoped to reports changed vs `HEAD`, included in `make check`, and in the CI `checks` job.
+  scoped to reports changed vs `HEAD` plus untracked ones, included in `make check`, and in the CI `checks` job.
 - [x] `docs/quality-gates.md` lists both record lints with their exit codes.
 
 ### WS-C — ORIENT
