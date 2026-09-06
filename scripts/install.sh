@@ -190,7 +190,7 @@ fi
 # Claude Code integration (opt-in, project-scoped)
 #
 # Qensei is driven by an AI coding assistant. Its slash commands (commands/),
-# review-panel subagents (agents/), and governance (policies/) only become
+# review-panel subagents (agents/), orchestrators (workflows/), and governance (policies/) only become
 # discoverable once they live under ./.claude — Claude Code scans .claude/commands
 # and .claude/agents at project scope. This step SYMLINKS them there, so the repo
 # root stays the single source of truth (edits are live, no re-sync) and generates
@@ -227,6 +227,11 @@ Product-neutral development governance. Read the relevant file when it applies:
 - `/validate` — verify a ticket over REST or UI
 - `/report-bug` — file a structured bug for a genuine backend regression
 
+## Deterministic orchestrator (`./.claude/workflows` → `../workflows`)
+- `review-panel` — the review-panel protocol as a Workflow-tool script: ORIENT → engine.diagnostics →
+  R-DIAGNOSIS → flagged R-EVIDENCE/R-MECHANISM → engine.citation_gate → JUDGE. Human-triggered (it spawns
+  several agents); the model-driven path stays the default. See `workflows/README.md`.
+
 ## Review panel — subagents (`./.claude/agents` → `../agents`)
 Advisory, read-only diagnostic lenses: `judge`, `r-diagnosis`, `r-evidence`,
 `r-fidelity`, `r-coverage`, `r-mechanism`, `r-uplift`, and the design-stage `r-design` (runs at
@@ -256,11 +261,13 @@ MD
 
 install_claude_wiring() {
   mkdir -p .claude
-  ln -sfn ../commands .claude/commands
-  ln -sfn ../agents   .claude/agents
+  ln -sfn ../commands  .claude/commands
+  ln -sfn ../agents    .claude/agents
+  ln -sfn ../workflows .claude/workflows
   generate_claude_md > .claude/CLAUDE.md
-  echo "  ./.claude/commands -> ../commands   (/automate, /validate, /report-bug)"
-  echo "  ./.claude/agents   -> ../agents     (review panel: judge + r-* lenses)"
+  echo "  ./.claude/commands  -> ../commands   (/automate, /validate, /report-bug)"
+  echo "  ./.claude/agents    -> ../agents     (review panel: judge + r-* lenses)"
+  echo "  ./.claude/workflows -> ../workflows  (review-panel orchestrator, Workflow tool)"
   echo "  ./.claude/CLAUDE.md                 (governance: policies/ + per-SUT skills pointer)"
   echo "  ./.claude is gitignored — re-run 'make install' to refresh the wiring."
   echo "  NOTE: (re)start Claude Code after first wiring so the review-panel lenses load"
