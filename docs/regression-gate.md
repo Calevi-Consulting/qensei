@@ -107,4 +107,12 @@ JSON for triage tooling (`engine/report.py`). Each case becomes a `<testcase>`; 
 a FAIL carries the collected failure details. In CI the gate uploads it as an artifact even on failure
 (`.gitlab-ci.yml`, `artifacts.when: always`).
 
+**Every report declares its provenance.** A `qensei.seeded` property (JUnit) / `seeded` field
+(JSON) records whether the run injected a fault into the SUT with `--seed-bug` — the demo path that
+demonstrates REAL_BUG detection. Without it a seeded red is byte-indistinguishable from a genuine one:
+same exit 1, same failing `<testcase>`. The field is emitted on every report, `false` included, so its
+absence never has to be interpreted. `--seed-bug` reaches only an `in_process` factory; requested against
+a `remote` runtime it is dropped, and the gate says so and stamps the run unseeded rather than claiming a
+seeding that did not happen.
+
 See also: [pre-flight & selection](preflight-and-selection.md), [personas & durability](personas-and-durability.md).
