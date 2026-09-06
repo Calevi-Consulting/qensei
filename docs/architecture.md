@@ -20,8 +20,14 @@ runtime. See [`sut/contract.md`](../sut/contract.md#sourceless-suts).
 
 The framework is **driven by an AI coding assistant ([Claude Code](https://claude.com/claude-code))**:
 the human-in-the-loop legs are Claude Code **slash commands** (`commands/`) and the advisory review panel
-is a set of Claude Code **subagents** (`agents/`). The engine and gate below are plain Python and run
-with no AI in the loop — the assistant works around the gate, never as it.
+is a set of Claude Code **subagents** (`agents/`, optionally sequenced by the deterministic orchestrator in
+`workflows/`). The engine and gate below are plain Python and run with no AI in the loop — the assistant
+works around the gate, never as it.
+
+The panel runs at two moments — **before code exists** (R-DESIGN over the `(spec, plan)` pair, reporting
+into the human spec-approval gate) and **on a red gate** (R-DIAGNOSIS on every non-green result, the full
+panel on defined triggers) — and neither can block a merge. Whether it ran is recorded and linted. The
+actors and the order are drawn in [end-to-end-workflow.md](end-to-end-workflow.md).
 
 ## Component map
 
@@ -50,8 +56,11 @@ flowchart TB
 
   subgraph gates["deterministic gates"]
     fidelity["fidelity_lint.py"]
+    coverage["coverage_lint.py"]
     citation["citation_gate.py"]
     freshness["freshness_gate.py"]
+    designrec["design_panel_lint.py"]
+    panelrec["panel_section_lint.py"]
   end
 
   plugin["sut/&lt;name&gt;/<br/>manifest.json + source/ + plugin.py"]
@@ -71,6 +80,7 @@ flowchart TB
   design -. reads source .-> plugin
   diagnostics -. reads BUSINESS_RULES .-> plugin
   fidelity -. lints .-> case
+  coverage -. lints .-> case
   freshness --> plugin
 ```
 
@@ -123,7 +133,10 @@ sequenceDiagram
 - **`commands/`** — the Claude Code slash commands the assistant runs: `/validate`, `/automate`,
   `/report-bug`.
 - **`agents/` + `docs/multiagent/`** — the advisory review panel, run as Claude Code subagents (see
-  [diagnostics-and-review-panel.md](diagnostics-and-review-panel.md)).
+  [diagnostics-and-review-panel.md](diagnostics-and-review-panel.md) and
+  [execution-architecture.md](multiagent/execution-architecture.md)).
+- **`workflows/`** — the panel protocol as a deterministic Workflow-tool script; human-triggered, with the
+  model-driven path as the default ([`workflows/README.md`](../workflows/README.md)).
 
 ## Where to go next
 
@@ -133,3 +146,4 @@ sequenceDiagram
 - [Pre-flight & selection](preflight-and-selection.md) — requirements + tag lanes.
 - [Deterministic quality gates](quality-gates.md) — the forcing functions.
 - [Diagnostics & the review panel](diagnostics-and-review-panel.md) — REAL_BUG/TEST_BUG + the lenses.
+- [End-to-end workflow](end-to-end-workflow.md) — the use cases and sequence diagrams: who acts, when.
