@@ -15,7 +15,8 @@ historical reports are never retro-gated. ``TEMPLATE.md`` is out of scope by nam
 
 Rules that close the vacuous-pass hole (``engine/record_lint.py``): the entry must sit **inside** the
 ``Panel`` section; fenced code and HTML comments are stripped first; an unfilled ``<placeholder>`` is not
-an entry. A bold label (``- **ran:** …``) is accepted.
+an entry. A bold label (``- **ran:** …``) and an annotation (``- waived (Phase 4): …`` — a report may
+waive one phase while recording the other) are both accepted.
 
 Expected shape anywhere in the report::
 
@@ -36,8 +37,9 @@ from engine.record_lint import lint_paths, resolve_paths, section_body
 
 PATHSPECS = ["validation-reports/*.md"]
 HEADER_RE = re.compile(r"(?mi)^(?P<h>#{2,4})\s+Panel\b")
-# `\**` tolerates a bold label; `(?!<)` rejects an unfilled `<placeholder>`.
-ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*\**(ran|waived)\**\s*:\**\s*(?!<)\S+")
+# `\**` tolerates a bold label; `(…)` an annotation such as `- waived (Phase 4): …`;
+# `(?!<)` rejects an unfilled `<placeholder>`.
+ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*\**(ran|waived)\**\s*(?:\([^)\n]{0,60}\)\s*)?:\**\s*(?!<)\S+")
 
 HELP = (
     "add a `### Panel` section with `- ran: <digest / verdict ref>` or `- waived: <reason>` — "

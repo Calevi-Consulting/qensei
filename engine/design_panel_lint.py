@@ -48,8 +48,8 @@ by ``make design-panel`` and CI) computes plans changed vs ``HEAD``/``REF`` plus
 Existing plans are never retro-gated. Shared rules (``engine/record_lint.py``): entries and
 dispositions count only **inside** the ``Design panel`` section (a sub-header does not end it), fenced
 code and HTML comments are stripped first, an unfilled ``<placeholder>`` is not an entry, and a bold
-label (``- **F1 APPLIED**: …``) is accepted — so a copied template or a pasted example never passes on
-its own.
+label (``- **F1 APPLIED**: …``) or an annotation (``- waived (docs-only): …``) is accepted — so a
+copied template or a pasted example never passes on its own.
 
 Exit codes: ``0`` pass (including "nothing to check"), ``1`` a touched plan lacks the record or cannot
 be read, ``2`` ``--changed`` could not determine the changed files (never a silent pass).
@@ -64,10 +64,13 @@ from engine.record_lint import lint_paths, resolve_paths, section_body
 
 PATHSPECS = ["sut/*/plans/*.md"]
 HEADER_RE = re.compile(r"(?mi)^(?P<h>#{2,4})\s+Design panel\b")
-# `\**` tolerates a bold label; `(?!<)` rejects an unfilled `<placeholder>`.
-ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*\**(ran|waived)\**\s*:\**\s*(?!<)\S+")
+# `\**` tolerates a bold label; `(…)` an annotation such as `- waived (Phase 4): …`;
+# `(?!<)` rejects an unfilled `<placeholder>`.
+ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*\**(ran|waived)\**\s*(?:\([^)\n]{0,60}\)\s*)?:\**\s*(?!<)\S+")
 # The whole `ran:` list item, including indented continuation lines that are not themselves items.
-RAN_RE = re.compile(r"(?mi)^\s*[-*]\s*\**ran\**\s*:\**\s*(?!<)(?P<body>.+(?:\n[ \t]+(?![-*\s])\S.*)*)")
+RAN_RE = re.compile(
+    r"(?mi)^\s*[-*]\s*\**ran\**\s*(?:\([^)\n]{0,60}\)\s*)?:\**\s*(?!<)(?P<body>.+(?:\n[ \t]+(?![-*\s])\S.*)*)"
+)
 # R-DESIGN's count. Prefer the phrase that names the lens; else the first `<N> findings` whose digits
 # are not the tail of a date / hyphenated token (`2026-09-06 findings` must not read as 6), and
 # `finding` is the whole word (`1 finding-free pass` declares nothing).

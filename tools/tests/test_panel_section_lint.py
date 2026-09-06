@@ -78,6 +78,17 @@ class VacuousPass(unittest.TestCase):
 class ReviewFindings(unittest.TestCase):
     """Pins from the independent pre-merge code review (language-pitfall angle), each verified."""
 
+    def test_an_annotated_waived_line_is_an_entry_on_its_own(self):
+        """`- waived (Phase 4): …` is the shape a report uses to say WHICH phase was waived. It used to
+        match nothing, so a report waiving only Phase 4 was told it had no entry at all."""
+        self.assertIsNone(check_text("# R\n### Panel\n- waived (Phase 4): docs-only change\n"))
+        self.assertIsNone(check_text("# R\n### Panel\n- waived (Phase 2b): x\n- waived (Phase 4): y\n"))
+        self.assertIsNone(check_text("# R\n### Panel\n- **ran (tier 1):** R-DIAGNOSIS, no flags\n"))
+
+    def test_an_annotation_still_needs_a_value(self):
+        self.assertIsNotNone(check_text("# R\n### Panel\n- waived (Phase 4):\n"))
+        self.assertIsNotNone(check_text("# R\n### Panel\n- waived (Phase 4): <reason>\n"))
+
     def test_tilde_fences_are_stripped(self):
         self.assertIsNotNone(check_text("# R\n### Panel\n~~~\n- ran: example\n~~~\n"))
         self.assertIsNone(check_text("# R\n### Panel\n~~~sh\n# comment\n~~~\n- waived: docs only\n"))
