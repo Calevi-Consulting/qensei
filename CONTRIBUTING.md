@@ -22,7 +22,9 @@ a Discussion or an issue). Treat this guide as a starting point, not a barrier.
 
 The runtime is zero-dependency (pure stdlib) — `make demo` / `make test` /
 `make design` need no install. The dev/test toolchain (pytest, ruff, pip-audit,
-Playwright) is Poetry-managed:
+Playwright) is Poetry-managed. `make install` bootstraps whatever is missing
+(Poetry, and the Python `pyproject.toml` targets) into `./.tooling` — project-local,
+no sudo, reverted by `rm -rf .tooling`:
 
 ```bash
 make install      # provision the dev toolchain into ./.venv (run once)

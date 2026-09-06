@@ -73,7 +73,9 @@ make diagnose-testbug  # a wrong test → lens says TEST_BUG (fix the test, don'
 ## Development setup
 
 The runtime above needs **no install**. The dev/test toolchain (test runner + linter + CVE scanner)
-is [Poetry](https://python-poetry.org/)-managed into a project-local `.venv`:
+is [Poetry](https://python-poetry.org/)-managed into a project-local `.venv`. `make install` is
+self-bootstrapping: if Poetry — or the Python version `pyproject.toml` targets — is missing, it
+provisions them into `./.tooling` (gitignored, no sudo; `rm -rf .tooling` reverts it):
 
 ```bash
 make install   # poetry install: pytest, pytest-xdist, ruff, pip-audit (into ./.venv)
