@@ -13,13 +13,19 @@ assumed. For the slide version of this story, see the
 The journey has four stops:
 
 ```
-ticket  →  /validate (manual leg)  →  /automate (spec + pack)  →  the gate (make test)
-                                                                      ↓ on a later failure
-                                                             DIAGNOSE: REAL_BUG vs TEST_BUG
+ticket  →  /validate (manual leg)  →  /automate ──┬─ spec ──── HUMAN approves the intent
+                                                  ├─ plan ──── DESIGN PANEL reviews it before any code
+                                                  └─ pack ──→  the gate (make test)
+                                                                   │
+                                            red? ── triage BEFORE any fix ──┘   (validate-and-iterate,
+                                                     ↓                            capped at 3 cycles
+                                            DIAGNOSE: REAL_BUG vs TEST_BUG        per root cause)
 ```
 
 The slash commands run inside the AI assistant (Claude Code); the gate and the diagnostics
-engine are plain Python with no AI in the loop.
+engine are plain Python with no AI in the loop. For the same journey drawn as **sequence diagrams** —
+every actor and action, including the red-CI loop — see
+[end-to-end-workflow.md](end-to-end-workflow.md).
 
 ## Stop 0 — the ticket
 
@@ -84,6 +90,20 @@ contract_claim = {"rule": "bulk-discount", "rate": 0.10, "min_qty": 3}
 the case protects, which is what lets the diagnostics layer (Stop 4) reason about a failure
 instead of guessing.
 
+### The design panel — before a line of the pack is written
+
+Between the spec and the pack, `/automate` writes a **plan** (the *how*: the REST mapping, the case
+shape, the persona) and hands the `(spec, plan)` pair to **R-DESIGN**, a read-only lens, *before*
+implementation. It looks for the defects that are cheap to fix now and expensive later — a criterion the
+ticket asked for that no AC carries, a persona that cannot prove what the AC claims, a pre-flight that
+skips exactly when the bug appears, a `covers` entry naming a route the scenario never exercises.
+
+Its findings are **not** decided by an agent: the assistant records a proposed disposition per finding
+(`APPLIED` / `REJECTED` / `FLAGGED` / `DEFERRED`, each with a reason) in the plan, and the human ratifies
+them at the spec-approval gate that already exists. A deterministic lint
+(`engine/design_panel_lint.py`) checks that the record is *there* and that it accounts for every
+finding — never what it says. See [r-design.md](multiagent/r-design.md).
+
 ## Stop 3 — the gate: deterministic green
 
 ```
@@ -97,6 +117,21 @@ validates, and diagnoses *around* it; it never becomes it.
 
 From this point on, SHOP-456 is permanent coverage: every future run re-asserts the discount
 rule at both sides of the threshold.
+
+### When the gate is red: validate-and-iterate
+
+Getting there is rarely one pass. **Phase 4 — Validate (iterative)** is the loop where the pack is run,
+pushed, failed in CI, triaged, fixed and run again. Its defining rule is that **triage happens before any
+fix**: on *every* non-green result the assistant reads the record (prior attempts, gotchas, fixes already
+rejected), runs the deterministic classifier, and dispatches **R-DIAGNOSIS as a subagent** — inline
+self-triage does not count. The full panel follows on defined triggers (a mechanism or evidence flag, a
+`REAL_BUG`, a second cycle on the same root cause, a pack's first landing), and every citation it emits is
+resolved by a gate before the judge adjudicates.
+
+Two limits keep the loop honest: **three cycles on the same root cause** and it stops and escalates, and
+**no fix may weaken an acceptance criterion** — the fidelity lint blocks that mechanically. The cycle's
+validation report records whether the panel ran or was waived. Sequence diagram:
+[UC-3](end-to-end-workflow.md#uc-3--validate-and-iterate-phase-4-the-red-ci-loop).
 
 ## Stop 4 — when it fails later: REAL_BUG vs TEST_BUG
 

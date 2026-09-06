@@ -39,7 +39,16 @@ The assistant drives the human-in-the-loop legs through **slash commands** (`com
 `/validate`, `/automate`, `/report-bug`) and spawns the advisory **review panel** as **subagents**
 (`agents/`), following the `policies/` as governance. The deterministic engine and regression gate
 (`engine/`) are plain Python and run with **no AI in the loop** — the assistant works *around* the gate,
-never *as* it, and the human owns convergence. See the [review-panel protocol](multiagent/review-panel.md).
+never *as* it, and the human owns convergence.
+
+The panel runs at **two** moments, and neither can block a merge. **Before code exists**, at `/automate`
+Phase 2b, **R-DESIGN** reviews the (spec, plan) pair and its findings land in the spec-approval gate the
+human already owns. **On a red gate**, Phase 4 dispatches R-DIAGNOSIS on *every* non-green result and the
+full panel on defined triggers. Invocation is not discretionary: both moments carry a **record** that a
+deterministic lint checks (`design_panel_lint`, `panel_section_lint`) — presence, never verdict, because a
+policy without a gate is not followed. Start at
+[end-to-end-workflow.md](end-to-end-workflow.md) for the sequence diagrams, or the
+[review-panel protocol](multiagent/review-panel.md) for the protocol itself.
 
 ## The documentation set
 
@@ -47,6 +56,7 @@ never *as* it, and the human owns convergence. See the [review-panel protocol](m
 |------|--------|
 | [the teaching deck (PDF)](qensei-teaching-deck.pdf) | the newcomer tour: the problem, the mental model, the workflow, ownership — 15 slides, no experience assumed |
 | [walkthrough.md](walkthrough.md) | the end-to-end journey narrated on a worked example (SHOP-456): ticket → `/validate` → `/automate` → the gate → REAL_BUG/TEST_BUG |
+| [end-to-end-workflow.md](end-to-end-workflow.md) | the same journey as **use cases + sequence diagrams**: who acts, in what order, where a human decides — the normal path, the design panel, the validate-and-iterate (red-CI) loop, on-demand triage |
 | [architecture.md](architecture.md) | the component map, the three capabilities, the plugin model, an end-to-end `make demo` |
 | [ticket-testing-and-reporting.md](ticket-testing-and-reporting.md) | the `/validate` and `/report-bug` legs: functional ticket validation, bug reporting, the per-tenant Jira field mapping |
 | [regression-gate.md](regression-gate.md) | the gate lifecycle, exit codes, the false-green guard, the report artifact |
@@ -55,6 +65,10 @@ never *as* it, and the human owns convergence. See the [review-panel protocol](m
 | [preflight-and-selection.md](preflight-and-selection.md) | `requires` + the requirement registry (skip/block), tag selection + lanes, the CI matrix |
 | [quality-gates.md](quality-gates.md) | the deterministic forcing functions: fidelity lint, citation gate, freshness gate, pre-commit + CI |
 | [diagnostics-and-review-panel.md](diagnostics-and-review-panel.md) | the REAL_BUG/TEST_BUG classifier and the advisory review lenses it pairs with |
+| [multiagent/review-panel.md](multiagent/review-panel.md) | the panel protocol: the sequence, the invocation tiers, ORIENT, the rebuttal + loop-budget rules |
+| [multiagent/r-design.md](multiagent/r-design.md) | the design-stage lens — what it checks at Phase 2b and why it reports into an existing human gate |
+| [multiagent/execution-architecture.md](multiagent/execution-architecture.md) | the timeline: at what moment a subagent appears, under what condition, who decides — plus the lens-or-lint decision |
+| [`workflows/README.md`](../workflows/README.md) | the deterministic orchestrator: the panel protocol as a Workflow-tool script, and why it coexists with the model-driven path |
 | [delivered-regressions.md](delivered-regressions.md) | the generated index of landed packs (`make regen-index`) |
 | [the SUT contract](../sut/contract.md) | how to write a plugin: manifest keys + the optional `plugin.py` hooks |
 
@@ -83,6 +97,7 @@ qensei/
 ├── sut/          the SITES under test — one self-contained plugin dir each (replaceable examples; + contract.md)
 ├── commands/     Claude Code slash commands the assistant runs — /validate · /automate · /report-bug
 ├── agents/       the advisory review panel — read-only diagnostic lenses + the judge (never gates a merge)
+├── workflows/    the panel protocol as a deterministic Workflow-tool script (human-triggered; the model-driven path is the default)
 ├── policies/     product-neutral governance — spec phases · ownership · test philosophy · security · release-safety
 ├── ticket/       the tracker-agnostic ticket-provider contract (+ jira config); a site's own tickets live under sut/<name>/tickets/
 ├── tools/tests/  the framework's own zero-dependency unittest suite (engine + seam)
@@ -96,7 +111,8 @@ Expanded:
   matchers + personas hooks), `runner.py` (the gate), `run.py` (CLI + false-green guard),
   `design.py`, `diagnostics.py`, `source_sync.py` (SUT source provisioning), plus `config.py` / `credentials.py` / `masking.py` / `preflight.py` /
   `selection.py` / `personas.py` / `report.py` and the deterministic gates `fidelity_lint.py` /
-  `citation_gate.py` / `freshness_gate.py`.
+  `coverage_lint.py` / `citation_gate.py` / `freshness_gate.py` / `design_panel_lint.py` /
+  `panel_section_lint.py`.
 - **`policies/`** — product-neutral governance (spec phases, ownership, test philosophy, security,
   release-safety). [quality-gates.md](quality-gates.md) shows how the policies become forcing functions.
 - **`sut/`** — the SITES under test, one **self-contained** plugin dir each. The shipped ones are
@@ -111,7 +127,11 @@ Expanded:
   site's cards into [delivered-regressions.md](delivered-regressions.md).
 - **`commands/`** — the **Claude Code slash commands** the assistant runs: `/validate` (verify a
   ticket vs the SUT), `/automate` (a validated result → an automated REST/UI pack), `/report-bug`.
-- **`agents/` + `docs/multiagent/`** — the advisory review panel, run as **Claude Code subagents**.
+- **`agents/` + `docs/multiagent/`** — the advisory review panel, run as **Claude Code subagents**:
+  `r-design` (before code exists), `r-diagnosis` / `r-evidence` / `r-mechanism` / `r-coverage` /
+  `r-fidelity` on a failure or an edit, `r-uplift` for migrations, adjudicated by `judge`.
+- **`workflows/`** — the same protocol as a deterministic script for the Workflow tool
+  ([`workflows/README.md`](../workflows/README.md)), for live observability and structured findings.
 - **`tools/tests/`** — engine + gate unit tests (`make test-engine`).
 
 ## Why packs (one directory per case)
