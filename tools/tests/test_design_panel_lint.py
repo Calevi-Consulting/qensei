@@ -107,6 +107,13 @@ class VacuousPass(unittest.TestCase):
     def test_example_inside_an_html_comment_does_not_count(self):
         self.assertIsNotNone(check_text("## Design panel\n<!--\n- ran: 1 finding\n- F1 APPLIED: x\n-->\n"))
 
+    def test_example_inside_a_fenced_block_does_not_count(self):
+        self.assertIsNotNone(check_text("## Design panel\n```\n- ran: 1 finding\n- F1 APPLIED: x\n```\n"))
+
+    def test_a_hash_line_inside_a_fence_does_not_split_the_record(self):
+        text = "## Design panel\n- ran: 1 finding\n```py\n# the fix\n```\n- F1 APPLIED: applied, see the fence\n"
+        self.assertIsNone(check_text(text))
+
     def test_entries_outside_the_section_do_not_count(self):
         self.assertIsNotNone(check_text("## Notes\n- ran: 1 finding\n- F1 APPLIED: x\n\n## Design panel\nprose\n"))
 

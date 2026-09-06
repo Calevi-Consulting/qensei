@@ -43,8 +43,8 @@ this with R-MECHANISM under F3), or named in the ``ran:`` prose — it does not 
 Scope is **changed files only** (pre-commit ``pass_filenames``; ``make design-panel`` covers files
 changed vs ``HEAD`` *and* untracked ones; CI diffs against the base ref). Existing plans are never
 retro-gated. Like its sibling: entries and dispositions count only **inside** the ``Design panel``
-section, HTML comments are stripped first, and an unfilled ``<placeholder>`` is not an entry — so a
-copied template can never satisfy the lint on its own.
+section, HTML comments and fenced code blocks are stripped first, and an unfilled ``<placeholder>`` is
+not an entry — so a copied template or a pasted example can never satisfy the lint on its own.
 
 Exit codes: ``0`` pass (including "no lintable path given"), ``1`` a touched plan lacks the record.
 """

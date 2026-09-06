@@ -65,6 +65,12 @@ class VacuousPass(unittest.TestCase):
     def test_entry_outside_the_section_does_not_count(self):
         self.assertIsNotNone(check_text("# R\n## What changed\n- ran: the gate twice\n\n### Panel\nprose\n"))
 
+    def test_example_inside_a_fenced_block_does_not_count(self):
+        self.assertIsNotNone(check_text("# R\n### Panel\n```\n- ran: example\n```\n"))
+
+    def test_a_hash_line_inside_a_fence_does_not_end_the_section(self):
+        self.assertIsNone(check_text("# R\n### Panel\n```sh\n# a comment\n```\n- waived: docs only\n"))
+
     def test_entry_after_the_next_header_does_not_count(self):
         self.assertIsNotNone(check_text("# R\n### Panel\nprose\n## Result\n- ran: x\n"))
 

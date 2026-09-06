@@ -18,7 +18,8 @@ copied verbatim from the template satisfied the first version of this lint):
 
 * the entry must sit **inside** the ``Panel`` section (from its header to the next markdown header),
   not anywhere in the file;
-* HTML comments are stripped before matching, so guidance text cannot satisfy the lint;
+* HTML comments and fenced code blocks are stripped before matching, so guidance text and
+  examples cannot satisfy the lint (and a `# …` line inside a fence cannot end the section early);
 * an unfilled placeholder — a value starting with ``<`` — is not an entry.
 
 Expected shape anywhere in the report::
@@ -38,6 +39,9 @@ HEADER_RE = re.compile(r"(?mi)^#{2,4}\s+Panel\b")
 # `(?!<)`: an unfilled `<placeholder>` is not a record.
 ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*(ran|waived)\s*:\s*(?!<)\S+")
 COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+# Fenced code is illustrative, never a record: strip it like a comment, which also keeps a `# …` line
+# inside a fence from being mistaken for the next markdown header.
+FENCE_RE = re.compile(r"```.*?```", re.S)
 NEXT_HEADER_RE = re.compile(r"(?m)^#{1,6}\s")
 
 HELP = (
@@ -48,9 +52,9 @@ HELP = (
 
 
 def section_body(text: str, header_re: re.Pattern[str]) -> str | None:
-    """The text between the first ``header_re`` match and the next markdown header (comments stripped);
-    ``None`` when the section is absent."""
-    text = COMMENT_RE.sub("", text)
+    """The text between the first ``header_re`` match and the next markdown header (HTML comments and
+    fenced code stripped first); ``None`` when the section is absent."""
+    text = FENCE_RE.sub("", COMMENT_RE.sub("", text))
     m = header_re.search(text)
     if m is None:
         return None

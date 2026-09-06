@@ -100,7 +100,7 @@ DEFERRED on the demonstrator (amending a human-approved spec is the human's call
 
 | Check | Command | Result |
 |---|---|---|
-| Engine + gate units | `make test-engine` | **124 passed** (was 80; +44 lint pins incl. the real-plan and real-template pins) |
+| Engine + gate units | `make test-engine` | **128 passed** (was 80; +48 lint pins incl. the real-plan and real-template pins) |
 | Regression gate (offline ritual) | `make check` | OK — fidelity, coverage-lint, **design-panel: clean**, **panel-record: clean**, lint, secrets |
 | Full local CI | `make verify` | OK — ruff, pip-audit, pytest 87 passed, fidelity, coverage-lint, secrets |
 | Hook path, negative polarity (integration AC 2) | scratch plan + scratch report, `git add -N`, `make check` | **fails** naming `[DESIGN-PANEL-RECORD-MISSING]`; `make panel-record` names `[PANEL-SECTION-MISSING]` |
