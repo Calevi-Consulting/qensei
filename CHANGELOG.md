@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A seeded gate red now declares itself** ([#41](https://github.com/Calevi-Consulting/qensei/issues/41)).
+  `--seed-bug` is a flag on the gate binary, and nothing recorded it: a seeded run produced exit 1, a
+  failing `<testcase>` and a report byte-indistinguishable from a genuine regression, on any SUT. The gate
+  now announces a seeded run on stderr and stamps every report with `qensei.seeded` (JUnit `<property>`) /
+  `seeded` (JSON) — emitted on **every** report, `false` included, so an absent marker is never ambiguous.
+  `--seed-bug` reaches only an `in_process` factory; requested against a `remote` runtime it is dropped, and
+  the gate now says so and stamps the run unseeded rather than claiming a seeding that did not happen
+  (`SUTConnector.seeded`). `policies/communication-standards.md` gains the matching evidence rule: a
+  gate-state claim carries the invocation that produced it. Surfaced by the review-panel orchestrator on its
+  first real run.
+
 ### Added
 
 - **Design panel + non-discretionary panel tiers** (`specs/005-design-panel-and-invocation-tiers.md`,
