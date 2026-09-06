@@ -9,9 +9,17 @@ reason).
 
 It gates PRESENCE, not content. The lenses stay advisory and a waiver is legitimate (a docs-only or
 tooling-only change; no non-green gate result this cycle); the human reads the waiver on the PR. Scope
-is **changed files only** (pre-commit ``pass_filenames``; ``make panel-record`` diffs against ``HEAD``;
-CI diffs against the base ref), so historical reports are never retro-gated. ``TEMPLATE.md`` is out of
-scope by name: it shows the shape and must not satisfy the lint on its own.
+is **changed files only** (pre-commit ``pass_filenames``; ``make panel-record`` covers files changed
+vs ``HEAD`` *and* untracked ones; CI diffs against the base ref), so historical reports are never
+retro-gated. ``TEMPLATE.md`` is out of scope by name.
+
+Three rules close the vacuous-pass hole (found on the pre-merge re-verification of spec 005 — a report
+copied verbatim from the template satisfied the first version of this lint):
+
+* the entry must sit **inside** the ``Panel`` section (from its header to the next markdown header),
+  not anywhere in the file;
+* HTML comments are stripped before matching, so guidance text cannot satisfy the lint;
+* an unfilled placeholder — a value starting with ``<`` — is not an entry.
 
 Expected shape anywhere in the report::
 
@@ -27,7 +35,10 @@ import re
 import sys
 
 HEADER_RE = re.compile(r"(?mi)^#{2,4}\s+Panel\b")
-ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*(ran|waived)\s*:\s*\S+")
+# `(?!<)`: an unfilled `<placeholder>` is not a record.
+ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*(ran|waived)\s*:\s*(?!<)\S+")
+COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+NEXT_HEADER_RE = re.compile(r"(?m)^#{1,6}\s")
 
 HELP = (
     "add a `### Panel` section with `- ran: <digest / verdict ref>` or `- waived: <reason>` — "
@@ -36,11 +47,24 @@ HELP = (
 )
 
 
+def section_body(text: str, header_re: re.Pattern[str]) -> str | None:
+    """The text between the first ``header_re`` match and the next markdown header (comments stripped);
+    ``None`` when the section is absent."""
+    text = COMMENT_RE.sub("", text)
+    m = header_re.search(text)
+    if m is None:
+        return None
+    rest = text[m.end():]
+    nxt = NEXT_HEADER_RE.search(rest)
+    return rest[: nxt.start()] if nxt else rest
+
+
 def check_text(text: str) -> str | None:
     """Return the failure reason for a report body, or ``None`` if it passes."""
-    if not HEADER_RE.search(text):
+    body = section_body(text, HEADER_RE)
+    if body is None:
         return f"no `Panel` section: {HELP}"
-    if not ENTRY_RE.search(text):
+    if not ENTRY_RE.search(body):
         return f"`Panel` section has no `ran:`/`waived:` entry: {HELP}"
     return None
 

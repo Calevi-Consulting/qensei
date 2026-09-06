@@ -78,11 +78,29 @@ folded into the F1 follow-up. `make design-panel` → `design-panel lint: clean`
 **Lens lifecycle signal:** F2 (plan faithfulness to the case) and F3/F4 (unchecked setup writes) recurred
 across runs — candidates to graduate into lints per the r-design doc's "honest limit".
 
+## Pre-merge re-verification (adversarial, on request)
+
+Four hypotheses probed empirically against the first version of the lints — three held, and were fixed
+before merge. All three belong to the vacuous-pass family the source framework had already paid for once
+(its scaffolded plan illustrated the record format in an HTML comment and handed every new pack a pass).
+
+| # | Hypothesis | Result | Fix |
+|---|---|---|---|
+| H1 | A report copied verbatim from `TEMPLATE.md` satisfies the lint | **confirmed** — `check_text(TEMPLATE) is None` | an unfilled `<placeholder>` is not an entry; HTML comments stripped before matching; pinned by a test that reads the real template |
+| H2 | A **new, untracked** plan is invisible to `make check` | **confirmed** — `git diff HEAD` lists no untracked files; the first plan of a pack (the common case) skipped the offline ritual; only pre-commit would have caught it | `make design-panel` / `make panel-record` union `git diff --name-only HEAD` with `git ls-files --others --exclude-standard` |
+| H3 | A `ran:` line (or `F<n>` disposition) anywhere in the file counts | **confirmed** | entries and dispositions count only inside the section (header → next markdown header) |
+| H4 | CI actually ran the lints over the new plan and report | OK — the `checks` job log shows `design-panel lint: clean` / `panel-record lint: clean` with the files passed | — |
+
+Also stated where it was only implied: the `ran:` count is R-DESIGN's; a Tier-2 lens's output folds into
+the `F<n>` line it bears on. +10 test pins (44 across the two lint modules). Design decisions re-examined
+and kept: no JUDGE at 2b; the GENERATOR proposes / the human ratifies; changed-files-only scope; F1
+DEFERRED on the demonstrator (amending a human-approved spec is the human's call).
+
 ## Phase 3 — Tests
 
 | Check | Command | Result |
 |---|---|---|
-| Engine + gate units | `make test-engine` | **115 passed** (was 80; +35 lint pins incl. the real-plan pin) |
+| Engine + gate units | `make test-engine` | **124 passed** (was 80; +44 lint pins incl. the real-plan and real-template pins) |
 | Regression gate (offline ritual) | `make check` | OK — fidelity, coverage-lint, **design-panel: clean**, **panel-record: clean**, lint, secrets |
 | Full local CI | `make verify` | OK — ruff, pip-audit, pytest 87 passed, fidelity, coverage-lint, secrets |
 | Hook path, negative polarity (integration AC 2) | scratch plan + scratch report, `git add -N`, `make check` | **fails** naming `[DESIGN-PANEL-RECORD-MISSING]`; `make panel-record` names `[PANEL-SECTION-MISSING]` |

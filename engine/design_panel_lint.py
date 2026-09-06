@@ -36,8 +36,15 @@ line passes). It raises the floor; no deterministic lint can prove the record is
 countervailing risk — a heavier format pushing authors toward ``waived:`` — is why the format is one
 line per finding and no required prose length.
 
-Scope is **changed files only** (pre-commit ``pass_filenames``; ``make design-panel`` diffs against
-``HEAD``; CI diffs against the base ref). Existing plans are never retro-gated.
+**The declared count is R-DESIGN's.** A Tier-2 lens (R-MECHANISM / R-EVIDENCE) verifies or refutes
+what R-DESIGN flagged; its output is folded into the ``F<n>`` line it bears on (the demonstrator does
+this with R-MECHANISM under F3), or named in the ``ran:`` prose — it does not add labels of its own.
+
+Scope is **changed files only** (pre-commit ``pass_filenames``; ``make design-panel`` covers files
+changed vs ``HEAD`` *and* untracked ones; CI diffs against the base ref). Existing plans are never
+retro-gated. Like its sibling: entries and dispositions count only **inside** the ``Design panel``
+section, HTML comments are stripped first, and an unfilled ``<placeholder>`` is not an entry — so a
+copied template can never satisfy the lint on its own.
 
 Exit codes: ``0`` pass (including "no lintable path given"), ``1`` a touched plan lacks the record.
 """
@@ -46,9 +53,12 @@ from __future__ import annotations
 import re
 import sys
 
+from engine.panel_section_lint import section_body
+
 HEADER_RE = re.compile(r"(?mi)^#{2,4}\s+Design panel\b")
-ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*(ran|waived)\s*:\s*\S+")
-RAN_RE = re.compile(r"(?mi)^\s*[-*]\s*ran\s*:\s*(?P<body>.+)$")
+# `(?!<)`: an unfilled `<placeholder>` is not a record.
+ENTRY_RE = re.compile(r"(?mi)^\s*[-*]\s*(ran|waived)\s*:\s*(?!<)\S+")
+RAN_RE = re.compile(r"(?mi)^\s*[-*]\s*ran\s*:\s*(?!<)(?P<body>.+)$")
 # "3 findings" / "1 finding" anywhere in the ran: body. Absent -> nothing to reconcile: a `ran:`
 # that names no number is still a legitimate record of "the panel ran, nothing to report".
 COUNT_RE = re.compile(r"(?i)\b(\d+)\s+finding")
@@ -56,7 +66,7 @@ COUNT_RE = re.compile(r"(?i)\b(\d+)\s+finding")
 # is required because a bare verdict tells the next reader nothing about why.
 DISPOSITIONS = ("APPLIED", "REJECTED", "FLAGGED", "DEFERRED")
 FINDING_RE = re.compile(
-    r"(?m)^\s*[-*]\s*F(?P<n>\d+)\s+(?P<disp>" + "|".join(DISPOSITIONS) + r")\s*:\s*(?P<why>\S.*)$"
+    r"(?m)^\s*[-*]\s*F(?P<n>\d+)\s+(?P<disp>" + "|".join(DISPOSITIONS) + r")\s*:\s*(?!<)(?P<why>\S.*)$"
 )
 PLAN_PATH_RE = re.compile(r"^sut/[^/]+/plans/[^/]+\.md$")
 
@@ -71,7 +81,8 @@ HELP = (
 
 def check_text(text: str) -> str | None:
     """Return the failure reason for a plan body, or ``None`` if it passes."""
-    if not HEADER_RE.search(text):
+    text = section_body(text, HEADER_RE)
+    if text is None:
         return f"no `Design panel` section: {HELP}"
     if not ENTRY_RE.search(text):
         return f"`Design panel` section has no `ran:`/`waived:` entry: {HELP}"

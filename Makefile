@@ -64,10 +64,12 @@ coverage-lint: ## coverage-metadata gate — case.py covers must match README + 
 	python3 -m engine.coverage_lint
 
 design-panel: ## Phase-2b record — a plan changed vs HEAD must say whether R-DESIGN ran (+ per-finding dispositions)
-	@git diff --name-only HEAD -- 'sut/*/plans/*.md' | xargs -r python3 -m engine.design_panel_lint
+	@{ git diff --name-only HEAD -- 'sut/*/plans/*.md'; git ls-files --others --exclude-standard -- 'sut/*/plans/*.md'; } \
+	  | sort -u | xargs -r python3 -m engine.design_panel_lint
 
 panel-record: ## Phase-4 record — a validation report changed vs HEAD must say whether the panel ran / was waived
-	@git diff --name-only HEAD -- 'validation-reports/*.md' | xargs -r python3 -m engine.panel_section_lint
+	@{ git diff --name-only HEAD -- 'validation-reports/*.md'; git ls-files --others --exclude-standard -- 'validation-reports/*.md'; } \
+	  | sort -u | xargs -r python3 -m engine.panel_section_lint
 
 citations: ## resolve every source:line a lens cited (anti-fabrication)
 	@git diff --name-only | xargs -r python3 -m engine.citation_gate || true

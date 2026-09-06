@@ -46,6 +46,29 @@ class CheckText(unittest.TestCase):
         self.assertIn("record", reason.lower())
 
 
+class VacuousPass(unittest.TestCase):
+    """The hole the pre-merge re-verification of spec 005 found: a report copied verbatim from
+    TEMPLATE.md satisfied the first version of the lint."""
+
+    def test_the_real_template_does_not_satisfy_the_lint(self):
+        root = Path(__file__).resolve().parents[2]
+        template = (root / "validation-reports" / "TEMPLATE.md").read_text(encoding="utf-8")
+        self.assertIsNotNone(check_text(template), "TEMPLATE.md must not pass the lint on its own")
+
+    def test_placeholder_value_is_not_an_entry(self):
+        self.assertIsNotNone(check_text("# R\n### Panel\n- ran: <digest ref>\n"))
+        self.assertIsNotNone(check_text("# R\n### Panel\n- waived: <reason>\n"))
+
+    def test_entry_inside_an_html_comment_does_not_count(self):
+        self.assertIsNotNone(check_text("# R\n### Panel\n<!-- - ran: example -->\n"))
+
+    def test_entry_outside_the_section_does_not_count(self):
+        self.assertIsNotNone(check_text("# R\n## What changed\n- ran: the gate twice\n\n### Panel\nprose\n"))
+
+    def test_entry_after_the_next_header_does_not_count(self):
+        self.assertIsNotNone(check_text("# R\n### Panel\nprose\n## Result\n- ran: x\n"))
+
+
 class Scope(unittest.TestCase):
     def test_validation_reports_only(self):
         self.assertTrue(is_lintable_path("validation-reports/2026-09-06-x.md"))

@@ -119,7 +119,9 @@ The active SUT (`--sut sut/<name>`), the spec (`sut/<name>/specs/<id>.md`), the 
 ## Output contract
 At most **six** findings, ranked. **Label them `F1`..`F<n>` in that order** — the plan's `## Design
 panel` record carries one disposition line per label, and `engine/design_panel_lint.py` reconciles the
-count, so an unlabelled finding cannot be traced to what was decided about it. Each carries:
+count, so an unlabelled finding cannot be traced to what was decided about it. The count is **yours** —
+a Tier-2 lens verifies or refutes what you flagged and its output is folded into your `F<n>` lines, never
+labelled separately. Each carries:
 - the checklist item it came from (1-10),
 - a severity (`BLOCK-WORTHY` / `FIX` / `FLAG`),
 - a `file:line` (`sut/<name>/source/<file>:<line>`, or a `sut/<name>/{tickets,skills,learnings,specs}/…`
