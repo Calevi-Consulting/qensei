@@ -61,6 +61,16 @@ def main(argv=None):
     # artifact (engine/report.py). `--seed-bug` only reaches an in_process factory; against a remote
     # runtime it is silently dropped, and a marker that can be wrong is worse than none, so that case
     # is reported as NOT applied rather than stamped.
+    #
+    # Stamping was chosen over RESTRICTING the flag (issue #41, option B: refuse it outside an explicit
+    # demo context, and raise rather than warn on a remote runtime). The reasoning, recorded here because
+    # this is where anyone reconsidering it will land: the harm was an INDISTINGUISHABLE artifact, which
+    # the stamp closes; what is left is forgery, which a restriction does not prevent. And "an explicit
+    # demo context" would have to be defined — an env var, a make target, a manifest key — buying new
+    # configuration surface for a guarantee the stamp already gives. Raising on a remote runtime is the
+    # half with residual value, but it would harden a path that is source-grounded and NOT runtime-
+    # verified. Full disposition:
+    # validation-reports/2026-09-06-seeded-red-provenance.md.
     if sut.seeded:
         print(f"\n  SEEDED RUN: a fault was injected into '{sut.name}' (--seed-bug). Any red below is "
               "MANUFACTURED, not a regression.", file=sys.stderr)

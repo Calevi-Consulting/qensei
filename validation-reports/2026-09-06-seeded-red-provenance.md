@@ -35,10 +35,27 @@ trusting the claim. A human handed the JUnit rather than the claim would have ha
   gate-state claim carries the invocation that produced it, because this framework can produce either
   colour on demand. `docs/regression-gate.md` documents the new field.
 
-**Not done, deliberately:** restricting the flag (option B in the issue). Seeding is a documented teaching
-feature — `make demo`, `make diagnose-realbug`, the whole REAL_BUG walkthrough — and removing the capability
-is a heavier call than labelling it. The stamp closes the harm at the artifact layer; if a manufacturable red
-is later judged an integrity issue rather than an ergonomics one, B remains open on #41.
+**Option B — DECLINED, not deferred.** The issue offered a third disposition: refuse `--seed-bug` outside an
+explicit demo context, and raise rather than silently ignore it on a `remote` runtime. Reviewed against what
+A actually closed, and declined on both halves:
+
+- *Restricting the flag* now buys close to nothing. The original harm was an **indistinguishable** artifact,
+  and the stamp closes exactly that — the report declares `qensei.seeded`. What remains is not ambiguity but
+  forgery, and a restriction does not stop it (whoever can strip the property can write the file outright).
+  Against an accident, the banner and the stamp already suffice. The cost is real: "an explicit demo context"
+  has to be *defined* — an env var, a make target, a manifest key — which is new configuration surface and a
+  new failure mode, in exchange for a guarantee A already provides.
+- *Raising on a remote runtime* is the half with residual value, and it shrank too: the silent no-op is gone,
+  since the gate now says `--seed-bug had NO EFFECT … This run is unseeded`. B.2 would only upgrade that
+  warning to a non-zero exit — a behaviour change on a path that is **source-grounded but not runtime-
+  verified** (there is no live remote backend to test it against). Hardening an untested path is how a fix
+  becomes the next defect.
+
+Seeding itself stays: it is a documented teaching feature (`make demo`, `make diagnose-realbug`, the whole
+REAL_BUG walkthrough). If a manufacturable red is ever judged an *integrity* issue rather than an ergonomics
+one, B is the change to make — the reasoning above is what would have to be overturned, and the note lives
+next to the code in `engine/run.py` where someone reconsidering it will land. Issue #41 is **closed**; this
+paragraph is the record, not a pointer to an open item.
 
 ## Phase 3 — Tests
 
@@ -80,7 +97,7 @@ boundary, not a mocked call.
 
 ### Panel
 
-- ran: this change IS a panel finding — `workflows/review-panel.js` surfaced it on the spec-005 PR-2 demonstrator run (decision ESCALATE, one framework-shape finding left for the human), and every claim in it was re-verified by hand before the issue was filed. Disposition: option A + C of the three the panel offered; B left open on #41.
+- ran: this change IS a panel finding — `workflows/review-panel.js` surfaced it on the spec-005 PR-2 demonstrator run (decision ESCALATE, one framework-shape finding left for the human), and every claim in it was re-verified by hand before the issue was filed. Disposition: options A + C of the three the panel offered; **B declined** — see the paragraph above for why, and `engine/run.py` for the note next to the code.
 - waived (Phase 4, this change's own cycle): no non-green gate result — the gate was green before and after; the seeded red used in testing is, by construction, the thing being labelled.
 
 ## Result
