@@ -19,7 +19,8 @@ never replace them.
 | UI packs (browser) | `make test-ui` (pytest + Playwright) | a failing browser-driven UI pack | `1` |
 
 The first five are **zero-dependency** (stdlib); `make check` runs them with no install. The last
-three use the Poetry-managed dev toolchain (`make install`) — `make verify` runs all of them together.
+three use the Poetry-managed dev toolchain (`make install`, which bootstraps Poetry itself when it is
+missing) — `make verify` runs all of them together.
 
 ```bash
 make check         # the offline pre-commit ritual (zero-dep): test-engine + fidelity + secrets

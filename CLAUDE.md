@@ -57,6 +57,7 @@ make check                         # offline pre-commit ritual: test-engine + fi
 
 # Dev toolchain (run `make install` once first — poetry install into ./.venv)
 make install                       # provisions the toolchain; opt-in wires ./.claude for Claude Code
+                                   # self-bootstrapping: missing Poetry / Python -> ./.tooling (gitignored)
 make pytest                        # REST + unit tests under pytest + xdist (excludes the ui lane)
 make lint / make lint-fix          # ruff
 make cve                           # pip-audit dependency CVE scan

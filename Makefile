@@ -50,8 +50,8 @@ check: test-engine fidelity coverage-lint lint-offline secrets ## offline pre-co
 lint-offline: ## ruff lint IF the toolchain is present (keeps `check` zero-dependency; CI always enforces it)
 	@if command -v ruff >/dev/null 2>&1; then \
 	  ruff check . && echo "  lint: clean"; \
-	elif command -v poetry >/dev/null 2>&1 && poetry run ruff --version >/dev/null 2>&1; then \
-	  poetry run ruff check . && echo "  lint: clean"; \
+	elif command -v $(POETRY) >/dev/null 2>&1 && $(POETRY) run ruff --version >/dev/null 2>&1; then \
+	  $(POETRY) run ruff check . && echo "  lint: clean"; \
 	else echo "  lint: skipped (ruff not installed — run 'make install'/'pre-commit install'; CI enforces it)"; fi
 
 test-engine: ## unit tests for the engine core + gates
@@ -80,26 +80,33 @@ secrets: ## fail if an obvious secret is staged (best-effort, stdlib)
 # --- dev toolchain (Poetry: pytest + xdist, lint, CVE scan) -----------------
 # `make check` above stays zero-dependency (stdlib unittest). The targets below need the
 # Poetry-managed dev env — run `make install` once first. `make verify` is the full local CI.
+#
+# `make install` is self-bootstrapping: if Poetry (or the Python the project targets) is
+# missing it provisions them into ./.tooling (gitignored, no sudo). That project-local
+# Poetry wins over a system-wide one, so the targets below drive the toolchain install.sh
+# actually set up. Override with `make pytest POETRY=/path/to/poetry`.
+POETRY ?= $(shell if [ -x .tooling/bin/poetry ]; then echo .tooling/bin/poetry; else echo poetry; fi)
+
 install: ## set up the dev/test toolchain (pytest+xdist, ruff, pip-audit) via Poetry
 	./scripts/install.sh
 
 pytest: ## run REST + unit tests under pytest + xdist (UI lane is opt-in: make test-ui)
-	poetry run pytest -m "not ui"
+	$(POETRY) run pytest -m "not ui"
 
 test-ui: ## run the browser (Playwright) UI packs, headless and parallel (needs `make install`)
-	poetry run pytest tests/test_ui.py
+	$(POETRY) run pytest tests/test_ui.py
 
 ui-watch: ## watch the UI verification LIVE — headed, slowed-down, single browser
-	poetry run pytest tests/test_ui.py --headed --slowmo 600 -n0
+	$(POETRY) run pytest tests/test_ui.py --headed --slowmo 600 -n0
 
 lint: ## ruff lint over the codebase (needs `make install`)
-	poetry run ruff check .
+	$(POETRY) run ruff check .
 
 lint-fix: ## ruff lint applying safe autofixes
-	poetry run ruff check --fix .
+	$(POETRY) run ruff check --fix .
 
 cve: ## scan dependencies for known CVEs with pip-audit (needs `make install`)
-	poetry run pip-audit
+	$(POETRY) run pip-audit
 
 verify: lint cve pytest fidelity coverage-lint secrets ## full local CI: lint + CVE + pytest + fidelity + coverage-lint + secrets
 	@echo "  verify: OK"
