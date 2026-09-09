@@ -17,6 +17,9 @@ Domain-agnostic — it works against any product through a System-Under-Test plu
   mental model, the `/validate` → `/automate` → `/report-bug` workflow, and the ownership model.
 - **[The walkthrough](docs/walkthrough.md)** — the same story on a runnable example (`SHOP-456`):
   ticket → `/validate` evidence → `/automate` spec + pack → the gate → REAL_BUG vs TEST_BUG.
+- **[The end-to-end workflow](docs/end-to-end-workflow.md)** — the same journey as **sequence diagrams**:
+  who acts, in what order, and where a human decides — including the design review before code exists and
+  the validate-and-iterate loop where a red CI run is triaged and fixed.
 
 ## What it is (three capabilities, one backend connection)
 
@@ -73,7 +76,9 @@ make diagnose-testbug  # a wrong test → lens says TEST_BUG (fix the test, don'
 ## Development setup
 
 The runtime above needs **no install**. The dev/test toolchain (test runner + linter + CVE scanner)
-is [Poetry](https://python-poetry.org/)-managed into a project-local `.venv`:
+is [Poetry](https://python-poetry.org/)-managed into a project-local `.venv`. `make install` is
+self-bootstrapping: if Poetry — or the Python version `pyproject.toml` targets — is missing, it
+provisions them into `./.tooling` (gitignored, no sudo; `rm -rf .tooling` reverts it):
 
 ```bash
 make install   # poetry install: pytest, pytest-xdist, ruff, pip-audit (into ./.venv)
@@ -134,9 +139,11 @@ layers on disk, how the pieces compose). Then:
 
 - [`sut/README.md`](sut/README.md) — the SUT plugins (replaceable examples) + how to add your own
 - [`sut/contract.md`](sut/contract.md) — the plugin shape: manifest keys + `plugin.py` hooks
+- [`docs/end-to-end-workflow.md`](docs/end-to-end-workflow.md) — use cases + sequence diagrams for the whole flow
 - [`docs/architecture.md`](docs/architecture.md) · [`docs/regression-gate.md`](docs/regression-gate.md) · [`docs/quality-gates.md`](docs/quality-gates.md) · [`docs/walkthrough.md`](docs/walkthrough.md)
 
 Top-level orientation (one gloss each): `commands/` assistant legs · `agents/` review panel ·
+`workflows/` the panel as a deterministic script ·
 `policies/` governance · `engine/` the deterministic core · `sut/` the sites · `ticket/` tracker
 contract · `docs/`.
 

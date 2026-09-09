@@ -68,11 +68,15 @@ jobs:
       - name: CVE scan (pip-audit)
         run: make cve
       - name: framework unit + integration tests
-        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py tools/tests/test_sourceless.py tools/tests/test_coverage_lint.py --junitxml=report-unit.xml
+        run: poetry run pytest tools/tests/test_engine.py tools/tests/test_multisite.py tools/tests/test_sourceless.py tools/tests/test_coverage_lint.py tools/tests/test_design_panel_lint.py tools/tests/test_panel_section_lint.py tools/tests/test_seed_provenance.py --junitxml=report-unit.xml
       - name: spec-fidelity lint (no weakened acceptance criteria)
         run: python3 -m engine.fidelity_lint --base "origin/${{ github.event.repository.default_branch }}"
       - name: coverage-metadata gate (covers match README + resolve against the SUT)
         run: python3 -m engine.coverage_lint
+      - name: design-panel record (touched sut/<name>/plans/*.md carry the Phase-2b record)
+        run: python3 -m engine.design_panel_lint --changed --base "origin/${{ github.event.repository.default_branch }}...HEAD"
+      - name: review-panel record (touched validation reports carry the Panel section)
+        run: python3 -m engine.panel_section_lint --changed --base "origin/${{ github.event.repository.default_branch }}...HEAD"
       - name: secrets scan
         run: make secrets
       - uses: actions/upload-artifact@v4

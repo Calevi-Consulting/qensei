@@ -138,6 +138,32 @@ seeds candidate coverage in Phase 1, **REGRESS** (`engine/run.py`) is the Phase 
    `ROUTES` + `BUSINESS_RULES`; `source_path()` is the file). Use a UI/browser mapping only where no
    API path exists, or for genuine end-to-end coverage.
 4. Reference the plan from the spec's final *Implementation* section.
+5. **Run the design panel — tiered and NON-DISCRETIONARY** (`docs/multiagent/r-design.md`, spec 005
+   WS-A). Every other lens fires in Phase 4, i.e. only after a design defect has already been implemented
+   and has cost a gate cycle (diagnose → fix → re-run, capped at 3 per root cause). This is the same
+   protocol moved to where the defect is still a review comment:
+
+   - **First, the lints** — where a pack already exists, `engine/coverage_lint.py` answers whether
+     `covers` / `contract_claim` / `spec_ref` *resolve*. A lens is never spent on what a rule can decide.
+   - **Tier 1 — ALWAYS**: **R-DESIGN as a SUBAGENT** (`agents/r-design.md`) over the (spec, plan) pair,
+     before any pack code. Inline self-review is NOT a substitute — the author of the plan is the worst
+     reviewer of it, the same bias Phase 4's Tier 1 exists to check. It self-gates SUT-source freshness.
+   - **Tier 2 — conditional**: **R-MECHANISM** when R-DESIGN sets `needs_mechanism` (the plan asserts
+     timing / scheduling / run-eligibility / component state, or reads back a write it just performed);
+     **R-EVIDENCE** when it sets `needs_evidence` (the plan rests on existing data or another pack's
+     artifacts). Their citations go through `engine/citation_gate.py` exactly as in Phase 4.
+   - **Findings surface at the Phase-2 human approval gate that already exists** — no new gate, no merge
+     authority, no slash command, and **no JUDGE at 2b** (a human is one step away).
+   - **Record — the findings come BACK into the plan.** The plan carries a `## Design panel` section:
+     `- ran: R-DESIGN <N> findings[; R-MECHANISM (needs_mechanism)]` followed by one
+     `- F<n> APPLIED|REJECTED|FLAGGED|DEFERRED: <reason>` line per finding, or `- waived: <reason>`
+     (legitimate: a docs-only revision of an already-implemented pack). **The dispositions are the
+     GENERATOR's proposal; the human ratifies them at the approval gate.** `engine/design_panel_lint.py`
+     (pre-commit, `make design-panel`, `make check`, CI — changed plans only) reconciles the declared count
+     against the labelled lines. It gates the RECORD, never the verdict — `REJECTED` passes like `APPLIED`.
+     The declared count is **R-DESIGN's**; a Tier-2 lens's output is folded into the `F<n>` line it bears on
+     (or named in the `ran:` prose), never labelled separately. Only lines inside the section count, HTML
+     comments are ignored, and an unfilled `<placeholder>` is not a record.
 
 ## Phase 3 — Implement (translate the functional test to a REST **or** UI automated pack)
 
@@ -207,7 +233,35 @@ net coverage loss; the gate is the source of truth, not a local single-pack run.
 
 ### 4b — Triage every non-green result BEFORE any code change (the review panel)
 
-Triage drives off **two complementary lenses**:
+Invocation is **tiered and non-discretionary** (`docs/multiagent/review-panel.md` § Invocation tiers).
+"This failure looks simple, I'll triage it inline" is precisely the bias the panel exists to check — in
+the framework this panel was ported from, an inline triage that classified 3/3 failures **correctly**
+still missed five pre-merge findings the retroactive panel then surfaced:
+
+- **Tier 1 — ALWAYS, on every non-green result, before any fix:**
+  1. **ORIENT** — a read-only step (not a lens) returns the **record**: the pack's index-card gotchas,
+     the spec's ACs, the plan, `sut/<name>/learnings/` + `skills/`, prior validation reports →
+     `rejected_fixes` (never re-propose one), `contradicts_subject` (the brief's premise may be wrong),
+     `prior_attempts` (the loop-budget input). Best-effort; an absent record is stated, not assumed.
+  2. **The deterministic lens** — `engine/diagnostics.py` when the case carries a resolvable
+     `contract_claim` (`make diagnose-realbug` is the worked example). Its verdict is evidence, not an
+     override.
+  3. **R-DIAGNOSIS as a SUBAGENT** (`agents/r-diagnosis.md`). Inline self-triage by the driving agent
+     is NOT a substitute — the lens's value is independent depth, not the verdict label. It self-gates
+     freshness and emits `needs_evidence` / `needs_mechanism`.
+- **Tier 2 — the full panel** (flagged lenses in parallel → `engine/citation_gate.py` → **JUDGE**) when
+  ANY of: R-DIAGNOSIS sets `needs_evidence` or `needs_mechanism`; its verdict is `REAL_BUG` or
+  `UNDOCUMENTED-ESCALATE`; this is the **2nd cycle on the same root cause**; the fix will need a
+  fidelity **reshape ack** (`--allow-reshape`); or the branch lands **a new pack** (its first landing —
+  the non-obvious trigger, and the one that pays). The JUDGE adjudicates and routes a genuine backend
+  regression to a structured bug report for the **human** to file via the ticket provider.
+- **Record**: the cycle's validation report carries a `### Panel` section — `- ran: <digest / verdict
+  ref>` or `- waived: <reason>` — enforced by `engine/panel_section_lint.py` (pre-commit,
+  `make panel-record`, `make check`, CI — changed reports only). Legitimate waivers: a docs/tooling-only
+  change, or no non-green result occurred. The lint gates the RECORD, never the verdict — the lenses
+  stay advisory and the human owns convergence.
+
+The lenses, and what each one owns:
 
 - **The deterministic code lens — `engine/diagnostics.py`.** It compares the case's `contract_claim`
   to the SUT's declared contract (`BUSINESS_RULES` via the SUTConnector source) and the runtime
@@ -314,7 +368,8 @@ The loop ends when either:
 
 ## Phase 5 — Record
 
-1. Write a validation report to `validation-reports/` (per `policies/methodology.md`).
+1. Write a validation report to `validation-reports/` (per `policies/methodology.md`), including the
+   `### Panel` record (`ran:` / `waived:`) — `engine/panel_section_lint.py` gates its presence.
 2. Reconcile the spec (the non-skippable Phase 6.5 gate): re-read it, check each acceptance criterion
    against the implementation, set `## Status: COMPLETE` only if every box is checked, and link the
    pack + case id(s). Commit the spec in the same change as the pack.

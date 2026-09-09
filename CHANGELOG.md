@@ -7,8 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A seeded gate red now declares itself** ([#41](https://github.com/Calevi-Consulting/qensei/issues/41)).
+  `--seed-bug` is a flag on the gate binary, and nothing recorded it: a seeded run produced exit 1, a
+  failing `<testcase>` and a report byte-indistinguishable from a genuine regression, on any SUT. The gate
+  now announces a seeded run on stderr and stamps every report with `qensei.seeded` (JUnit `<property>`) /
+  `seeded` (JSON) — emitted on **every** report, `false` included, so an absent marker is never ambiguous.
+  `--seed-bug` reaches only an `in_process` factory; requested against a `remote` runtime it is dropped, and
+  the gate now says so and stamps the run unseeded rather than claiming a seeding that did not happen
+  (`SUTConnector.seeded`). `policies/communication-standards.md` gains the matching evidence rule: a
+  gate-state claim carries the invocation that produced it. Surfaced by the review-panel orchestrator on its
+  first real run.
+
 ### Added
 
+- **Design panel + non-discretionary panel tiers** (`specs/005-design-panel-and-invocation-tiers.md`,
+  WS-A/B/C): a new design-stage lens, **`r-design`**, reviews the (spec, plan) pair at `/automate` Phase 2b
+  before any pack code exists, with its findings recorded per-finding in the plan
+  (`F<n> APPLIED|REJECTED|FLAGGED|DEFERRED`) and gated by `engine/design_panel_lint.py`. Phase-4 panel
+  invocation is now **tiered** (R-DIAGNOSIS as a subagent on every non-green result; the full panel on
+  flags / `REAL_BUG` / 2nd cycle / reshape ack / a pack's first landing) and **recorded** in every
+  validation report (`### Panel`), gated by `engine/panel_section_lint.py`. A read-only **ORIENT** step
+  now precedes every lens, returning the record (`rejected_fixes`, `contradicts_subject`,
+  `prior_attempts`). Both lints are stdlib, wired in pre-commit, `make check` and CI (changed files only).
+- **Deterministic review-panel orchestrator** (spec 005 WS-D/E): `workflows/review-panel.js` implements the
+  panel protocol as a Workflow-tool script over the same `agents/` lenses and the same `engine/` gates —
+  ORIENT → `engine.diagnostics` → R-DIAGNOSIS → flagged R-EVIDENCE / R-MECHANISM in parallel →
+  `engine.citation_gate` → JUDGE — with a subject gate that throws rather than convening a panel against a
+  null subject. `scripts/install.sh` wires `.claude/workflows`. The model-driven path stays the always-on
+  default; the orchestrator is human-triggered. `docs/multiagent/execution-architecture.md` documents the
+  timeline: the three laws, every dispatch condition, the lens-or-lint decision and its graduation path.
 - **Sourceless SUT mode** (`specs/002-sourceless-ticket-driven-mode.md`): a SUT can declare no backend
   source (omit `source`, or `{"source": {"mode": "none"}}`) and still run the regression gate against its
   live runtime. `design` falls back to the ticket + docs, `diagnostics` returns `INDETERMINATE` (contract

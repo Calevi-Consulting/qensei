@@ -119,7 +119,8 @@ def lint_file(path: str, base_ref: str = "HEAD", allow_reshape: bool = False) ->
     if base_src is None:
         return []  # new file (or untracked): nothing to weaken
     try:
-        cur = ast.parse(open(path, encoding="utf-8").read())
+        with open(path, encoding="utf-8") as fh:
+            cur = ast.parse(fh.read())
         base = ast.parse(base_src)
     except SyntaxError as e:
         return [Finding(path, "?", "parse-error", f"could not parse: {e}")]

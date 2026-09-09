@@ -22,7 +22,9 @@ a Discussion or an issue). Treat this guide as a starting point, not a barrier.
 
 The runtime is zero-dependency (pure stdlib) — `make demo` / `make test` /
 `make design` need no install. The dev/test toolchain (pytest, ruff, pip-audit,
-Playwright) is Poetry-managed:
+Playwright) is Poetry-managed. `make install` bootstraps whatever is missing
+(Poetry, and the Python `pyproject.toml` targets) into `./.tooling` — project-local,
+no sudo, reverted by `rm -rf .tooling`:
 
 ```bash
 make install      # provision the dev toolchain into ./.venv (run once)
@@ -43,6 +45,14 @@ Two paths, both welcome:
   `sut/mock-shop/` as the reference site. Keep one regression case per
   `packs/<id>/` directory so concurrent edits do not collide.
 
+  Two records are gated when you author one, and both check **presence, never
+  verdict**: a plan you touch under `sut/<name>/plans/` must carry a
+  `## Design panel` section saying whether the design review ran (with one
+  disposition line per finding) or why it was waived, and a validation report must
+  carry a `### Panel` line saying whether the review panel ran. `make check` runs
+  both. See [`docs/end-to-end-workflow.md`](docs/end-to-end-workflow.md) for where
+  each fits in the flow.
+
 - **Fix or improve the core** — the engine (`engine/`), the review lenses
   (`agents/`), and the governance (`policies/`) are all fair game. The framework is
   young; if a lens misfires, a rule is wrong, or the engine has a bug, a PR is very
@@ -50,6 +60,12 @@ Two paths, both welcome:
   architectural constraint that stays: keep `engine/` and `policies/`
   **product-neutral** — do not hardcode any single SUT's endpoints, rules, or
   skills into them.
+
+## How the work flows
+
+Read [`docs/end-to-end-workflow.md`](docs/end-to-end-workflow.md) once before your first pack: it
+draws the whole path as sequence diagrams — where a human approves intent, where the design is reviewed
+*before* any code, and how the validate-and-iterate loop triages a red CI run before anything is fixed.
 
 ## Commit messages
 

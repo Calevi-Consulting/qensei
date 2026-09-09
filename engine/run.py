@@ -10,7 +10,8 @@ Options:
   --select EXPR     run only cases matching a tag expression, e.g. "smoke and not slow"
   --preflight MODE  "partial" (skip unmet-requirement cases) | "block" (fail them)
   --report PATH     also write a machine-readable report (.xml = JUnit, .json = JSON)
-  --seed-bug        boot the mock backend with a seeded regression (demo)
+  --seed-bug        boot the mock backend with a seeded regression (demo; the run and its
+                    report are stamped as seeded — see engine/report.py)
 """
 from __future__ import annotations
 
@@ -55,16 +56,40 @@ def main(argv=None):
 
     packs = args.packs or str(sut.packs_dir)  # default to THIS site's packs (self-contained)
     sut.start(buggy=args.seed_bug)
+    # Provenance, loudly. A seeded run produces a red that is otherwise identical to a genuine
+    # regression — same exit 1, same failing case, same report — so say so in the output AND in the
+    # artifact (engine/report.py). `--seed-bug` only reaches an in_process factory; against a remote
+    # runtime it is silently dropped, and a marker that can be wrong is worse than none, so that case
+    # is reported as NOT applied rather than stamped.
+    #
+    # Stamping was chosen over RESTRICTING the flag (issue #41, option B: refuse it outside an explicit
+    # demo context, and raise rather than warn on a remote runtime). The reasoning, recorded here because
+    # this is where anyone reconsidering it will land: the harm was an INDISTINGUISHABLE artifact, which
+    # the stamp closes; what is left is forgery, which a restriction does not prevent. And "an explicit
+    # demo context" would have to be defined — an env var, a make target, a manifest key — buying new
+    # configuration surface for a guarantee the stamp already gives. Raising on a remote runtime is the
+    # half with residual value, but it would harden a path that is source-grounded and NOT runtime-
+    # verified. Full disposition:
+    # validation-reports/2026-09-06-seeded-red-provenance.md.
+    if sut.seeded:
+        print(f"\n  SEEDED RUN: a fault was injected into '{sut.name}' (--seed-bug). Any red below is "
+              "MANUFACTURED, not a regression.", file=sys.stderr)
+    elif args.seed_bug:
+        print(f"\n  --seed-bug had NO EFFECT: '{sut.name}' runs in {sut.runtime_mode()!r} mode, which "
+              "takes no runtime kwargs. This run is unseeded.", file=sys.stderr)
     try:
         if sut.runtime_mode() == "remote" and not sut.reachable():
             print(f"\n  GATE FALSE-GREEN GUARD: SUT unreachable @ {sut.base_url}\n", file=sys.stderr)
             return 2
         results = runner.run_packs(sut, packs, select=args.select, preflight=settings.preflight)
+        seeded = sut.seeded
     finally:
         sut.stop()
 
     if args.report:
-        report_mod.write_report(results, args.report, suite_name=f"{sut.name}-{settings.env or 'default'}")
+        report_mod.write_report(
+            results, args.report, suite_name=f"{sut.name}-{settings.env or 'default'}", seeded=seeded
+        )
         print(f"  report written: {args.report}")
 
     reason = _precheck(sut, results)
@@ -73,6 +98,9 @@ def main(argv=None):
         return 2
 
     failed = [r for r in results if r[3] == "FAIL"]
+    if seeded and failed:
+        print("  (the failure above is SEEDED — this run proves detection works, not that the "
+              "system regressed)\n", file=sys.stderr)
     return 1 if failed else 0
 
 
