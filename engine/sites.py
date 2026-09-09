@@ -1,10 +1,11 @@
 """Discover the SUT sites the integration gate runs — so the pytest bridges and the CI matrices
 AUTO-ADAPT to whatever plugins live under ``sut/`` instead of a hardcoded ``ALL_SITES`` list.
 
-This is what lets an adopter DELETE the shipped example SUTs (mock-shop / restful-booker / widget-api)
-and drop in their own without editing the test bridges or CI: the engine and gates already discover
-packs by glob (``runner.py`` / ``ui.py`` / ``coverage_lint.py`` / ``fidelity_lint.py``); this closes
-the same gap for ``tests/test_sites.py``, ``tests/test_ui.py``, and both CI ``select-sites`` matrices.
+This is what lets an adopter DELETE the shipped example SUTs (mock-shop / restful-booker /
+restful-booker-live / widget-api) and drop in their own without editing the test bridges or CI: the
+engine and gates already discover packs by glob (``runner.py`` / ``ui.py`` / ``coverage_lint.py`` /
+``fidelity_lint.py``); this closes the same gap for ``tests/test_sites.py``, ``tests/test_ui.py``,
+and both CI ``select-sites`` matrices.
 
 A site is **gate-runnable** when it has at least one pack AND its default runtime boots offline
 (``runtime.mode == "in_process"``). A remote / sourceless SUT (e.g. ``widget-api``, or
